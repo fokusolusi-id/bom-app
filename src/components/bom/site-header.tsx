@@ -1,6 +1,15 @@
 import Image from "next/image";
 import Link from "next/link";
 
+const nav = [
+  ["/kompetisi", "Kompetisi"],
+  ["/komunitas", "Komunitas"],
+  ["/mulai", "Mulai"],
+  ["/leaderboard", "Leaderboard"],
+] as const;
+
+const linkCls = "font-display text-sm font-bold italic uppercase hover:text-primary";
+
 export function SiteHeader() {
   return (
     <header className="border-b">
@@ -9,12 +18,15 @@ export function SiteHeader() {
           <Image src="/brand/logo-768.png" alt="BOM Beyblade of Medan" width={44} height={44} />
           <span className="font-display text-lg font-extrabold italic uppercase">Beyblade of Medan</span>
         </Link>
-        <nav className="font-display flex gap-6 text-sm font-bold italic uppercase">
-          <Link href="/kompetisi" className="hover:text-primary hidden md:inline">Kompetisi</Link>
-          <Link href="/komunitas" className="hover:text-primary hidden md:inline">Komunitas</Link>
-          <Link href="/mulai" className="hover:text-primary hidden md:inline">Mulai</Link>
-          <Link href="/leaderboard" className="hover:text-primary">Leaderboard</Link>
+        <nav aria-label="Utama" className="hidden gap-6 md:flex">
+          {nav.map(([href, label]) => <Link key={href} href={href} className={linkCls}>{label}</Link>)}
         </nav>
+        <details className="relative md:hidden">
+          <summary className={`${linkCls} cursor-pointer list-none`}>Menu</summary>
+          <nav aria-label="Menu" className="bg-popover absolute right-0 z-10 mt-2 flex w-44 flex-col gap-3 rounded border p-4">
+            {nav.map(([href, label]) => <Link key={href} href={href} className={linkCls}>{label}</Link>)}
+          </nav>
+        </details>
       </div>
     </header>
   );

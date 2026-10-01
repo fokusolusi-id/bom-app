@@ -2,21 +2,14 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { RibbonBanner } from "@/components/bom/ribbon-banner";
-import { mockPlayers, type Player } from "@/lib/data";
-import { createClient, hasSupabase } from "@/lib/supabase/server";
+import { publicPlayers } from "@/server/players";
 
 export const metadata = { title: "Leaderboard | BOM" };
 export const revalidate = 30;
 
-async function getPlayers(): Promise<{ players: Player[]; live: boolean }> {
-  if (!hasSupabase()) return { players: mockPlayers, live: false };
-  const supabase = await createClient();
-  const { data } = await supabase.from("players").select("*").order("points", { ascending: false }).limit(100);
-  return { players: (data as Player[]) ?? [], live: true };
-}
-
 export default async function LeaderboardPage() {
-  const { players, live } = await getPlayers();
+  const { repo, live } = publicPlayers();
+  const players = await repo.list(100);
   return (
     <main className="mx-auto max-w-4xl px-4 py-10">
       <RibbonBanner>Season 1 Leaderboard</RibbonBanner>

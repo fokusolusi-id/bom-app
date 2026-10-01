@@ -79,10 +79,5 @@ create policy "admins self read" on public.admins for select using (user_id = au
 -- Realtime for the TV scoreboard.
 alter publication supabase_realtime add table public.matches;
 
--- Sample data
-insert into public.players (bom_id, name, points, wins, losses) values
- ('BOM-0001','Rakha',1240,31,6),('BOM-0007','Dimas',1105,28,8),
- ('BOM-0012','Fadil',980,24,9),('BOM-0003','Putra',915,22,11);
-
 -- After creating your user in Supabase Auth, make yourself admin:
 -- insert into public.admins (user_id) select id from auth.users where email = 'YOUR_EMAIL';

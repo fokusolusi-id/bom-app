@@ -1,4 +1,4 @@
-import type { Tier } from "@/lib/data";
+import type { Tier } from "@/domain/tier";
 
 export const tiers: { tier: Tier | "Casual / Try"; freq: string; desc: string }[] = [
   { tier: "Championship", freq: "Tahunan", desc: "Flagship. Mengundang komunitas Sumatera lain. Juara jadi wakil BOM ke G1." },
