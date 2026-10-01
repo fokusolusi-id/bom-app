@@ -26,7 +26,6 @@ Without env vars the app runs on mock data.
 
 ## Routes
 - `/` landing, `/leaderboard` (from DB, revalidates every 30s)
-- `/scoreboard` TV mode, updates live via Supabase Realtime
 - `/login`, `/admin` create match, +/- score, finish match (awards points: win +30, loss +10, x2 for Cup/Major/Championship)
 
 ## Security model

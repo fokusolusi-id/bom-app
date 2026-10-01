@@ -10,8 +10,10 @@ export function SiteHeader() {
           <span className="font-display text-lg font-extrabold italic uppercase">Beyblade of Medan</span>
         </Link>
         <nav className="font-display flex gap-6 text-sm font-bold italic uppercase">
+          <Link href="/kompetisi" className="hover:text-primary hidden md:inline">Kompetisi</Link>
+          <Link href="/komunitas" className="hover:text-primary hidden md:inline">Komunitas</Link>
+          <Link href="/mulai" className="hover:text-primary hidden md:inline">Mulai</Link>
           <Link href="/leaderboard" className="hover:text-primary">Leaderboard</Link>
-          <Link href="/scoreboard" className="hover:text-primary">Scoreboard</Link>
         </nav>
       </div>
     </header>
