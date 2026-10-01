@@ -1,17 +1,26 @@
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { RibbonBanner } from "@/components/bom/ribbon-banner";
-import { subs, umbrella } from "@/lib/content";
+import { umbrella } from "@/lib/content";
+import { publicSubCommunities } from "@/server/sub-communities";
 
 export const metadata = { title: "Sub Komunitas | BOM" };
+export const revalidate = 60;
 
-export default function KomunitasPage() {
+export default async function KomunitasPage() {
+  const subs = await publicSubCommunities().listActive();
   return (
     <main className="mx-auto max-w-6xl px-4 py-12">
       <RibbonBanner>Sub Komunitas</RibbonBanner>
-      <p className="text-muted-foreground mt-4 max-w-xl text-sm">Empat sub komunitas, satu aturan main. Poin dari semua gathering masuk satu leaderboard.</p>
+      <p className="text-muted-foreground mt-4 max-w-xl text-sm">Satu aturan main untuk semua sub komunitas. Poin dari semua gathering masuk satu leaderboard.</p>
       <div className="mt-6 grid gap-4 md:grid-cols-4">
-        {subs.map(([n, d]) => (
-          <Card key={n}><CardHeader><CardTitle>{n}</CardTitle><CardDescription>{d}</CardDescription></CardHeader></Card>
+        {subs.map((s) => (
+          <Card key={s.id ?? s.name}>
+            <CardHeader>
+              <CardTitle>{s.name}</CardTitle>
+              <CardDescription>{s.schedule}</CardDescription>
+              {s.focus && <p className="text-sm">{s.focus}</p>}
+            </CardHeader>
+          </Card>
         ))}
       </div>
       <ul className="mt-6 grid gap-2 md:grid-cols-3">

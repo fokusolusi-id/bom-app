@@ -37,3 +37,22 @@ describe("parseMatchInput", () => {
   it("rejects unknown tier", () => expect(() => input({ a_id: A, b_id: B, tier: "Nope" })).toThrow());
   it("rejects overlong text", () => expect(() => input({ a_id: A, b_id: B, round: "x".repeat(41) })).toThrow());
 });
+
+import { parseSubCommunityInput } from "@/domain/sub-community";
+
+describe("parseSubCommunityInput", () => {
+  const sub = (o: Record<string, unknown>) => parseSubCommunityInput((k) => o[k]);
+  it("parses a valid row", () => {
+    expect(sub({ name: " DXM ", schedule: "Sabtu malam", focus: "", sort_order: "2", is_active: "on" }))
+      .toEqual({ name: "DXM", schedule: "Sabtu malam", focus: null, sort_order: 2, is_active: true });
+  });
+  it("requires name and schedule", () => {
+    expect(() => sub({ schedule: "x" })).toThrow();
+    expect(() => sub({ name: "x" })).toThrow();
+  });
+  it("rejects bad id and order", () => {
+    expect(() => sub({ id: "nope", name: "a", schedule: "b" })).toThrow();
+    expect(() => sub({ name: "a", schedule: "b", sort_order: 1000 })).toThrow();
+  });
+  it("treats missing checkbox as inactive", () => expect(sub({ name: "a", schedule: "b" }).is_active).toBe(false));
+});
