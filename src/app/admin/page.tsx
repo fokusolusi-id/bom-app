@@ -1,32 +1,21 @@
-import { redirect } from "next/navigation";
 import { TIERS } from "@/domain/tier";
 import { supabaseMatches } from "@/server/matches";
 import { supabasePlayers } from "@/server/players";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TierBadge } from "@/components/bom/tier-badge";
-import { createClient, hasSupabase } from "@/lib/supabase/server";
-import { bumpScore, createMatch, finishMatch, signOut } from "./actions";
+import { createClient } from "@/lib/supabase/server";
+import { bumpScore, createMatch, finishMatch } from "./actions";
 
 export const metadata = { title: "Admin | BOM" };
-export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
-  if (!hasSupabase()) {
-    return <main className="mx-auto max-w-xl px-4 py-16"><p className="text-muted-foreground">Set env Supabase dulu (lihat README).</p></main>;
-  }
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
-  const { data: isAdmin } = await supabase.rpc("is_admin");
-  if (!isAdmin) return <main className="mx-auto max-w-xl px-4 py-16"><p>Akun ini belum terdaftar sebagai admin. Tambahkan ke tabel admins.</p></main>;
-
   const [matches, players] = await Promise.all([supabaseMatches(supabase).listOpen(), supabasePlayers(supabase).list(1000)]);
   const field = "bg-input rounded-md border px-3 py-2 outline-none focus:ring-2 focus:ring-ring";
 
   return (
-    <main className="mx-auto max-w-3xl space-y-6 px-4 py-10">
-      <form action={signOut} className="flex justify-end"><Button variant="outline" size="sm">Keluar</Button></form>
+    <main className="mx-auto space-y-6">
       <Card>
         <CardHeader><CardTitle>Match baru</CardTitle></CardHeader>
         <CardContent>

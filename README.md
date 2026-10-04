@@ -12,7 +12,7 @@ Without env vars the app runs on mock data.
 
 ## Supabase setup
 1. Create a project at supabase.com.
-2. SQL editor: run `supabase/migrations/0001_init.sql` then `0002_hardening.sql` (tables, RLS, constraints, `bump_score`, `finish_match`). Optional dev data: `supabase/seed.sql`.
+2. SQL editor: run `supabase/migrations/0001_init.sql` then `0002_hardening.sql` and `0003_sub_communities.sql` (tables, RLS, constraints, `bump_score`, `finish_match`). Optional dev data: `supabase/seed.sql`.
 3. Auth > Users: create your admin user (email + password).
 4. SQL editor: `insert into public.admins (user_id) select id from auth.users where email = 'YOUR_EMAIL';`
 5. Settings > API: copy Project URL and anon/publishable key into `.env.local`.
@@ -34,7 +34,7 @@ Without env vars the app runs on mock data.
 
 ## Routes
 - `/` landing, `/kompetisi`, `/komunitas`, `/mulai`, `/leaderboard` (from DB, revalidates every 30s)
-- `/login`, `/admin` create match, +/- score, finish match (awards points: win +30, loss +10, x2 for Cup/Major/Championship)
+- `/login`, `/admin` admin area: `/admin` matches, `/admin/komunitas` sub community CMS (shown on `/komunitas`). Create match, +/- score, finish match (awards points: win +30, loss +10, x2 for Cup/Major/Championship)
 
 ## Security model
 Anon key is public by design. All writes are blocked by RLS unless the user is in `admins`. `finish_match` is security definer and re-checks `is_admin()`.
