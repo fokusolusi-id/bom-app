@@ -4,7 +4,7 @@ import { SiteHeader } from "@/components/bom/site-header";
 
 export const metadata: Metadata = {
   title: "BOM | Beyblade of Medan",
-  description: "Rumah Beyblade X kompetitif di Sumatera. Built in Medan. Battle anywhere.",
+  description: "Rumah Beyblade X kompetitif di Sumatera Utara, tempat pemain Medan naik kelas sampai ke panggung dunia. Built in Medan. Battle anywhere.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

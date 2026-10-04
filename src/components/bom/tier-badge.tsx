@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import type { Tier } from "@/lib/data";
+import type { Tier } from "@/domain/tier";
 
 const styles: Record<Tier, "secondary" | "outline" | "default" | "destructive"> = {
   Ranked: "secondary",

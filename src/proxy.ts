@@ -19,4 +19,5 @@ export async function proxy(request: NextRequest) {
   return response;
 }
 
-export const config = { matcher: ["/((?!_next/static|_next/image|brand|icon.png|favicon.ico).*)"] };
+// Only routes that need an auth session; public pages skip the Supabase round trip.
+export const config = { matcher: ["/admin/:path*", "/login"] };
