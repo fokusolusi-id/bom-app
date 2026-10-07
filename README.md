@@ -20,7 +20,7 @@ Without env vars the app runs on mock data.
 ## Vercel deploy
 1. Push this folder to a GitHub repo.
 2. vercel.com > Add New Project > import the repo (framework auto-detects Next.js).
-3. Environment Variables: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` (Production + Preview).
+3. Environment Variables: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` (Production + Preview). Optional: `NEXT_PUBLIC_WHATSAPP_INVITE_URL` (WhatsApp group invite shown in the footer; hidden when unset).
 4. Deploy. Then Supabase > Auth > URL Configuration: set Site URL to your Vercel domain.
 (Or use the Vercel Supabase integration from the Vercel marketplace to inject the env vars automatically.)
 
@@ -31,6 +31,7 @@ Without env vars the app runs on mock data.
 - `src/domain` pure rules (tiers, scoring, input validation). Single source of truth for points.
 - `src/server` repositories (Supabase and in-memory) and the admin session guard.
 - `src/app` routes. `src/lib/content.ts` static page copy.
+- `public/` favicon set (`favicon.ico`, `favicon-16x16.png`, `favicon-32x32.png`, `apple-touch-icon.png`, `android-chrome-*.png`) and `site.webmanifest`, wired up via `metadata.icons`/`metadata.manifest` in `src/app/layout.tsx`. Don't add `favicon.ico`/`icon.png`/`apple-icon.png` under `src/app`: file-based icons override the metadata config and `favicon.ico` would conflict with the one in `public/`.
 
 ## Routes
 - `/` landing, `/kompetisi`, `/komunitas`, `/mulai`, `/leaderboard` (from DB, revalidates every 30s)

@@ -53,11 +53,6 @@ export default function Home() {
           </Link>
         ))}
       </section>
-
-      <footer className="border-border mt-20 border-t pt-8 text-center">
-        <div className="font-display text-primary text-xl font-extrabold italic uppercase">Built in Medan. Battle anywhere.</div>
-        <div className="text-muted-foreground mt-1 text-sm">Play • Compete • Rank • Grow • Belong</div>
-      </footer>
     </main>
   );
 }

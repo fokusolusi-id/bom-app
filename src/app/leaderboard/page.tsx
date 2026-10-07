@@ -24,7 +24,7 @@ export default async function LeaderboardPage() {
           <TableBody>
             {players.map((p, i) => (
               <TableRow key={p.bom_id}>
-                <TableCell className="font-display tabular text-primary text-2xl font-black italic">{i + 1}</TableCell>
+                <TableCell className="font-num tabular text-primary text-2xl font-black italic">{i + 1}</TableCell>
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <Avatar><AvatarFallback>{p.name[0]}</AvatarFallback></Avatar>
@@ -33,7 +33,7 @@ export default async function LeaderboardPage() {
                 </TableCell>
                 <TableCell className="tabular text-success text-right">{p.wins}</TableCell>
                 <TableCell className="tabular text-destructive text-right">{p.losses}</TableCell>
-                <TableCell className="font-display tabular text-right text-xl font-black italic">{p.points}</TableCell>
+                <TableCell className="font-num tabular text-right text-xl font-black italic">{p.points}</TableCell>
               </TableRow>
             ))}
           </TableBody>

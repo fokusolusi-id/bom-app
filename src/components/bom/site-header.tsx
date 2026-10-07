@@ -8,7 +8,7 @@ const nav = [
   ["/leaderboard", "Leaderboard"],
 ] as const;
 
-const linkCls = "font-display text-sm font-bold italic uppercase hover:text-primary";
+const linkCls = "font-label text-sm font-bold italic uppercase tracking-[0.08em] hover:text-primary";
 
 export function SiteHeader() {
   return (
