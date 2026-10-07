@@ -2,32 +2,37 @@
 @import "tw-animate-css";
 @import "@fontsource-variable/exo-2/wght-italic.css";
 @import "@fontsource-variable/exo-2/wght.css";
-@import "@fontsource-variable/inter";
+@import "@fontsource/kanit/600-italic.css";
+@import "@fontsource/kanit/700-italic.css";
+@import "@fontsource/barlow/400.css";
+@import "@fontsource/barlow/500.css";
+@import "@fontsource/barlow-semi-condensed/700.css";
+@import "@fontsource/barlow-semi-condensed/800.css";
+@import "../styles/bom-tokens.css";
 
 @custom-variant dark (&:is(.dark *));
 
-/* BOM tokens: shadcn variable names, dark-only */
+/* shadcn variable names mapped onto the BOM design system tokens (src/styles/bom-tokens.css). Dark-only. */
 :root {
-  --background: #000000;
-  --foreground: #ffffff;
-  --card: #0e0e0e;
-  --card-foreground: #ffffff;
-  --popover: #1a1a1a;
-  --popover-foreground: #ffffff;
-  --primary: #ff8a0f;
-  --primary-foreground: #000000;
-  --secondary: #1a1a1a;
-  --secondary-foreground: #ffffff;
-  --muted: #1a1a1a;
-  --muted-foreground: #8f8b87;
-  --accent: #cc4400;
-  --accent-foreground: #ffffff;
-  --destructive: #e5484d;
-  --border: #2a2a2a;
-  --input: #2a2a2a;
-  --ring: #ff8a0f;
-  --success: #3fb950;
-  --radius: 0.25rem;
+  --background: var(--surface-page);
+  --foreground: var(--text-1);
+  --card: var(--surface-card);
+  --card-foreground: var(--text-1);
+  --popover: var(--surface-raised);
+  --popover-foreground: var(--text-1);
+  --primary: var(--accent);
+  --primary-foreground: var(--text-on-accent);
+  --secondary: var(--surface-raised);
+  --secondary-foreground: var(--text-1);
+  --muted: var(--surface-raised);
+  --muted-foreground: var(--text-2);
+  --accent: var(--bom-orange);
+  --accent-foreground: var(--bom-white);
+  --destructive: var(--status-loss);
+  --input: var(--bom-line);
+  --ring: var(--bom-orange);
+  --success: var(--status-win);
+  --radius: var(--radius-2);
 }
 
 @theme inline {
@@ -50,23 +55,35 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
   --color-success: var(--success);
-  --radius-sm: calc(var(--radius) - 2px);
-  --radius-md: var(--radius);
-  --radius-lg: calc(var(--radius) + 2px);
-  --font-sans: "Inter Variable", system-ui, sans-serif;
-  --font-display: "Exo 2 Variable", system-ui, sans-serif;
+  --radius-sm: var(--radius-1);
+  --radius-md: var(--radius-2);
+  --radius-lg: var(--radius-2);
+  --font-sans: "Barlow", system-ui, sans-serif;
+  --font-display: "Exo 2 Variable", "Saira", system-ui, sans-serif;
+  --font-label: "Kanit", "Exo 2 Variable", system-ui, sans-serif;
+  --font-num: "Barlow Semi Condensed", "Barlow", system-ui, sans-serif;
 }
 
 @layer base {
   * { @apply border-border outline-ring/50; }
   body { @apply bg-background text-foreground font-sans antialiased; }
-  h1, h2, h3, h4 { @apply font-display font-extrabold italic uppercase tracking-tight; }
+  h1, h2, h3, h4 { @apply font-display italic uppercase; font-weight: var(--fw-display); letter-spacing: var(--ls-display); }
 }
 
+/* Chamfered corners: top-left + bottom-right cut (6 / 12 / 24px, from the design system). */
+@utility chamfer-sm {
+  clip-path: polygon(var(--chamfer-s) 0, 100% 0, 100% calc(100% - var(--chamfer-s)), calc(100% - var(--chamfer-s)) 100%, 0 100%, 0 var(--chamfer-s));
+}
 @utility chamfer {
-  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+  clip-path: polygon(var(--chamfer-m) 0, 100% 0, 100% calc(100% - var(--chamfer-m)), calc(100% - var(--chamfer-m)) 100%, 0 100%, 0 var(--chamfer-m));
 }
 @utility chamfer-lg {
-  clip-path: polygon(18px 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%, 0 18px);
+  clip-path: polygon(var(--chamfer-l) 0, 100% 0, 100% calc(100% - var(--chamfer-l)), calc(100% - var(--chamfer-l)) 100%, 0 100%, 0 var(--chamfer-l));
 }
 @utility tabular { font-variant-numeric: tabular-nums; }
+@utility text-two-tone {
+  background: var(--bom-two-tone);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
