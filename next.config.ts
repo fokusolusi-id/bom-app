@@ -10,6 +10,7 @@ const csp = [
   "img-src 'self' data: blob: https://*.supabase.co",
   "font-src 'self' data:",
   "connect-src 'self' https://*.supabase.co wss://*.supabase.co" + (isDev ? " ws:" : ""),
+  "frame-src https://www.google.com", // Google Maps embed on /about-us
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",

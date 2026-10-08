@@ -2,9 +2,10 @@ import Image from "next/image";
 import Link from "next/link";
 
 const nav = [
-  ["/kompetisi", "Kompetisi"],
-  ["/komunitas", "Komunitas"],
-  ["/daftar", "Membership"],
+  ["/about-bom", "About BOM"],
+  ["/rules", "Rules"],
+  ["/schedule", "Schedule"],
+  ["/membership", "Membership"],
   ["/leaderboard", "Leaderboard"],
 ] as const;
 
