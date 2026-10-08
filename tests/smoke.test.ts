@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 const base = process.env.SMOKE_URL;
 
 describe.skipIf(!base)("smoke", () => {
-  it.each(["/", "/leaderboard", "/kompetisi", "/komunitas", "/mulai"])("%s returns 200", async (path) => {
+  it.each(["/", "/leaderboard", "/kompetisi", "/komunitas", "/daftar"])("%s returns 200", async (path) => {
     expect((await fetch(base + path)).status).toBe(200);
   });
   it("sends security headers", async () => {

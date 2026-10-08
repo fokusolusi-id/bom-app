@@ -4,7 +4,7 @@ import Link from "next/link";
 const nav = [
   ["/kompetisi", "Kompetisi"],
   ["/komunitas", "Komunitas"],
-  ["/mulai", "Mulai"],
+  ["/daftar", "Membership"],
   ["/leaderboard", "Leaderboard"],
 ] as const;
 
