@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { PointsChart } from "@/components/bom/points-chart";
 import { RibbonBanner } from "@/components/bom/ribbon-banner";
 import { TierBadge } from "@/components/bom/tier-badge";
-import { matchHistory, normalizeBomId, pointsSeries, winRate, type Result } from "@/domain/profile";
+import { formatBomId, matchHistory, normalizeBomId, pointsSeries, winRate, type Result } from "@/domain/profile";
 import { publicMatchHistory } from "@/server/matches";
 import { publicPlayers } from "@/server/players";
 import { publicPlacements } from "@/server/tournaments";
@@ -30,7 +30,7 @@ async function loadPlayer(raw: string) {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const player = await loadPlayer((await params).bomId);
-  return { title: player ? `${player.name} (${player.bom_id}) | BOM` : "Member | BOM" };
+  return { title: player ? `${player.name} ${formatBomId(player.bom_id)} | BOM` : "Member | BOM" };
 }
 
 export default async function MemberPage({ params }: Props) {
@@ -66,7 +66,7 @@ export default async function MemberPage({ params }: Props) {
         <Avatar className="size-16"><AvatarFallback className="text-2xl">{player.name[0]}</AvatarFallback></Avatar>
         <div>
           <h1 className="text-4xl leading-none">{player.name}</h1>
-          <Badge variant="secondary" className="mt-2">{player.bom_id}</Badge>
+          <Badge variant="secondary" className="mt-2">{formatBomId(player.bom_id)}</Badge>
         </div>
       </div>
 

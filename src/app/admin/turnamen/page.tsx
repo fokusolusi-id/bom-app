@@ -1,3 +1,4 @@
+import { formatBomId } from "@/domain/profile";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input, NativeSelect } from "@/components/ui/input";
@@ -49,7 +50,7 @@ export default async function AdminTournamentsPage() {
             </ul>
             <ActionForm action={setPlacement} resetOnSuccess className="grid gap-3 sm:grid-cols-[1fr_6rem_auto]">
               <input type="hidden" name="tournament_id" value={t.id} />
-              <NativeSelect name="player_id" aria-label="Pemain" required defaultValue=""><option value="" disabled>Pemain</option>{players.map((p) => <option key={p.id} value={p.id}>{p.name} ({p.bom_id})</option>)}</NativeSelect>
+              <NativeSelect name="player_id" aria-label="Pemain" required defaultValue=""><option value="" disabled>Pemain</option>{players.map((p) => <option key={p.id} value={p.id}>{p.name} {formatBomId(p.bom_id)}</option>)}</NativeSelect>
               <Input name="place" type="number" min={1} max={999} placeholder="Posisi" aria-label="Posisi" required />
               <Button type="submit">Set posisi</Button>
             </ActionForm>

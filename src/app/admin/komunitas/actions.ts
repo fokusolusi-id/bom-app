@@ -9,7 +9,8 @@ import { supabaseSubCommunities } from "@/server/sub-communities";
 
 function revalidate() {
   revalidatePath("/admin/komunitas");
-  revalidatePath("/komunitas");
+  revalidatePath("/about-bom");
+  revalidatePath("/schedule");
 }
 
 export async function prepareSubCommunityImageUpload(contentType: string): Promise<{ path: string; token: string } | { error: string }> {

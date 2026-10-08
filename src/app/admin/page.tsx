@@ -1,3 +1,4 @@
+import { formatBomId } from "@/domain/profile";
 import { TIERS } from "@/domain/tier";
 import { supabaseMatches } from "@/server/matches";
 import { supabasePlayers } from "@/server/players";
@@ -21,8 +22,8 @@ export default async function AdminPage() {
         <CardHeader><CardTitle>Match baru</CardTitle></CardHeader>
         <CardContent>
           <ActionForm action={createMatch} resetOnSuccess className="grid gap-3 sm:grid-cols-2">
-            <NativeSelect name="a_id" aria-label="Blader A" required defaultValue=""><option value="" disabled>Blader A</option>{players.map((p) => <option key={p.id} value={p.id}>{p.name} ({p.bom_id})</option>)}</NativeSelect>
-            <NativeSelect name="b_id" aria-label="Blader B" required defaultValue=""><option value="" disabled>Blader B</option>{players.map((p) => <option key={p.id} value={p.id}>{p.name} ({p.bom_id})</option>)}</NativeSelect>
+            <NativeSelect name="a_id" aria-label="Blader A" required defaultValue=""><option value="" disabled>Blader A</option>{players.map((p) => <option key={p.id} value={p.id}>{p.name} {formatBomId(p.bom_id)}</option>)}</NativeSelect>
+            <NativeSelect name="b_id" aria-label="Blader B" required defaultValue=""><option value="" disabled>Blader B</option>{players.map((p) => <option key={p.id} value={p.id}>{p.name} {formatBomId(p.bom_id)}</option>)}</NativeSelect>
             <NativeSelect name="tier" aria-label="Tier">{TIERS.map((t) => <option key={t}>{t}</option>)}</NativeSelect>
             <Input name="round" maxLength={40} placeholder="Round (mis. Semifinal)" aria-label="Round" />
             <Input name="stadium" maxLength={40} placeholder="Stadium 1" aria-label="Stadium" />

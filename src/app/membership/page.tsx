@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Input, NativeSelect } from "@/components/ui/input";
 import { RibbonBanner } from "@/components/bom/ribbon-banner";
 import { ActionForm } from "@/components/form/action-form";
+import { CompetitionPath } from "@/components/bom/competition-path";
+import { SectionHeading } from "@/components/bom/section-heading";
 import { funnel } from "@/lib/content";
 import { publicSubCommunities } from "@/server/sub-communities";
 import { submitJoinRequest } from "./actions";
@@ -10,11 +12,11 @@ import { submitJoinRequest } from "./actions";
 export const metadata = { title: "Membership | BOM" };
 export const revalidate = 60;
 
-export default async function DaftarPage() {
+export default async function MembershipPage() {
   const subs = await publicSubCommunities().listActive();
   return (
     <main className="mx-auto max-w-6xl px-4 py-12">
-      <RibbonBanner>Mulai dari Nol</RibbonBanner>
+      <RibbonBanner>Membership</RibbonBanner>
       <p className="text-muted-foreground mt-4 max-w-xl text-sm">Belum punya bey? Tidak masalah. Kompetitif di puncak, ramah di pintu.</p>
       <ol className="mt-6 grid gap-4 md:grid-cols-5">
         {funnel.map(([t, d], i) => (
@@ -48,6 +50,11 @@ export default async function DaftarPage() {
           </ActionForm>
         </CardContent>
       </Card>
+
+      <section aria-labelledby="path" className="mt-16">
+        <SectionHeading id="path">Competition path</SectionHeading>
+        <CompetitionPath showDescriptions />
+      </section>
     </main>
   );
 }

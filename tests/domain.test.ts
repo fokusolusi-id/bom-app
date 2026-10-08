@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { matchHistory, normalizeBomId, pointsSeries, rankOf, resultFor, winRate } from "@/domain/profile";
+import { formatBomId, matchHistory, normalizeBomId, pointsSeries, rankOf, resultFor, winRate } from "@/domain/profile";
 import { parsePlacementInput, parseTournamentInput } from "@/domain/tournament";
 import type { Match } from "@/domain/types";
+import { nextWeekly, pickNextEvent } from "@/domain/next-event";
+import { monthKey, monthWeeks, parseMonth, parseWeekday, shiftMonth, weekdayOf } from "@/domain/schedule";
 import { parseMatchInput } from "@/domain/match-input";
 import { clampScore, outcome, pointsFor } from "@/domain/scoring";
 import { parseTier } from "@/domain/tier";
@@ -146,6 +148,11 @@ describe("member profile", () => {
     expect(series.map((s) => s.points)).toEqual([30, 50]);
   });
 
+  it("formatBomId brackets and upper-cases", () => {
+    expect(formatBomId("BoM-001")).toBe("[BOM-001]");
+    expect(formatBomId("bom-777")).toBe("[BOM-777]");
+  });
+
   it("winRate and rankOf", () => {
     expect(winRate(0, 0)).toBe(0);
     expect(winRate(3, 1)).toBe(75);
@@ -165,5 +172,57 @@ describe("tournament input", () => {
   it("parses placements", () => {
     expect(parsePlacementInput((k) => ({ tournament_id: U, player_id: U, place: "2" })[k as "place"])).toEqual({ tournamentId: U, playerId: U, place: 2 });
     expect(() => parsePlacementInput((k) => ({ tournament_id: U, player_id: U, place: "0" })[k as "place"])).toThrow();
+  });
+});
+
+describe("schedule", () => {
+  it.each([["Sabtu malam", 6], ["Kamis malam", 4], ["tiap JUM'AT", 5], ["Setiap hari", null]])("parseWeekday(%j)", (text, want) => {
+    expect(parseWeekday(text)).toBe(want);
+  });
+
+  it("parseMonth falls back on bad input", () => {
+    const fb = { year: 2026, month: 10 };
+    expect(parseMonth("2026-03", fb)).toEqual({ year: 2026, month: 3 });
+    for (const bad of [undefined, "", "2026-13", "2026-00", "x", "1999-01"]) expect(parseMonth(bad, fb)).toBe(fb);
+  });
+
+  it("shiftMonth crosses years", () => {
+    expect(shiftMonth({ year: 2026, month: 1 }, -1)).toEqual({ year: 2025, month: 12 });
+    expect(shiftMonth({ year: 2026, month: 12 }, 1)).toEqual({ year: 2027, month: 1 });
+    expect(monthKey({ year: 2026, month: 3 })).toBe("2026-03");
+  });
+
+  it("monthWeeks pads Monday-first weeks", () => {
+    const weeks = monthWeeks({ year: 2026, month: 10 }); // 1 Oct 2026 is a Thursday
+    expect(weeks.every((w) => w.length === 7)).toBe(true);
+    expect(weeks[0]).toEqual([null, null, null, 1, 2, 3, 4]);
+    expect(weeks.flat().filter((d) => d !== null)).toHaveLength(31);
+    expect(weekdayOf({ year: 2026, month: 10 }, 3)).toBe(6);
+  });
+});
+
+describe("next event", () => {
+  // Saturday 10 Oct 2026, 18:00 WIB = 11:00 UTC.
+  const SAT_6PM = "2026-10-10T11:00:00.000Z";
+  it("nextWeekly picks this Saturday before 18:00 WIB and the next one after", () => {
+    expect(nextWeekly(new Date("2026-10-08T05:00:00Z"), 6, "18:00").toISOString()).toBe(SAT_6PM);
+    expect(nextWeekly(new Date("2026-10-10T10:59:00Z"), 6, "18:00").toISOString()).toBe(SAT_6PM);
+    expect(nextWeekly(new Date(SAT_6PM), 6, "18:00").toISOString()).toBe("2026-10-17T11:00:00.000Z");
+  });
+  it("nextWeekly uses the WIB calendar day, not UTC", () => {
+    // Sat 10 Oct 01:00 WIB is still Friday 18:00 UTC.
+    expect(nextWeekly(new Date("2026-10-09T18:00:00Z"), 6, "18:00").toISOString()).toBe(SAT_6PM);
+  });
+  it("pickNextEvent prefers the sooner of weekly Ranked and a tournament", () => {
+    const now = new Date("2026-10-08T05:00:00Z");
+    const weekly = { weekday: 6, time: "18:00" };
+    expect(pickNextEvent({ now, weekly, tournament: null })?.title).toBe("Next Ranked");
+    expect(pickNextEvent({ now, weekly, tournament: { name: "Cup 1", tier: "Cup", held_on: "2026-10-09" } })?.title).toBe("Next Cup: Cup 1");
+    expect(pickNextEvent({ now, weekly, tournament: { name: "Cup 2", tier: "Cup", held_on: "2026-11-01" } })?.title).toBe("Next Ranked");
+  });
+  it("pickNextEvent ignores past tournaments and returns null when empty", () => {
+    const now = new Date("2026-10-08T05:00:00Z");
+    expect(pickNextEvent({ now, weekly: null, tournament: { name: "Old", tier: "Cup", held_on: "2026-09-01" } })).toBeNull();
+    expect(pickNextEvent({ now, weekly: null, tournament: { name: "Today", tier: "Cup", held_on: "2026-10-08" } })?.hasTime).toBe(false);
   });
 });
