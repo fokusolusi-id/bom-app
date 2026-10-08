@@ -14,7 +14,7 @@ export const metadata = { title: "Admin | BOM" };
 
 export default async function AdminPage() {
   const supabase = await requireAdmin();
-  const [matches, players] = await Promise.all([supabaseMatches(supabase).listOpen(), supabasePlayers(supabase).list(1000)]);
+  const [matches, players] = await Promise.all([supabaseMatches(supabase).listOpen(), supabasePlayers(supabase).list(1000, { includeRegistered: true })]);
 
   return (
     <main className="mx-auto space-y-6">

@@ -16,24 +16,40 @@ export function nextWeekly(now: Date, weekday: number, time: string): Date {
 export type NextEvent = { title: string; at: Date; hasTime: boolean };
 
 /**
- * The soonest of the weekly Ranked (when a weekly slot exists) and the next scheduled tournament.
- * Tournaments only have a date, so they start at 00:00 WIB and carry `hasTime: false`.
- * A tournament today still counts. Returns null when there is nothing to show.
+ * Upcoming events, soonest first: the next weekly Ranked sessions (when a weekly slot exists) merged with
+ * scheduled tournaments. Tournaments only have a date, so they start at 00:00 WIB and carry `hasTime: false`.
+ * A tournament today still counts.
  */
-export function pickNextEvent(opts: {
+export function upcomingEvents(opts: {
   now: Date;
   weekly: { weekday: number; time: string } | null;
-  tournament: { name: string; tier: string; held_on: string } | null;
-}): NextEvent | null {
-  const { now, weekly, tournament } = opts;
-  const candidates: NextEvent[] = [];
-  if (weekly) candidates.push({ title: "Next Ranked", at: nextWeekly(now, weekly.weekday, weekly.time), hasTime: true });
-  if (tournament) {
-    const at = new Date(`${tournament.held_on}T00:00:00+07:00`);
-    const endOfDay = at.getTime() + DAY_MS;
-    if (!Number.isNaN(at.getTime()) && endOfDay > now.getTime()) {
-      candidates.push({ title: `Next ${tournament.tier}: ${tournament.name}`, at, hasTime: false });
+  tournaments: { name: string; tier: string; held_on: string }[];
+  limit: number;
+}): NextEvent[] {
+  const { now, weekly, tournaments, limit } = opts;
+  const events: NextEvent[] = [];
+  if (weekly) {
+    let from = now;
+    for (let i = 0; i < limit; i++) {
+      const at = nextWeekly(from, weekly.weekday, weekly.time);
+      events.push({ title: "Ranked", at, hasTime: true });
+      from = at;
     }
   }
-  return candidates.sort((a, b) => a.at.getTime() - b.at.getTime())[0] ?? null;
+  for (const t of tournaments) {
+    const at = new Date(`${t.held_on}T00:00:00+07:00`);
+    if (!Number.isNaN(at.getTime()) && at.getTime() + DAY_MS > now.getTime()) events.push({ title: `${t.tier}: ${t.name}`, at, hasTime: false });
+  }
+  return events.sort((a, b) => a.at.getTime() - b.at.getTime()).slice(0, limit);
 }
+
+const dayFmt = new Intl.DateTimeFormat("en-GB", { weekday: "long", day: "numeric", month: "long", timeZone: "Asia/Jakarta" });
+const timeFmt = new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "Asia/Jakarta" });
+
+/** "Saturday 10 October, 18:00 WIB" (tournaments have no time, so just the day). */
+export function formatWhen(e: NextEvent): string {
+  return `${dayFmt.format(e.at)}${e.hasTime ? `, ${timeFmt.format(e.at)} WIB` : ""}`;
+}
+
+/** Today's date in Medan as YYYY-MM-DD. */
+export const todayWib = (now: Date) => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Jakarta" }).format(now);

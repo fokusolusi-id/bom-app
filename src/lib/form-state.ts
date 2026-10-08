@@ -1,4 +1,4 @@
-export type FormState = { ok?: boolean; error?: string; message?: string };
+export type FormState<D = undefined> = { ok?: boolean; error?: string; message?: string; data?: D };
 
 /**
  * Runs a mutation and turns a thrown error into an inline form message.

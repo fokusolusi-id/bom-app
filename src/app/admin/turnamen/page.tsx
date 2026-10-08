@@ -27,7 +27,7 @@ function TournamentForm({ t }: { t?: Tournament }) {
 
 export default async function AdminTournamentsPage() {
   const supabase = await requireAdmin();
-  const [tournaments, players] = await Promise.all([supabaseTournaments(supabase).list(), supabasePlayers(supabase).list(1000)]);
+  const [tournaments, players] = await Promise.all([supabaseTournaments(supabase).list(), supabasePlayers(supabase).list(1000, { includeRegistered: true })]);
   const byId = new Map(players.map((p) => [p.id, p]));
   return (
     <div className="space-y-6">

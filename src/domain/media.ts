@@ -19,3 +19,12 @@ export function parseImagePath(raw: unknown, folder: MediaFolder): string | null
   if (typeof raw !== "string" || !pattern.test(raw)) throw new Error("Foto tidak valid");
   return raw;
 }
+
+export const PROOF_BUCKET = "payment-proofs";
+const PROOF_PATH = /^proofs\/[0-9a-f-]{36}\.(jpg|png|webp)$/;
+
+/** Storage path of an uploaded payment screenshot, e.g. proofs/<uuid>.png. */
+export function parsePaymentProofPath(raw: unknown): string {
+  if (typeof raw !== "string" || !PROOF_PATH.test(raw)) throw new Error("Upload screenshot bukti pembayaran");
+  return raw;
+}

@@ -1,12 +1,14 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Player } from "@/domain/types";
+import type { Player, PlayerStatus } from "@/domain/types";
 import { hasSupabase } from "@/lib/supabase/env";
 import { check } from "./db";
 import { createPublicClient } from "./supabase-public";
 
 export interface PlayerRepository {
-  list(limit?: number): Promise<Player[]>;
+  /** Active players by points. Admin screens pass `includeRegistered` to also pick not-yet-active members. */
+  list(limit?: number, opts?: { includeRegistered?: boolean }): Promise<Player[]>;
+  setStatus(playerId: string, status: PlayerStatus): Promise<void>;
   /** Case-insensitive: "bom-001" finds "BoM-001". */
   getByBomId(bomId: string): Promise<Player | null>;
   /** 1-based leaderboard position; ties share the better rank. */
@@ -15,8 +17,10 @@ export interface PlayerRepository {
 
 export function supabasePlayers(client: SupabaseClient): PlayerRepository {
   return {
-    async list(limit = 100) {
-      const { data, error } = await client.from("players").select("*").order("points", { ascending: false }).limit(limit);
+    async list(limit = 100, opts) {
+      let q = client.from("players").select("*").order("points", { ascending: false }).limit(limit);
+      if (!opts?.includeRegistered) q = q.eq("status", "active");
+      const { data, error } = await q;
       check(error, "Failed to load players");
       return (data ?? []) as Player[];
     },
@@ -28,9 +32,13 @@ export function supabasePlayers(client: SupabaseClient): PlayerRepository {
       return (data as Player | null) ?? null;
     },
     async rank(points) {
-      const { count, error } = await client.from("players").select("id", { count: "exact", head: true }).gt("points", points);
+      const { count, error } = await client.from("players").select("id", { count: "exact", head: true }).eq("status", "active").gt("points", points);
       check(error, "Failed to load rank");
       return (count ?? 0) + 1;
+    },
+    async setStatus(playerId, status) {
+      const { error } = await client.from("players").update({ status }).eq("id", playerId);
+      check(error, "Failed to update player status");
     },
   };
 }
@@ -45,6 +53,7 @@ export const samplePlayers: Player[] = [
 
 export function memoryPlayers(players: Player[] = samplePlayers): PlayerRepository {
   return {
+    setStatus: async () => {},
     list: async (limit = 100) => [...players].sort((a, b) => b.points - a.points).slice(0, limit),
     getByBomId: async (bomId) => players.find((p) => p.bom_id.toLowerCase() === bomId.toLowerCase()) ?? null,
     rank: async (points) => players.filter((p) => p.points > points).length + 1,
