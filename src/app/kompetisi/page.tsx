@@ -13,8 +13,8 @@ export default function KompetisiPage() {
         {tiers.map(({ tier, freq, desc }) => (
           <Card key={tier}>
             <CardContent className="flex flex-col gap-2 py-4 md:flex-row md:items-center md:gap-6">
-              <div className="flex items-center gap-3 md:w-72">
-                {tier === "Casual / Try" ? <span className="border-border rounded border px-2 py-0.5 text-xs font-semibold">Casual / Try</span> : <TierBadge tier={tier} />}
+              <div className="flex items-center gap-3 md:w-80 md:shrink-0">
+                <TierBadge tier={tier} />
                 <span className="text-primary text-sm font-bold uppercase">{freq}</span>
               </div>
               <p className="text-muted-foreground text-sm">{desc}</p>

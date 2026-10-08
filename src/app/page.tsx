@@ -14,7 +14,7 @@ const pillars = [
 
 const more = [
   ["Jenjang Kompetisi", "Dari Ranked mingguan sampai Championship, dan jalur ke panggung resmi.", "/kompetisi"],
-  ["Sub Komunitas", "Empat sub komunitas, satu aturan main.", "/komunitas"],
+  ["Sub Komunitas", "Semua sub komunitas, satu aturan main.", "/komunitas"],
   ["Mulai dari Nol", "Belum punya bey? Mulai dari pojok Try.", "/mulai"],
 ] as const;
 

@@ -44,7 +44,7 @@ describe("parseSubCommunityInput", () => {
   const sub = (o: Record<string, unknown>) => parseSubCommunityInput((k) => o[k]);
   it("parses a valid row", () => {
     expect(sub({ name: " DXM ", schedule: "Sabtu malam", focus: "", sort_order: "2", is_active: "on" }))
-      .toEqual({ name: "DXM", schedule: "Sabtu malam", focus: null, sort_order: 2, is_active: true, image_path: null });
+      .toEqual({ name: "DXM", schedule: "Sabtu malam", focus: null, sort_order: 2, is_active: true, image_path: null, instagram: null });
   });
   it("requires name and schedule", () => {
     expect(() => sub({ schedule: "x" })).toThrow();
@@ -92,4 +92,15 @@ describe("parseJoinRequest", () => {
     expect(() => join({ name: "Rakha", email: "nope", whatsapp: "081234567890" })).toThrow();
     expect(() => join({ name: "R", email: "a@b.co", whatsapp: "081234567890" })).toThrow();
   });
+});
+
+import { parseInstagram } from "@/domain/validation";
+
+describe("parseInstagram", () => {
+  it("accepts handles and profile URLs", () => {
+    expect(parseInstagram("@turcil.mdn")).toBe("turcil.mdn");
+    expect(parseInstagram("https://www.instagram.com/turcil.mdn/?hl=id")).toBe("turcil.mdn");
+    expect(parseInstagram("")).toBeNull();
+  });
+  it("rejects invalid handles", () => expect(() => parseInstagram("bad handle!")).toThrow());
 });

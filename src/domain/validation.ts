@@ -11,3 +11,12 @@ export function parseText(raw: unknown, label: string, max: number, fallback?: s
   if (v.length > max) throw new Error(`${label} maksimal ${max} karakter`);
   return v;
 }
+
+/** Instagram handle from "@handle", "handle" or an instagram.com profile URL. Empty means none. */
+export function parseInstagram(raw: unknown): string | null {
+  const v = typeof raw === "string" ? raw.trim() : "";
+  if (!v) return null;
+  const handle = v.replace(/^(https?:\/\/)?(www\.)?instagram\.com\//i, "").replace(/^@/, "").replace(/[/?#].*$/, "");
+  if (!/^[A-Za-z0-9._]{1,30}$/.test(handle)) throw new Error("Instagram tidak valid");
+  return handle;
+}
