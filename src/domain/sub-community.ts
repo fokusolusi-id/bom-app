@@ -1,7 +1,8 @@
+import { parseImagePath } from "./media";
 import { isUuid, parseText } from "./validation";
 
 export type SubCommunity = {
-  id?: string; name: string; schedule: string; focus: string | null; sort_order: number; is_active: boolean;
+  id?: string; name: string; schedule: string; focus: string | null; sort_order: number; is_active: boolean; image_path: string | null;
 };
 
 export type SubCommunityInput = Omit<SubCommunity, "id"> & { id?: string };
@@ -18,5 +19,6 @@ export function parseSubCommunityInput(get: (key: string) => unknown): SubCommun
     focus: parseText(get("focus"), "Fokus", 280, "") || null,
     sort_order: order,
     is_active: get("is_active") === "on" || get("is_active") === "true",
+    image_path: parseImagePath(get("image_path"), "sub-communities"),
   };
 }

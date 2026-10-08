@@ -1,6 +1,8 @@
+import Image from "next/image";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { RibbonBanner } from "@/components/bom/ribbon-banner";
 import { umbrella } from "@/lib/content";
+import { mediaUrl } from "@/lib/media";
 import { publicSubCommunities } from "@/server/sub-communities";
 
 export const metadata = { title: "Sub Komunitas | BOM" };
@@ -15,6 +17,7 @@ export default async function KomunitasPage() {
       <div className="mt-6 grid gap-4 md:grid-cols-4">
         {subs.map((s) => (
           <Card key={s.id ?? s.name}>
+            {s.image_path && <Image src={mediaUrl(s.image_path)} alt={s.name} width={400} height={225} className="aspect-video w-full rounded-md object-cover" />}
             <CardHeader>
               <CardTitle>{s.name}</CardTitle>
               <CardDescription>{s.schedule}</CardDescription>

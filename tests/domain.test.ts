@@ -44,7 +44,7 @@ describe("parseSubCommunityInput", () => {
   const sub = (o: Record<string, unknown>) => parseSubCommunityInput((k) => o[k]);
   it("parses a valid row", () => {
     expect(sub({ name: " DXM ", schedule: "Sabtu malam", focus: "", sort_order: "2", is_active: "on" }))
-      .toEqual({ name: "DXM", schedule: "Sabtu malam", focus: null, sort_order: 2, is_active: true });
+      .toEqual({ name: "DXM", schedule: "Sabtu malam", focus: null, sort_order: 2, is_active: true, image_path: null });
   });
   it("requires name and schedule", () => {
     expect(() => sub({ schedule: "x" })).toThrow();
@@ -55,4 +55,41 @@ describe("parseSubCommunityInput", () => {
     expect(() => sub({ name: "a", schedule: "b", sort_order: 1000 })).toThrow();
   });
   it("treats missing checkbox as inactive", () => expect(sub({ name: "a", schedule: "b" }).is_active).toBe(false));
+});
+
+import { normalizeWhatsapp, parseJoinRequest } from "@/domain/join-request";
+import { imageExtension, parseImagePath } from "@/domain/media";
+
+describe("media", () => {
+  const path = "sub-communities/0f8fad5b-d9cb-469f-a165-70867728950e.webp";
+  it("accepts an uploaded path or empty", () => {
+    expect(parseImagePath(path, "sub-communities")).toBe(path);
+    expect(parseImagePath("", "sub-communities")).toBeNull();
+  });
+  it("rejects foreign or traversal paths", () => {
+    expect(() => parseImagePath("players/0f8fad5b-d9cb-469f-a165-70867728950e.webp", "sub-communities")).toThrow();
+    expect(() => parseImagePath("sub-communities/../x.webp", "sub-communities")).toThrow();
+  });
+  it("maps image types", () => {
+    expect(imageExtension("image/jpeg")).toBe("jpg");
+    expect(() => imageExtension("image/gif")).toThrow();
+  });
+});
+
+describe("parseJoinRequest", () => {
+  const join = (o: Record<string, unknown>) => parseJoinRequest((k) => o[k]);
+  it("normalises WhatsApp numbers", () => {
+    expect(normalizeWhatsapp("0812-3456-7890")).toBe("+6281234567890");
+    expect(normalizeWhatsapp("62 812 3456 7890")).toBe("+6281234567890");
+    expect(normalizeWhatsapp("+6281234567890")).toBe("+6281234567890");
+    expect(() => normalizeWhatsapp("12345")).toThrow();
+  });
+  it("parses a valid request", () => {
+    expect(join({ name: "  Rakha   Putra ", email: "Rakha@Mail.com", whatsapp: "081234567890", sub_community: "" }))
+      .toEqual({ name: "Rakha Putra", email: "rakha@mail.com", whatsapp: "+6281234567890", sub_community: null });
+  });
+  it("rejects bad email and short name", () => {
+    expect(() => join({ name: "Rakha", email: "nope", whatsapp: "081234567890" })).toThrow();
+    expect(() => join({ name: "R", email: "a@b.co", whatsapp: "081234567890" })).toThrow();
+  });
 });

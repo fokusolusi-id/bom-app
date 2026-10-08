@@ -8,6 +8,7 @@ export const dynamic = "force-dynamic";
 const sections = [
   ["/admin", "Match"],
   ["/admin/komunitas", "Sub Komunitas"],
+  ["/admin/pendaftar", "Pendaftar"],
 ] as const;
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {

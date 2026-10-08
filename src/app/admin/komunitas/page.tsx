@@ -4,8 +4,9 @@ import { Input, Textarea } from "@/components/ui/input";
 import type { SubCommunity } from "@/domain/sub-community";
 import { requireAdmin } from "@/server/admin-session";
 import { supabaseSubCommunities } from "@/server/sub-communities";
-import { ActionForm } from "../action-form";
-import { deleteSubCommunity, saveSubCommunity } from "./actions";
+import { ActionForm } from "@/components/form/action-form";
+import { ImageUpload } from "@/components/form/image-upload";
+import { deleteSubCommunity, prepareSubCommunityImageUpload, saveSubCommunity } from "./actions";
 
 export const metadata = { title: "Sub Komunitas | Admin BOM" };
 
@@ -17,6 +18,7 @@ function SubCommunityForm({ s }: { s?: SubCommunity }) {
       <Input name="schedule" defaultValue={s?.schedule} placeholder="Jadwal (mis. Sabtu malam)" aria-label="Jadwal" maxLength={60} required />
       <Textarea name="focus" defaultValue={s?.focus ?? ""} placeholder="Fokus (umur, area, format)" aria-label="Fokus" maxLength={280} rows={2} className="sm:col-span-2" />
       <Input name="sort_order" type="number" min={0} max={999} defaultValue={s?.sort_order ?? 0} aria-label="Urutan" />
+      <ImageUpload name="image_path" label="Foto sub komunitas" defaultPath={s?.image_path} prepare={prepareSubCommunityImageUpload} />
       <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="is_active" defaultChecked={s?.is_active ?? true} /> Tampil di website</label>
       <Button type="submit" className="sm:col-span-2">{s ? "Simpan" : "Tambah"}</Button>
     </ActionForm>

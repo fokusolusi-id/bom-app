@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input, NativeSelect } from "@/components/ui/input";
 import { TierBadge } from "@/components/bom/tier-badge";
 import { requireAdmin } from "@/server/admin-session";
-import { ActionForm } from "./action-form";
+import { ActionForm } from "@/components/form/action-form";
 import { bumpScore, createMatch, finishMatch } from "./actions";
 
 export const metadata = { title: "Admin | BOM" };
