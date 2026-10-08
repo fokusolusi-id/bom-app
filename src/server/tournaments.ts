@@ -11,8 +11,8 @@ export type TournamentWithPlacements = Tournament & { placements: { player_id: s
 export type Podium = { name: string; tier: Tournament["tier"]; held_on: string; champion: string; runnerUp: string | null };
 
 export interface TournamentRepository {
-  /** Soonest tournament on or after `today` (YYYY-MM-DD, WIB), or null. */
-  upcoming(today: string): Promise<Tournament | null>;
+  /** Next `limit` tournaments on or after `today` (YYYY-MM-DD, WIB), soonest first. */
+  upcoming(today: string, limit: number): Promise<Tournament[]>;
   /** Most recent tournament on or before `today` that has a champion recorded. */
   latestPodium(today: string): Promise<Podium | null>;
   list(): Promise<TournamentWithPlacements[]>;
@@ -25,10 +25,10 @@ export interface TournamentRepository {
 
 export function supabaseTournaments(client: SupabaseClient): TournamentRepository {
   return {
-    async upcoming(today) {
-      const { data, error } = await client.from("tournaments").select("id,name,tier,held_on").gte("held_on", today).order("held_on").limit(1);
-      check(error, "Failed to load next tournament");
-      return ((data ?? [])[0] as Tournament | undefined) ?? null;
+    async upcoming(today, limit) {
+      const { data, error } = await client.from("tournaments").select("id,name,tier,held_on").gte("held_on", today).order("held_on").limit(limit);
+      check(error, "Failed to load upcoming tournaments");
+      return (data ?? []) as Tournament[];
     },
     async latestPodium(today) {
       const { data, error } = await client
@@ -84,5 +84,5 @@ export function publicPlacements(): Pick<TournamentRepository, "placementsForPla
 
 /** Tournament lookups for public pages. Nothing without Supabase. */
 export function publicTournaments(): Pick<TournamentRepository, "upcoming" | "latestPodium"> {
-  return hasSupabase() ? supabaseTournaments(createPublicClient()) : { upcoming: async () => null, latestPodium: async () => null };
+  return hasSupabase() ? supabaseTournaments(createPublicClient()) : { upcoming: async () => [], latestPodium: async () => null };
 }

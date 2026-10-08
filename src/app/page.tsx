@@ -7,43 +7,23 @@ import { RibbonBanner } from "@/components/bom/ribbon-banner";
 import { SectionHeading } from "@/components/bom/section-heading";
 import { SubCommunityChart } from "@/components/bom/sub-community-chart";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { pickNextEvent } from "@/domain/next-event";
-import { GATHERING_TIME, parseWeekday } from "@/domain/schedule";
+import { Card, CardContent } from "@/components/ui/card";
+import { formatWhen, todayWib } from "@/domain/next-event";
 import { communityStats } from "@/lib/content";
 import { DIRECTIONS_URL, INSTAGRAM, PARTNER_EMAIL, VENUE, WHATSAPP_INVITE } from "@/lib/venue";
+import { loadUpcomingEvents } from "@/server/events";
 import { latestResult } from "@/server/latest-result";
-import { publicPlayers } from "@/server/players";
 import { publicSubCommunities } from "@/server/sub-communities";
-import { publicTournaments } from "@/server/tournaments";
 
 export const revalidate = 60;
 
-const SATURDAY = 6;
-
-const steps = [
-  ["Show up", "Come to any weekly Ranked session. No experience needed."],
-  ["Get your BOM ID", "Every blader gets an ID that tracks points and results."],
-  ["Climb", "Earn seasonal points, qualify for BOM Cup and BOM Major, and BOM Championship."],
-] as const;
-
-const dayFmt = new Intl.DateTimeFormat("en-GB", { weekday: "long", day: "numeric", month: "long", timeZone: "Asia/Jakarta" });
-const timeFmt = new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "Asia/Jakarta" });
-const todayWib = (now: Date) => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Jakarta" }).format(now);
+/** Events shown on the homepage; the rest are behind "View all". */
+const EVENT_LIMIT = 3;
 
 export default async function Home() {
   const now = new Date();
-  const today = todayWib(now);
-  const [subs, players, tournament, result] = await Promise.all([
-    publicSubCommunities().listActive(),
-    publicPlayers().repo.list(5),
-    publicTournaments().upcoming(today),
-    latestResult(today),
-  ]);
-  // The weekly Ranked exists while a sub komunitas meets on Saturday.
-  const weekly = subs.some((s) => parseWeekday(s.schedule) === SATURDAY) ? { weekday: SATURDAY, time: GATHERING_TIME } : null;
-  const next = pickNextEvent({ now, weekly, tournament });
+  const [subs, result] = await Promise.all([publicSubCommunities().listActive(), latestResult(todayWib(now))]);
+  const events = await loadUpcomingEvents(subs, EVENT_LIMIT, now);
 
   return (
     <main className="mx-auto max-w-6xl space-y-16 px-4 py-12">
@@ -53,7 +33,7 @@ export default async function Home() {
           <h1 className="text-5xl leading-none md:text-7xl">Built in Medan. <span className="text-primary">Battle anywhere.</span></h1>
           <p className="text-muted-foreground max-w-md">Competitive Beyblade X community in Medan. Fierce at the top, friendly at the door.</p>
           <div className="flex flex-wrap gap-3">
-            <Button size="lg" asChild><Link href="/membership">Join the next Ranked</Link></Button>
+            <Button size="lg" asChild><Link href="/schedule">Join the next Ranked</Link></Button>
             <Button size="lg" variant="outline" asChild><Link href="/leaderboard">View leaderboard</Link></Button>
           </div>
         </div>
@@ -61,67 +41,34 @@ export default async function Home() {
       </section>
 
       <section aria-labelledby="next-event">
-        <SectionHeading id="next-event">Next event</SectionHeading>
-        <Card className="border-primary">
-          {next ? (
-            <CardContent className="space-y-3">
-              <div className="font-display text-2xl font-extrabold italic uppercase md:text-4xl">{next.title}</div>
-              <p className="flex flex-wrap items-center gap-x-6 gap-y-2 text-lg">
-                <span className="flex items-center gap-2"><CalendarDays className="text-primary size-5" aria-hidden />{dayFmt.format(next.at)}{next.hasTime && `, ${timeFmt.format(next.at)} WIB`}</span>
-                <span className="flex items-center gap-2"><MapPin className="text-primary size-5" aria-hidden />{VENUE}</span>
-              </p>
-              <p className="text-muted-foreground text-sm">Bring your bey, we&apos;ll help with the rest.</p>
-              <Button variant="outline" asChild><a href={DIRECTIONS_URL} target="_blank" rel="noopener noreferrer"><MapPin aria-hidden />Map</a></Button>
-            </CardContent>
-          ) : (
+        <SectionHeading id="next-event">Next events</SectionHeading>
+        {events.length > 0 ? (
+          <>
+            <ul className="grid gap-4 md:grid-cols-3">
+              {events.map((e) => (
+                <li key={`${e.title}-${e.at.toISOString()}`}>
+                  <Card className={`h-full ${e === events[0] ? "border-primary" : ""}`}>
+                    <CardContent className="flex h-full flex-col gap-3">
+                      <div className="font-display text-2xl font-extrabold italic uppercase">{e.title}</div>
+                      <p className="flex items-center gap-2"><CalendarDays className="text-primary size-5 shrink-0" aria-hidden />{formatWhen(e)}</p>
+                      <p className="flex items-center gap-2"><MapPin className="text-primary size-5 shrink-0" aria-hidden />{VENUE}</p>
+                      <Button variant="outline" size="sm" className="mt-auto self-start" asChild><a href={DIRECTIONS_URL} target="_blank" rel="noopener noreferrer"><MapPin aria-hidden />Map</a></Button>
+                    </CardContent>
+                  </Card>
+                </li>
+              ))}
+            </ul>
+            <p className="text-muted-foreground mt-3 text-sm">Bring your bey, we&apos;ll help with the rest.</p>
+            <Button variant="outline" className="mt-4" asChild><Link href="/schedule">View all<ArrowRight aria-hidden /></Link></Button>
+          </>
+        ) : (
+          <Card>
             <CardContent className="space-y-3">
               <p className="text-lg">Next event is being scheduled. Join the group to hear first.</p>
               {WHATSAPP_INVITE && <Button className="bg-[#25D366] text-black hover:bg-[#1EBE5A]" asChild><a href={WHATSAPP_INVITE} target="_blank" rel="noopener noreferrer"><WhatsappIcon />Join Grup WhatsApp</a></Button>}
             </CardContent>
-          )}
-        </Card>
-      </section>
-
-      <section aria-labelledby="leaderboard">
-        <SectionHeading id="leaderboard">Leaderboard</SectionHeading>
-        <div className="bg-card rounded-lg border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-16">#</TableHead><TableHead>Blader</TableHead>
-                <TableHead className="text-right">W</TableHead><TableHead className="text-right">Poin</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {players.map((p, i) => (
-                <TableRow key={p.bom_id}>
-                  <TableCell className="font-num tabular text-primary text-2xl font-black italic">{i + 1}</TableCell>
-                  <TableCell><Link href={`/member/${p.bom_id.toLowerCase()}`} className="hover:text-primary font-bold">{p.name}</Link></TableCell>
-                  <TableCell className="tabular text-success text-right">{p.wins}</TableCell>
-                  <TableCell className="font-num tabular text-right text-xl font-black italic">{p.points}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-        <Button variant="outline" className="mt-4" asChild><Link href="/leaderboard">See full leaderboard<ArrowRight aria-hidden /></Link></Button>
-      </section>
-
-      <section aria-labelledby="how">
-        <SectionHeading id="how">How it works</SectionHeading>
-        <ol className="grid gap-4 md:grid-cols-3">
-          {steps.map(([t, d], i) => (
-            <li key={t}>
-              <Card className="h-full">
-                <CardHeader>
-                  <div className="font-display text-primary text-3xl font-black italic">{i + 1}</div>
-                  <CardTitle>{t}</CardTitle>
-                  <CardDescription>{d}</CardDescription>
-                </CardHeader>
-              </Card>
-            </li>
-          ))}
-        </ol>
+          </Card>
+        )}
       </section>
 
       <section aria-labelledby="path">

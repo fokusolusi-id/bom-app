@@ -1,11 +1,19 @@
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { ActionForm } from "@/components/form/action-form";
+import { Badge } from "@/components/ui/badge";
+import { AGE_GROUPS } from "@/domain/join-request";
+import { formatBomId } from "@/domain/profile";
 import { requireAdmin } from "@/server/admin-session";
 import { supabaseJoinRequests } from "@/server/join-requests";
+import { setPlayerStatus } from "./actions";
 
 export const metadata = { title: "Pendaftar | Admin BOM" };
 
 const dateFormat = new Intl.DateTimeFormat("id-ID", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Jakarta" });
+const ageLabel = new Map<string, string>(AGE_GROUPS);
+const wa = (n: string) => `https://wa.me/${n.slice(1)}`;
 
 export default async function AdminJoinRequestsPage() {
   const rows = await supabaseJoinRequests(await requireAdmin()).listRecent();
@@ -16,17 +24,35 @@ export default async function AdminJoinRequestsPage() {
         {rows.length === 0 ? <p className="text-muted-foreground text-sm">Belum ada pendaftar.</p> : (
           <Table>
             <TableHeader>
-              <TableRow><TableHead>Nama</TableHead><TableHead>Kontak</TableHead><TableHead>Sub komunitas</TableHead><TableHead>Masuk</TableHead></TableRow>
+              <TableRow><TableHead>Blader</TableHead><TableHead>Kontak</TableHead><TableHead>Detail</TableHead><TableHead>Status</TableHead><TableHead>Masuk</TableHead></TableRow>
             </TableHeader>
             <TableBody>
               {rows.map((r) => (
                 <TableRow key={r.id}>
-                  <TableCell className="font-bold">{r.name}</TableCell>
-                  <TableCell className="space-y-1 text-sm">
-                    <a href={`https://wa.me/${r.whatsapp.slice(1)}`} target="_blank" rel="noreferrer" className="hover:text-primary block">{r.whatsapp}</a>
-                    <a href={`mailto:${r.email}`} className="text-muted-foreground hover:text-primary block">{r.email}</a>
+                  <TableCell>
+                    <div className="font-bold">{r.blader_name ?? r.name}</div>
+                    {r.player && <Badge variant="secondary">{formatBomId(r.player.bom_id)}</Badge>}
                   </TableCell>
-                  <TableCell>{r.sub_community ?? "-"}</TableCell>
+                  <TableCell className="space-y-1 text-sm">
+                    <div>{r.name}</div>
+                    <a href={wa(r.whatsapp)} target="_blank" rel="noreferrer" className="hover:text-primary block">{r.whatsapp}</a>
+                    {r.guardian_name && r.guardian_whatsapp && (
+                      <a href={wa(r.guardian_whatsapp)} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-primary block">Wali: {r.guardian_name} {r.guardian_whatsapp}</a>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-muted-foreground space-y-0.5 text-xs">
+                    <div>{r.age_group ? ageLabel.get(r.age_group) : "-"}</div>
+                    <div>Alamat: {r.address ?? "-"}</div>
+                    <div>Dari: {r.hear_from ?? "-"}{r.photo_consent ? " · foto OK" : ""}</div>
+                    {r.payment_proof_url ? <a href={r.payment_proof_url} target="_blank" rel="noreferrer" className="text-primary block underline">Bukti bayar</a> : <div>Bukti bayar: -</div>}
+                  </TableCell>
+                  <TableCell>
+                    {r.player ? (
+                      <ActionForm action={setPlayerStatus.bind(null, r.player.id, r.player.status === "active" ? "registered" : "active")}>
+                        <Button variant={r.player.status === "active" ? "outline" : "default"} size="sm">{r.player.status === "active" ? "Active: nonaktifkan" : "Registered: aktifkan"}</Button>
+                      </ActionForm>
+                    ) : "-"}
+                  </TableCell>
                   <TableCell className="text-muted-foreground text-sm">{dateFormat.format(new Date(r.created_at))}</TableCell>
                 </TableRow>
               ))}

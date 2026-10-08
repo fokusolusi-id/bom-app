@@ -1,21 +1,25 @@
 "use server";
 import { after } from "next/server";
-import { isBot, parseJoinRequest } from "@/domain/join-request";
-import { toFormState, type FormState } from "@/lib/form-state";
+import { isBot, parseRegistration } from "@/domain/join-request";
+import type { FormState } from "@/lib/form-state";
 import { hasSupabase } from "@/lib/supabase/env";
-import { sendJoinRequestEmails, supabaseJoinRequests } from "@/server/join-requests";
+import { sendRegistrationEmail, supabaseJoinRequests } from "@/server/join-requests";
 import { createPublicClient } from "@/server/supabase-public";
 
-const THANKS = "Terima kasih! Pengurus BOM akan menghubungi kamu lewat WhatsApp.";
+export type RegisteredMember = { bomId: string; bladerName: string };
 
-export async function submitJoinRequest(_prev: FormState, formData: FormData): Promise<FormState> {
+export async function registerMember(_prev: FormState<RegisteredMember>, formData: FormData): Promise<FormState<RegisteredMember>> {
   const get = (k: string) => formData.get(k);
-  if (isBot(get)) return { ok: true, message: THANKS };
+  // Bots get a quiet fake success so they don't retry.
+  if (isBot(get)) return { ok: true, data: { bomId: "BoM-000", bladerName: "Blader" } };
   if (!hasSupabase()) return { error: "Pendaftaran belum aktif" };
-  return toFormState(async () => {
-    const input = parseJoinRequest(get);
-    await supabaseJoinRequests(createPublicClient()).submit(input);
+  try {
+    const input = parseRegistration(get);
+    const bomId = await supabaseJoinRequests(createPublicClient()).register(input);
     // Send after the response so a slow mail provider doesn't hold up the form.
-    after(() => sendJoinRequestEmails(input));
-  }, THANKS);
+    after(() => sendRegistrationEmail(input, bomId));
+    return { ok: true, data: { bomId, bladerName: input.bladerName } };
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Terjadi kesalahan" };
+  }
 }

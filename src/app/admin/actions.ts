@@ -14,7 +14,7 @@ export async function createMatch(_prev: FormState, formData: FormData): Promise
   const supabase = await requireAdmin();
   return toFormState(async () => {
     const input = parseMatchInput((k) => formData.get(k));
-    const players = await supabasePlayers(supabase).list(1000);
+    const players = await supabasePlayers(supabase).list(1000, { includeRegistered: true });
     const a = players.find((p) => p.id === input.aId);
     const b = players.find((p) => p.id === input.bId);
     if (!a || !b) throw new Error("Blader tidak ditemukan");

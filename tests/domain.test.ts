@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { formatBomId, matchHistory, normalizeBomId, pointsSeries, rankOf, resultFor, winRate } from "@/domain/profile";
 import { parsePlacementInput, parseTournamentInput } from "@/domain/tournament";
 import type { Match } from "@/domain/types";
-import { nextWeekly, pickNextEvent } from "@/domain/next-event";
+import { nextWeekly, upcomingEvents } from "@/domain/next-event";
 import { monthKey, monthWeeks, parseMonth, parseWeekday, shiftMonth, weekdayOf } from "@/domain/schedule";
 import { parseMatchInput } from "@/domain/match-input";
 import { clampScore, outcome, pointsFor } from "@/domain/scoring";
@@ -62,7 +62,7 @@ describe("parseSubCommunityInput", () => {
   it("treats missing checkbox as inactive", () => expect(sub({ name: "a", schedule: "b" }).is_active).toBe(false));
 });
 
-import { normalizeWhatsapp, parseJoinRequest } from "@/domain/join-request";
+import { normalizeWhatsapp, parseRegistration } from "@/domain/join-request";
 import { imageExtension, parseImagePath } from "@/domain/media";
 
 describe("media", () => {
@@ -81,21 +81,44 @@ describe("media", () => {
   });
 });
 
-describe("parseJoinRequest", () => {
-  const join = (o: Record<string, unknown>) => parseJoinRequest((k) => o[k]);
+describe("parseRegistration", () => {
+  const base = { full_name: "  Rakha   Putra ", blader_name: "Rakha", whatsapp: "081234567890", address: " Jl. Contoh No. 1,  Medan ", age_group: "all", accepted_payment: "on", payment_proof: "proofs/0f8fad5b-d9cb-469f-a165-70867728950e.png" };
+  const reg = (o: Record<string, unknown> = {}) => parseRegistration((k) => ({ ...base, ...o })[k]);
   it("normalises WhatsApp numbers", () => {
     expect(normalizeWhatsapp("0812-3456-7890")).toBe("+6281234567890");
     expect(normalizeWhatsapp("62 812 3456 7890")).toBe("+6281234567890");
     expect(normalizeWhatsapp("+6281234567890")).toBe("+6281234567890");
     expect(() => normalizeWhatsapp("12345")).toThrow();
   });
-  it("parses a valid request", () => {
-    expect(join({ name: "  Rakha   Putra ", email: "Rakha@Mail.com", whatsapp: "081234567890", sub_community: "" }))
-      .toEqual({ name: "Rakha Putra", email: "rakha@mail.com", whatsapp: "+6281234567890", sub_community: null });
+  it("parses a registration with the optional field empty", () => {
+    expect(reg()).toEqual({
+      fullName: "Rakha Putra", bladerName: "Rakha", whatsapp: "+6281234567890", address: "Jl. Contoh No. 1, Medan", ageGroup: "all",
+      guardianName: null, guardianWhatsapp: null, hearFrom: null, acceptedPayment: true, photoConsent: false, paymentProofPath: "proofs/0f8fad5b-d9cb-469f-a165-70867728950e.png",
+    });
   });
-  it("rejects bad email and short name", () => {
-    expect(() => join({ name: "Rakha", email: "nope", whatsapp: "081234567890" })).toThrow();
-    expect(() => join({ name: "R", email: "a@b.co", whatsapp: "081234567890" })).toThrow();
+  it("requires a guardian under 12 and ignores one for all ages", () => {
+    expect(() => reg({ age_group: "under12" })).toThrow();
+    expect(() => reg({ age_group: "under12", guardian_name: "Ibu" })).toThrow();
+    expect(reg({ age_group: "under12", guardian_name: "Ibu Rakha", guardian_whatsapp: "08111222333" })).toMatchObject({ guardianName: "Ibu Rakha", guardianWhatsapp: "+628111222333" });
+    expect(reg({ guardian_name: "Ibu", guardian_whatsapp: "08111222333" }).guardianName).toBeNull();
+  });
+  it("requires the payment acknowledgement and records the optional photo consent", () => {
+    expect(() => reg({ accepted_payment: undefined })).toThrow();
+    expect(() => reg({ accepted_payment: "" })).toThrow();
+    expect(reg({ photo_consent: "on" }).photoConsent).toBe(true);
+  });
+  it("requires a payment screenshot from the proofs folder", () => {
+    expect(() => reg({ payment_proof: "" })).toThrow();
+    expect(() => reg({ payment_proof: undefined })).toThrow();
+    expect(() => reg({ payment_proof: "proofs/../x.png" })).toThrow();
+    expect(() => reg({ payment_proof: "sub-communities/0f8fad5b-d9cb-469f-a165-70867728950e.png" })).toThrow();
+  });
+  it("rejects bad age group, short name, short address and bad number", () => {
+    expect(() => reg({ age_group: "13-17" })).toThrow();
+    expect(() => reg({ blader_name: "R" })).toThrow();
+    expect(() => reg({ address: "Jl" })).toThrow();
+    expect(() => reg({ address: "" })).toThrow();
+    expect(() => reg({ whatsapp: "123" })).toThrow();
   });
 });
 
@@ -213,16 +236,23 @@ describe("next event", () => {
     // Sat 10 Oct 01:00 WIB is still Friday 18:00 UTC.
     expect(nextWeekly(new Date("2026-10-09T18:00:00Z"), 6, "18:00").toISOString()).toBe(SAT_6PM);
   });
-  it("pickNextEvent prefers the sooner of weekly Ranked and a tournament", () => {
+  it("upcomingEvents lists weekly Ranked sessions up to the limit", () => {
     const now = new Date("2026-10-08T05:00:00Z");
-    const weekly = { weekday: 6, time: "18:00" };
-    expect(pickNextEvent({ now, weekly, tournament: null })?.title).toBe("Next Ranked");
-    expect(pickNextEvent({ now, weekly, tournament: { name: "Cup 1", tier: "Cup", held_on: "2026-10-09" } })?.title).toBe("Next Cup: Cup 1");
-    expect(pickNextEvent({ now, weekly, tournament: { name: "Cup 2", tier: "Cup", held_on: "2026-11-01" } })?.title).toBe("Next Ranked");
+    const events = upcomingEvents({ now, weekly: { weekday: 6, time: "18:00" }, tournaments: [], limit: 3 });
+    expect(events.map((e) => e.at.toISOString())).toEqual(["2026-10-10T11:00:00.000Z", "2026-10-17T11:00:00.000Z", "2026-10-24T11:00:00.000Z"]);
+    expect(events[0]).toMatchObject({ title: "Ranked", hasTime: true });
   });
-  it("pickNextEvent ignores past tournaments and returns null when empty", () => {
+  it("upcomingEvents merges tournaments in date order and trims to the limit", () => {
     const now = new Date("2026-10-08T05:00:00Z");
-    expect(pickNextEvent({ now, weekly: null, tournament: { name: "Old", tier: "Cup", held_on: "2026-09-01" } })).toBeNull();
-    expect(pickNextEvent({ now, weekly: null, tournament: { name: "Today", tier: "Cup", held_on: "2026-10-08" } })?.hasTime).toBe(false);
+    const events = upcomingEvents({
+      now, weekly: { weekday: 6, time: "18:00" }, limit: 3,
+      tournaments: [{ name: "Cup 1", tier: "Cup", held_on: "2026-10-12" }, { name: "Cup 2", tier: "Cup", held_on: "2026-12-01" }],
+    });
+    expect(events.map((e) => e.title)).toEqual(["Ranked", "Cup: Cup 1", "Ranked"]);
+  });
+  it("upcomingEvents ignores past tournaments and is empty with nothing scheduled", () => {
+    const now = new Date("2026-10-08T05:00:00Z");
+    expect(upcomingEvents({ now, weekly: null, tournaments: [{ name: "Old", tier: "Cup", held_on: "2026-09-01" }], limit: 3 })).toEqual([]);
+    expect(upcomingEvents({ now, weekly: null, tournaments: [{ name: "Today", tier: "Cup", held_on: "2026-10-08" }], limit: 3 })[0].hasTime).toBe(false);
   });
 });
