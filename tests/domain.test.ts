@@ -1,4 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { matchHistory, normalizeBomId, pointsSeries, rankOf, resultFor, winRate } from "@/domain/profile";
+import { parsePlacementInput, parseTournamentInput } from "@/domain/tournament";
+import type { Match } from "@/domain/types";
 import { parseMatchInput } from "@/domain/match-input";
 import { clampScore, outcome, pointsFor } from "@/domain/scoring";
 import { parseTier } from "@/domain/tier";
@@ -103,4 +106,64 @@ describe("parseInstagram", () => {
     expect(parseInstagram("")).toBeNull();
   });
   it("rejects invalid handles", () => expect(() => parseInstagram("bad handle!")).toThrow());
+});
+
+describe("member profile", () => {
+  const P = "11111111-1111-1111-1111-111111111111";
+  const Q = "22222222-2222-2222-2222-222222222222";
+  const m = (o: Partial<Match>): Match => ({
+    id: "m", tier: "Ranked", round: "R1", stadium: "S1", target: 4, a_id: P, b_id: Q,
+    a_name: "A", b_name: "B", a_score: 4, b_score: 2, status: "finished", updated_at: "2026-01-01T00:00:00Z", ...o,
+  });
+
+  it.each([["bom-001", "bom-001"], [" BoM-001 ", "BoM-001"], ["a_b", null], ["", null], ["x".repeat(21), null], ["a%b", null]])("normalizeBomId(%j)", (raw, want) => {
+    expect(normalizeBomId(raw)).toBe(want);
+  });
+
+  it("resultFor works from either side", () => {
+    expect(resultFor(m({}), P)).toBe("win");
+    expect(resultFor(m({}), Q)).toBe("loss");
+    expect(resultFor(m({ a_score: 3, b_score: 3 }), P)).toBe("draw");
+  });
+
+  it("matchHistory flips perspective and sorts newest first", () => {
+    const rows = matchHistory([
+      m({ id: "old", updated_at: "2026-01-01T00:00:00Z" }),
+      m({ id: "new", a_id: Q, b_id: P, a_name: "B", b_name: "A", a_score: 1, b_score: 4, a_combo: "x", b_combo: "y", updated_at: "2026-02-01T00:00:00Z" }),
+      m({ id: "live", status: "live" }),
+    ], P);
+    expect(rows.map((r) => r.id)).toEqual(["new", "old"]);
+    expect(rows[0]).toMatchObject({ opponent: "B", score: 4, opponentScore: 1, result: "win", combo: "y", opponentCombo: "x" });
+  });
+
+  it("pointsSeries replays finish_match, skipping draws and unknown opponents", () => {
+    const series = pointsSeries([
+      m({ id: "1", updated_at: "2026-01-01T00:00:00Z" }),
+      m({ id: "2", tier: "Cup", a_score: 1, b_score: 4, updated_at: "2026-01-02T00:00:00Z" }),
+      m({ id: "3", a_score: 2, b_score: 2, updated_at: "2026-01-03T00:00:00Z" }),
+      m({ id: "4", b_id: null, updated_at: "2026-01-04T00:00:00Z" }),
+    ], P);
+    expect(series.map((s) => s.points)).toEqual([30, 50]);
+  });
+
+  it("winRate and rankOf", () => {
+    expect(winRate(0, 0)).toBe(0);
+    expect(winRate(3, 1)).toBe(75);
+    expect(rankOf(100, [300, 100, 100, 50])).toBe(2);
+  });
+});
+
+describe("tournament input", () => {
+  const U = "11111111-1111-1111-1111-111111111111";
+  const T = (o: Record<string, unknown>) => parseTournamentInput((k) => o[k]);
+  it("parses a tournament", () => {
+    expect(T({ name: " Cup 1 ", tier: "Cup", held_on: "2026-03-01" })).toEqual({ name: "Cup 1", tier: "Cup", held_on: "2026-03-01" });
+  });
+  it.each([{ name: "", tier: "Cup", held_on: "2026-03-01" }, { name: "x", tier: "Nope", held_on: "2026-03-01" }, { name: "x", tier: "Cup", held_on: "03/01/2026" }])("rejects %j", (o) => {
+    expect(() => T(o)).toThrow();
+  });
+  it("parses placements", () => {
+    expect(parsePlacementInput((k) => ({ tournament_id: U, player_id: U, place: "2" })[k as "place"])).toEqual({ tournamentId: U, playerId: U, place: 2 });
+    expect(() => parsePlacementInput((k) => ({ tournament_id: U, player_id: U, place: "0" })[k as "place"])).toThrow();
+  });
 });
