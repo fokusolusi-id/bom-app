@@ -16,6 +16,7 @@ function SubCommunityForm({ s }: { s?: SubCommunity }) {
       {s?.id && <input type="hidden" name="id" value={s.id} />}
       <Input name="name" defaultValue={s?.name} placeholder="Nama" aria-label="Nama" maxLength={60} required />
       <Input name="schedule" defaultValue={s?.schedule} placeholder="Jadwal (mis. Sabtu malam)" aria-label="Jadwal" maxLength={60} required />
+      <Input name="instagram" defaultValue={s?.instagram ?? ""} placeholder="Instagram (@handle atau link)" aria-label="Instagram" maxLength={100} />
       <Textarea name="focus" defaultValue={s?.focus ?? ""} placeholder="Fokus (umur, area, format)" aria-label="Fokus" maxLength={280} rows={2} className="sm:col-span-2" />
       <Input name="sort_order" type="number" min={0} max={999} defaultValue={s?.sort_order ?? 0} aria-label="Urutan" />
       <ImageUpload name="image_path" label="Foto sub komunitas" defaultPath={s?.image_path} prepare={prepareSubCommunityImageUpload} />

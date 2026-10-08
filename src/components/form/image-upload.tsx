@@ -46,7 +46,7 @@ export function ImageUpload({ name, label, defaultPath, prepare }: {
   return (
     <div className="col-span-full flex flex-wrap items-center gap-3">
       <input ref={hidden} type="hidden" name={name} value={path ?? ""} />
-      {path && <Image src={mediaUrl(path)} alt="" width={160} height={90} className="aspect-video rounded-md border object-cover" />}
+      {path && <Image src={mediaUrl(path)} alt="" width={96} height={96} className="bg-muted aspect-square rounded-md border object-contain" />}
       <label className="text-sm">
         <span className="sr-only">{label}</span>
         <input type="file" accept={IMAGE_ACCEPT} disabled={busy} aria-label={label} className="text-sm"

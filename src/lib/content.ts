@@ -1,6 +1,6 @@
-import type { Tier } from "@/domain/tier";
+import type { TierLabel } from "@/domain/tier";
 
-export const tiers: { tier: Tier | "Casual / Try"; freq: string; desc: string }[] = [
+export const tiers: { tier: TierLabel; freq: string; desc: string }[] = [
   { tier: "Championship", freq: "Tahunan", desc: "Flagship. Mengundang komunitas Sumatera lain. Juara jadi wakil BOM ke G1." },
   { tier: "Major", freq: "Kuartalan", desc: "Turnamen besar, hadiah sponsor, format resmi Beyblade X 3-on-3." },
   { tier: "Cup", freq: "Bulanan", desc: "Poin ranking dobel, pemenang masuk Wall of Fame." },
@@ -29,6 +29,7 @@ export const subs = [
   ["DXM", "Sabtu malam"],
   ["3R WAR", "Sabtu malam"],
   ["Beyground", "Kamis malam"],
+  ["Doys Party", "Sabtu malam"],
 ] as const;
 
 export const umbrella = [

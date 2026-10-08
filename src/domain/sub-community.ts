@@ -1,8 +1,8 @@
 import { parseImagePath } from "./media";
-import { isUuid, parseText } from "./validation";
+import { isUuid, parseInstagram, parseText } from "./validation";
 
 export type SubCommunity = {
-  id?: string; name: string; schedule: string; focus: string | null; sort_order: number; is_active: boolean; image_path: string | null;
+  id?: string; name: string; schedule: string; focus: string | null; sort_order: number; is_active: boolean; image_path: string | null; instagram: string | null;
 };
 
 export type SubCommunityInput = Omit<SubCommunity, "id"> & { id?: string };
@@ -20,5 +20,6 @@ export function parseSubCommunityInput(get: (key: string) => unknown): SubCommun
     sort_order: order,
     is_active: get("is_active") === "on" || get("is_active") === "true",
     image_path: parseImagePath(get("image_path"), "sub-communities"),
+    instagram: parseInstagram(get("instagram")),
   };
 }
