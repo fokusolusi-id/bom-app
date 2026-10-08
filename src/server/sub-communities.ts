@@ -9,11 +9,12 @@ import { createPublicClient } from "./supabase-public";
 export interface SubCommunityRepository {
   listActive(): Promise<SubCommunity[]>;
   listAll(): Promise<SubCommunity[]>;
+  get(id: string): Promise<SubCommunity | null>;
   save(input: SubCommunityInput): Promise<void>;
   remove(id: string): Promise<void>;
 }
 
-const COLS = "id,name,schedule,focus,sort_order,is_active";
+const COLS = "id,name,schedule,focus,sort_order,is_active,image_path";
 
 export function supabaseSubCommunities(client: SupabaseClient): SubCommunityRepository {
   const list = async (activeOnly: boolean) => {
@@ -26,6 +27,11 @@ export function supabaseSubCommunities(client: SupabaseClient): SubCommunityRepo
   return {
     listActive: () => list(true),
     listAll: () => list(false),
+    async get(id) {
+      const { data, error } = await client.from("sub_communities").select(COLS).eq("id", id).maybeSingle();
+      check(error, "Failed to load sub community");
+      return (data as SubCommunity | null) ?? null;
+    },
     async save(input) {
       const { id, ...row } = input;
       const { error } = id
@@ -42,9 +48,9 @@ export function supabaseSubCommunities(client: SupabaseClient): SubCommunityRepo
 
 // Used when Supabase env vars are not set (local preview).
 export function staticSubCommunities(): SubCommunityRepository {
-  const rows: SubCommunity[] = subs.map(([name, schedule], i) => ({ name, schedule, focus: null, sort_order: i + 1, is_active: true }));
+  const rows: SubCommunity[] = subs.map(([name, schedule], i) => ({ name, schedule, focus: null, sort_order: i + 1, is_active: true, image_path: null }));
   const readOnly = async () => { throw new Error("Supabase belum dikonfigurasi"); };
-  return { listActive: async () => rows, listAll: async () => rows, save: readOnly, remove: readOnly };
+  return { listActive: async () => rows, listAll: async () => rows, get: async () => null, save: readOnly, remove: readOnly };
 }
 
 export function publicSubCommunities(): SubCommunityRepository {

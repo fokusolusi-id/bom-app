@@ -1,9 +1,9 @@
 "use client";
 import { startTransition, useActionState, useEffect, useRef } from "react";
-import type { FormState } from "./form-state";
+import type { FormState } from "@/lib/form-state";
 
 /**
- * Form bound to a server action that returns FormState; shows its error inline.
+ * Form bound to a server action that returns FormState; shows its error or success message inline.
  * Submits via onSubmit instead of `action` so React doesn't wipe the inputs when validation fails.
  */
 export function ActionForm({ action, resetOnSuccess, className, children }: {
@@ -30,6 +30,7 @@ export function ActionForm({ action, resetOnSuccess, className, children }: {
     >
       <fieldset disabled={pending} className="contents">{children}</fieldset>
       {state.error && <p role="alert" className="text-destructive col-span-full text-sm">{state.error}</p>}
+      {state.ok && state.message && <p role="status" className="text-success col-span-full text-sm">{state.message}</p>}
     </form>
   );
 }

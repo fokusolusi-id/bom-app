@@ -8,7 +8,7 @@ import { createClient } from "@/lib/supabase/server";
 import { requireAdmin } from "@/server/admin-session";
 import { supabaseMatches } from "@/server/matches";
 import { supabasePlayers } from "@/server/players";
-import { toFormState, type FormState } from "./form-state";
+import { toFormState, type FormState } from "@/lib/form-state";
 
 export async function createMatch(_prev: FormState, formData: FormData): Promise<FormState> {
   const supabase = await requireAdmin();
