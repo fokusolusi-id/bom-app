@@ -7,6 +7,7 @@ export const dynamic = "force-dynamic";
 
 const sections = [
   ["/admin", "Match"],
+  ["/admin/turnamen", "Turnamen"],
   ["/admin/komunitas", "Sub Komunitas"],
   ["/admin/pendaftar", "Pendaftar"],
 ] as const;

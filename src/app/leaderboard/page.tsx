@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -12,7 +13,7 @@ export default async function LeaderboardPage() {
   const players = await repo.list(100);
   return (
     <main className="mx-auto max-w-4xl px-4 py-10">
-      <RibbonBanner>Season 1 Leaderboard</RibbonBanner>
+      <RibbonBanner>Season 2026 Leaderboard</RibbonBanner>
       <div className="bg-card mt-6 rounded-lg border">
         <Table>
           <TableHeader>
@@ -28,7 +29,7 @@ export default async function LeaderboardPage() {
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <Avatar><AvatarFallback>{p.name[0]}</AvatarFallback></Avatar>
-                    <div><div className="font-bold">{p.name}</div><Badge variant="secondary">{p.bom_id}</Badge></div>
+                    <div><Link href={`/member/${p.bom_id.toLowerCase()}`} className="hover:text-primary font-bold">{p.name}</Link><Badge variant="secondary">{p.bom_id}</Badge></div>
                   </div>
                 </TableCell>
                 <TableCell className="tabular text-success text-right">{p.wins}</TableCell>
