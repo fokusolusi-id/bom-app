@@ -1,7 +1,10 @@
+import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { SubCommunity, SubCommunityInput } from "@/domain/sub-community";
 import { subs } from "@/lib/content";
-import { createPublicClient, hasSupabase } from "./supabase-public";
+import { hasSupabase } from "@/lib/supabase/env";
+import { check } from "./db";
+import { createPublicClient } from "./supabase-public";
 
 export interface SubCommunityRepository {
   listActive(): Promise<SubCommunity[]>;
@@ -17,7 +20,7 @@ export function supabaseSubCommunities(client: SupabaseClient): SubCommunityRepo
     let q = client.from("sub_communities").select(COLS).order("sort_order").order("name");
     if (activeOnly) q = q.eq("is_active", true);
     const { data, error } = await q;
-    if (error) throw new Error(`Failed to load sub communities: ${error.message}`);
+    check(error, "Failed to load sub communities");
     return (data ?? []) as SubCommunity[];
   };
   return {
@@ -28,11 +31,11 @@ export function supabaseSubCommunities(client: SupabaseClient): SubCommunityRepo
       const { error } = id
         ? await client.from("sub_communities").update(row).eq("id", id)
         : await client.from("sub_communities").insert(row);
-      if (error) throw new Error(`Failed to save sub community: ${error.message}`);
+      check(error, "Failed to save sub community");
     },
     async remove(id) {
       const { error } = await client.from("sub_communities").delete().eq("id", id);
-      if (error) throw new Error(`Failed to delete sub community: ${error.message}`);
+      check(error, "Failed to delete sub community");
     },
   };
 }

@@ -1,6 +1,9 @@
+import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Player } from "@/domain/types";
-import { createPublicClient, hasSupabase } from "./supabase-public";
+import { hasSupabase } from "@/lib/supabase/env";
+import { check } from "./db";
+import { createPublicClient } from "./supabase-public";
 
 export interface PlayerRepository {
   list(limit?: number): Promise<Player[]>;
@@ -10,7 +13,7 @@ export function supabasePlayers(client: SupabaseClient): PlayerRepository {
   return {
     async list(limit = 100) {
       const { data, error } = await client.from("players").select("*").order("points", { ascending: false }).limit(limit);
-      if (error) throw new Error(`Failed to load players: ${error.message}`);
+      check(error, "Failed to load players");
       return (data ?? []) as Player[];
     },
   };

@@ -1,7 +1,9 @@
+import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { MatchInput } from "@/domain/match-input";
 import type { Side } from "@/domain/scoring";
 import type { Match } from "@/domain/types";
+import { check } from "./db";
 
 export interface MatchRepository {
   listOpen(): Promise<Match[]>;
@@ -9,10 +11,6 @@ export interface MatchRepository {
   create(input: MatchInput, names: { a: string; b: string }): Promise<void>;
   bump(id: string, side: Side, delta: 1 | -1): Promise<void>;
   finish(id: string, winnerPoints: number, loserPoints: number): Promise<void>;
-}
-
-function check(error: { message: string } | null, what: string) {
-  if (error) throw new Error(`${what}: ${error.message}`);
 }
 
 export function supabaseMatches(client: SupabaseClient): MatchRepository {
