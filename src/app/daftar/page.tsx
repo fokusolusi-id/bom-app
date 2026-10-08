@@ -7,10 +7,10 @@ import { funnel } from "@/lib/content";
 import { publicSubCommunities } from "@/server/sub-communities";
 import { submitJoinRequest } from "./actions";
 
-export const metadata = { title: "Mulai dari Nol | BOM" };
+export const metadata = { title: "Membership | BOM" };
 export const revalidate = 60;
 
-export default async function MulaiPage() {
+export default async function DaftarPage() {
   const subs = await publicSubCommunities().listActive();
   return (
     <main className="mx-auto max-w-6xl px-4 py-12">
@@ -28,7 +28,7 @@ export default async function MulaiPage() {
         ))}
       </ol>
 
-      <Card id="daftar" className="mt-12 max-w-2xl">
+      <Card className="mt-12 max-w-2xl">
         <CardHeader>
           <CardTitle>Daftar BOM</CardTitle>
           <CardDescription>Isi data kamu, pengurus akan menghubungi lewat WhatsApp untuk BOM ID dan jadwal gathering.</CardDescription>

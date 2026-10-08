@@ -3,6 +3,10 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { RibbonBanner } from "@/components/bom/ribbon-banner";
+import { WhatsappIcon } from "@/components/bom/brand-icons";
+
+// Invite links get reset when they leak, so the WhatsApp one lives in env, not code.
+const whatsappInvite = process.env.NEXT_PUBLIC_WHATSAPP_INVITE_URL;
 
 const pillars = [
   ["Play", "Gathering mingguan dan casual battle. Stadium selalu ada, siapa pun boleh main."],
@@ -10,12 +14,6 @@ const pillars = [
   ["Rank", "BOM ID, profil pemain, poin musiman, satu leaderboard publik bersama."],
   ["Grow", "Sesi beginner, coaching combo, bedah rules, onboarding pemain baru."],
   ["Belong", "Achievement, tim, spotlight member, merchandise, identitas Medan."],
-] as const;
-
-const more = [
-  ["Jenjang Kompetisi", "Dari Ranked mingguan sampai Championship, dan jalur ke panggung resmi.", "/kompetisi"],
-  ["Sub Komunitas", "Semua sub komunitas, satu aturan main.", "/komunitas"],
-  ["Mulai dari Nol", "Belum punya bey? Mulai dari pojok Try.", "/mulai"],
 ] as const;
 
 export default function Home() {
@@ -28,9 +26,18 @@ export default function Home() {
           <p className="text-muted-foreground max-w-md">
             BOM adalah rumah Beyblade X kompetitif di Sumatera Utara, tempat pemain Medan naik kelas sampai ke panggung dunia.
           </p>
-          <div className="flex flex-wrap gap-3">
+          <div className="grid max-w-lg grid-cols-2 gap-3">
             <Button size="lg" asChild><Link href="/leaderboard">Lihat Leaderboard</Link></Button>
             <Button size="lg" variant="outline" asChild><Link href="/komunitas">Jadwal Gathering</Link></Button>
+            <Button size="lg" variant="outline" asChild><Link href="/daftar">Daftar Membership</Link></Button>
+            {whatsappInvite && (
+              <Button size="lg" className="bg-[#25D366] text-black hover:bg-[#1EBE5A]" asChild>
+                <a href={whatsappInvite} target="_blank" rel="noopener noreferrer">
+                  <WhatsappIcon />
+                  Join Grup WhatsApp
+                </a>
+              </Button>
+            )}
           </div>
         </div>
         <div className="flex justify-center"><Image src="/brand/logo-768.png" alt="BOM logo" width={420} height={420} priority /></div>
@@ -43,15 +50,6 @@ export default function Home() {
             <Card key={t}><CardHeader><CardTitle className="text-primary">{t}</CardTitle><CardDescription>{d}</CardDescription></CardHeader></Card>
           ))}
         </div>
-        <p className="text-muted-foreground mt-3 text-sm">Compete adalah pilar utama. Yang lain ada untuk mengisinya.</p>
-      </section>
-
-      <section className="mt-16 grid gap-4 md:grid-cols-3">
-        {more.map(([t, d, href]) => (
-          <Link key={href} href={href}>
-            <Card className="hover:border-primary h-full transition-colors"><CardHeader><CardTitle>{t}</CardTitle><CardDescription>{d}</CardDescription></CardHeader></Card>
-          </Link>
-        ))}
       </section>
     </main>
   );

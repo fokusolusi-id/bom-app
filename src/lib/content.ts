@@ -5,16 +5,8 @@ export const tiers: { tier: TierLabel; freq: string; desc: string }[] = [
   { tier: "Major", freq: "Kuartalan", desc: "Turnamen besar, hadiah sponsor, format resmi Beyblade X 3-on-3." },
   { tier: "Cup", freq: "Bulanan", desc: "Poin ranking dobel, pemenang masuk Wall of Fame." },
   { tier: "Ranked", freq: "Mingguan", desc: "Gathering ranked di tiap sub komunitas. Poin masuk satu leaderboard bersama." },
-  { tier: "Casual / Try", freq: "Tiap gathering", desc: "Pojok coba, beginner battle, parent dan kid. Pintu masuk tanpa syarat." },
+  { tier: "Casual", freq: "Tiap gathering", desc: "Pojok coba, beginner battle, parent dan kid. Pintu masuk tanpa syarat." },
 ];
-
-export const path = [
-  ["BOM Ranked", "Medan • mingguan", true],
-  ["BOM Championship", "Medan • tahunan", true],
-  ["G1 Indonesia", "Jakarta", false],
-  ["SEA Cup", "Regional • 2026", false],
-  ["World Championship", "Jepang", false],
-] as const;
 
 export const funnel = [
   ["Try", "Pojok coba di tiap gathering. Launcher, bey, stadium disediakan. Nol syarat."],
