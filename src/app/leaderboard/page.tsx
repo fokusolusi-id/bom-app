@@ -1,47 +1,43 @@
 import Link from "next/link";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { formatBomId } from "@/domain/profile";
+import { LeaderboardTable } from "@/components/bom/leaderboard-table";
+import { PointsTable } from "@/components/bom/points-table";
 import { RibbonBanner } from "@/components/bom/ribbon-banner";
+import { Button } from "@/components/ui/button";
 import { publicPlayers } from "@/server/players";
-import { BomIdBadge } from "@/components/bom/bom-id-badge";
 
 export const metadata = { title: "Leaderboard | BOM" };
 export const revalidate = 30;
+
+const prizes = [
+  ["Top 25 (page 1)", "Draft Pick Prize"],
+  ["Tiger Elder", "the player with the most appearances (admins excluded)"],
+  ["Tiger Supreme King", "the player with the most Tiger King badges"],
+] as const;
 
 export default async function LeaderboardPage() {
   const { repo, live } = publicPlayers();
   const players = await repo.list(100);
   return (
     <main className="mx-auto max-w-4xl px-4 py-10">
-      <RibbonBanner>Season 2026 Leaderboard</RibbonBanner>
-      <div className="bg-card mt-6 rounded-lg border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-16">#</TableHead><TableHead>Blader</TableHead>
-              <TableHead className="text-right">W</TableHead><TableHead className="text-right">L</TableHead><TableHead className="text-right">Poin</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {players.map((p, i) => (
-              <TableRow key={p.bom_id}>
-                <TableCell className="font-num tabular text-primary text-2xl font-black italic">{i + 1}</TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-3">
-                    <Avatar><AvatarFallback>{p.name[0]}</AvatarFallback></Avatar>
-                    <div><div className="font-bold">{p.name}</div><Link href={`/member/${p.bom_id.toLowerCase()}`} aria-label={`Profil ${p.name} ${formatBomId(p.bom_id)}`}><BomIdBadge id={p.bom_id} className="hover:bg-white transition-colors" /></Link></div>
-                  </div>
-                </TableCell>
-                <TableCell className="tabular text-success text-right">{p.wins}</TableCell>
-                <TableCell className="tabular text-destructive text-right">{p.losses}</TableCell>
-                <TableCell className="font-num tabular text-right text-xl font-black italic">{p.points}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-      {!live && <p className="text-muted-foreground mt-3 text-xs">Data contoh. Set NEXT_PUBLIC_SUPABASE_URL untuk data asli.</p>}
+      <RibbonBanner>BOM Leaderboard Season 2026</RibbonBanner>
+
+      <section aria-labelledby="prizes" className="border-primary mt-8 space-y-3 border-t-[3px] pt-4">
+        <h2 id="prizes" className="text-2xl">Season 2026 prizes</h2>
+        <p className="text-muted-foreground">The Season 2026 prizes will be awarded to:</p>
+        <ul className="list-disc space-y-1 pl-5 marker:text-primary">
+          {prizes.map(([who, what]) => (
+            <li key={who}><strong className="font-display text-primary italic uppercase">{who}</strong>: {what}</li>
+          ))}
+        </ul>
+        <p className="flex flex-wrap items-center gap-3 pt-1">
+          <span>Join our membership to be listed on the leaderboard.</span>
+          <Button size="sm" asChild><Link href="/membership">Join membership</Link></Button>
+        </p>
+      </section>
+
+      <LeaderboardTable players={players.map(({ bom_id, name, points, wins, losses }) => ({ bom_id, name, points, wins, losses }))} />
+      <PointsTable />
+      {!live && <p className="text-muted-foreground mt-3 text-xs">Sample data. Set NEXT_PUBLIC_SUPABASE_URL for real data.</p>}
     </main>
   );
 }

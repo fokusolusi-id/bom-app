@@ -25,14 +25,14 @@ export function MediaUpload({ name, label, defaultPath, prepare, kind }: {
   async function upload(file: File) {
     setError(null);
     const isVideo = file.type.startsWith("video/");
-    if (isVideo !== (kind === "video")) return setError(kind === "video" ? "Pilih file video (MP4/WebM)" : "Pilih file foto (JPG/PNG/WebP)");
-    if (file.size > (isVideo ? MAX_VIDEO_BYTES : MAX_IMAGE_BYTES)) return setError(`Ukuran maksimal ${isVideo ? "20" : "5"} MB`);
+    if (isVideo !== (kind === "video")) return setError(kind === "video" ? "Choose a video file (MP4/WebM)" : "Choose a photo file (JPG/PNG/WebP)");
+    if (file.size > (isVideo ? MAX_VIDEO_BYTES : MAX_IMAGE_BYTES)) return setError(`The file must be at most ${isVideo ? "20" : "5"} MB`);
     setBusy(true);
     try {
       const target = await prepare(file.type);
       if ("error" in target) return setError(target.error);
       const { error } = await createClient().storage.from(MEDIA_BUCKET).uploadToSignedUrl(target.path, target.token, file, { contentType: file.type });
-      if (error) return setError(`Upload gagal: ${error.message}`);
+      if (error) return setError(`Upload failed: ${error.message}`);
       setPath(target.path);
     } finally {
       setBusy(false);
@@ -52,7 +52,7 @@ export function MediaUpload({ name, label, defaultPath, prepare, kind }: {
         <input type="file" accept={accept} disabled={busy} aria-label={label} className="text-sm"
           onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; if (f) void upload(f); }} />
       </label>
-      {busy && <span className="text-muted-foreground text-sm">Mengunggah…</span>}
+      {busy && <span className="text-muted-foreground text-sm">Uploading…</span>}
       {error && <span role="alert" className="text-destructive text-sm">{error}</span>}
     </div>
   );

@@ -18,16 +18,16 @@ export default async function AdminMatchPage() {
   const [matches, players] = await Promise.all([supabaseMatches(supabase).listOpen(), supabasePlayers(supabase).list(1000, { includeRegistered: true })]);
 
   return (
-    <AdminPage title="Match" hint="Mulai match, atur skor, lalu selesaikan untuk memberi poin.">
-      <AddCard title="Match baru">
+    <AdminPage title="Match" hint="Start a match, set the score, then finish it to award points.">
+      <AddCard title="New match">
           <ActionForm action={createMatch} resetOnSuccess className="grid gap-3 sm:grid-cols-2">
             <NativeSelect name="a_id" aria-label="Blader A" required defaultValue=""><option value="" disabled>Blader A</option>{players.map((p) => <option key={p.id} value={p.id}>{p.name} {formatBomId(p.bom_id)}</option>)}</NativeSelect>
             <NativeSelect name="b_id" aria-label="Blader B" required defaultValue=""><option value="" disabled>Blader B</option>{players.map((p) => <option key={p.id} value={p.id}>{p.name} {formatBomId(p.bom_id)}</option>)}</NativeSelect>
             <NativeSelect name="tier" aria-label="Tier">{TIERS.map((t) => <option key={t}>{t}</option>)}</NativeSelect>
-            <Input name="round" maxLength={40} placeholder="Round (mis. Semifinal)" aria-label="Round" />
+            <Input name="round" maxLength={40} placeholder="Round (e.g. Semifinal)" aria-label="Round" />
             <Input name="stadium" maxLength={40} placeholder="Stadium 1" aria-label="Stadium" />
-            <Input name="target" type="number" min={1} max={10} defaultValue={4} aria-label="Target poin" />
-            <Button type="submit" className="sm:col-span-2">Mulai match (live)</Button>
+            <Input name="target" type="number" min={1} max={10} defaultValue={4} aria-label="Target points" />
+            <Button type="submit" className="sm:col-span-2">Start match (live)</Button>
           </ActionForm>
       </AddCard>
 
@@ -46,7 +46,7 @@ export default async function AdminMatchPage() {
                 </div>
               </div>
             ))}
-            <ActionForm action={finishMatch.bind(null, m.id)}><Button variant="outline" className="w-full">Selesai &amp; beri poin</Button></ActionForm>
+            <ActionForm action={finishMatch.bind(null, m.id)}><Button variant="outline" className="w-full">Finish &amp; award points</Button></ActionForm>
           </CardContent>
         </Card>
       ))}

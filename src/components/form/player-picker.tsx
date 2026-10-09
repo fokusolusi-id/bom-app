@@ -42,19 +42,19 @@ export function PlayerPicker({ name, players, defaultIds = [], max, preparePhoto
             <li key={id} className="bg-secondary space-y-2 rounded px-2 py-2 text-sm">
               <div className="flex items-center gap-2">
                 <span className="flex-1 truncate font-bold">{p?.name ?? "Unknown"} {p && <BomIdBadge id={p.bomId} className="ml-1 align-middle" />}</span>
-                <Button type="button" variant="ghost" size="sm" disabled={i === 0} onClick={() => move(i, -1)} aria-label="Naikkan"><ArrowUp /></Button>
-                <Button type="button" variant="ghost" size="sm" disabled={i === ids.length - 1} onClick={() => move(i, 1)} aria-label="Turunkan"><ArrowDown /></Button>
-                <Button type="button" variant="ghost" size="sm" onClick={() => setIds((cur) => cur.filter((x) => x !== id))} aria-label="Hapus"><X /></Button>
+                <Button type="button" variant="ghost" size="sm" disabled={i === 0} onClick={() => move(i, -1)} aria-label="Move up"><ArrowUp /></Button>
+                <Button type="button" variant="ghost" size="sm" disabled={i === ids.length - 1} onClick={() => move(i, 1)} aria-label="Move down"><ArrowDown /></Button>
+                <Button type="button" variant="ghost" size="sm" onClick={() => setIds((cur) => cur.filter((x) => x !== id))} aria-label="Remove"><X /></Button>
               </div>
-              <MediaUpload name={`${PHOTO_FIELD}${id}`} label={`Foto ${p?.name ?? ""}`} defaultPath={p?.photo} prepare={preparePhoto} kind="image" />
+              <MediaUpload name={`${PHOTO_FIELD}${id}`} label={`Photo ${p?.name ?? ""}`} defaultPath={p?.photo} prepare={preparePhoto} kind="image" />
             </li>
           );
         })}
-        {ids.length === 0 && <li className="text-muted-foreground text-sm">Belum ada anggota.</li>}
+        {ids.length === 0 && <li className="text-muted-foreground text-sm">No members yet.</li>}
       </ul>
       {ids.length < max && (
-        <NativeSelect aria-label="Tambah anggota" value="" onChange={(e) => e.target.value && setIds((cur) => [...cur, e.target.value])}>
-          <option value="">+ Tambah anggota</option>
+        <NativeSelect aria-label="Add member" value="" onChange={(e) => e.target.value && setIds((cur) => [...cur, e.target.value])}>
+          <option value="">+ Add member</option>
           {available.map((p) => <option key={p.id} value={p.id}>{p.name} {formatBomId(p.bomId)}</option>)}
         </NativeSelect>
       )}

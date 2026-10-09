@@ -6,9 +6,9 @@ export function parseText(raw: unknown, label: string, max: number, fallback?: s
   const v = typeof raw === "string" ? raw.trim() : "";
   if (!v) {
     if (fallback !== undefined) return fallback;
-    throw new Error(`${label} wajib diisi`);
+    throw new Error(`${label} is required`);
   }
-  if (v.length > max) throw new Error(`${label} maksimal ${max} karakter`);
+  if (v.length > max) throw new Error(`${label} must be at most ${max} characters`);
   return v;
 }
 
@@ -17,6 +17,6 @@ export function parseInstagram(raw: unknown): string | null {
   const v = typeof raw === "string" ? raw.trim() : "";
   if (!v) return null;
   const handle = v.replace(/^(https?:\/\/)?(www\.)?instagram\.com\//i, "").replace(/^@/, "").replace(/[/?#].*$/, "");
-  if (!/^[A-Za-z0-9._]{1,30}$/.test(handle)) throw new Error("Instagram tidak valid");
+  if (!/^[A-Za-z0-9._]{1,30}$/.test(handle)) throw new Error("Invalid Instagram handle");
   return handle;
 }

@@ -6,7 +6,7 @@ export type EventType = TierLabel | "Break";
 export const EVENT_TYPES: readonly EventType[] = [...TIER_LABELS, "Break"];
 
 export function parseEventType(value: unknown): EventType {
-  if (typeof value !== "string" || !(EVENT_TYPES as readonly string[]).includes(value)) throw new Error("Jenis event tidak valid");
+  if (typeof value !== "string" || !(EVENT_TYPES as readonly string[]).includes(value)) throw new Error("Invalid event type");
   return value as EventType;
 }
 
@@ -27,7 +27,7 @@ const WIB = "+07:00";
 export function wibLocalToIso(local: unknown): string {
   const m = /^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})(?::\d{2})?$/.exec(typeof local === "string" ? local.trim() : "");
   const at = m ? new Date(`${m[1]}T${m[2]}:00${WIB}`) : null;
-  if (!at || Number.isNaN(at.getTime())) throw new Error("Tanggal dan jam tidak valid");
+  if (!at || Number.isNaN(at.getTime())) throw new Error("Invalid date and time");
   return at.toISOString();
 }
 
@@ -46,13 +46,13 @@ export function parseEventInput(get: (key: string) => unknown): ScheduleEventInp
   const id = get("id");
   if (id !== null && id !== undefined && id !== "" && !isUuid(id)) throw new Error("Invalid id");
   const community = get("sub_community_id");
-  if (community !== null && community !== undefined && community !== "" && !isUuid(community)) throw new Error("Komunitas tidak valid");
+  if (community !== null && community !== undefined && community !== "" && !isUuid(community)) throw new Error("Invalid community");
   return {
     ...(id ? { id: id as string } : {}),
     sub_community_id: community ? (community as string) : null,
-    name: parseText(get("name"), "Nama event", 80),
+    name: parseText(get("name"), "Event name", 80),
     starts_at: wibLocalToIso(get("starts_at")),
-    place: parseText(get("place"), "Tempat", 120),
+    place: parseText(get("place"), "Place", 120),
     tier: parseEventType(get("tier")),
     is_active: get("is_active") === "on" || get("is_active") === "true",
   };
@@ -88,4 +88,9 @@ export function pickOnePerDay<T extends { starts_at: string; tier: EventType }>(
     winners.add(tied[hash(day) % tied.length]);
   }
   return events.filter((e) => winners.has(e));
+}
+
+/** How many different days have a Ranked event: "2" for a Thursday and a Saturday gathering in the same week. */
+export function rankedDays(events: { starts_at: string; tier: EventType }[]): number {
+  return new Set(events.filter((e) => e.tier === "Ranked").map((e) => wibDay(e.starts_at))).size;
 }

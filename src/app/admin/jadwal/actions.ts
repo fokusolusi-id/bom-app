@@ -17,7 +17,7 @@ export async function saveScheduleEvent(_prev: FormState, formData: FormData): P
   return toFormState(async () => {
     await supabaseScheduleEvents(supabase).save(parseEventInput((k) => formData.get(k)));
     revalidate();
-  }, "Disimpan");
+  }, "Saved");
 }
 
 export async function deleteScheduleEvent(id: string): Promise<FormState> {

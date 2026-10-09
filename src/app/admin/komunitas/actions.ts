@@ -18,7 +18,7 @@ export async function prepareSubCommunityImageUpload(contentType: string): Promi
   try {
     return await createImageUpload(supabase, "sub-communities", contentType);
   } catch (e) {
-    return { error: e instanceof Error ? e.message : "Gagal menyiapkan upload" };
+    return { error: e instanceof Error ? e.message : "Could not prepare the upload" };
   }
 }
 

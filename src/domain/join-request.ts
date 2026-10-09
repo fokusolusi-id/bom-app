@@ -31,35 +31,35 @@ export function normalizeWhatsapp(raw: unknown): string {
   const digits = typeof raw === "string" ? raw.replace(/[\s\-().]/g, "") : "";
   const local = digits.replace(/^\+?62/, "").replace(/^0/, "");
   const number = `+62${local}`;
-  if (!/^\+62[0-9]{8,13}$/.test(number)) throw new Error("Nomor WhatsApp tidak valid");
+  if (!/^\+62[0-9]{8,13}$/.test(number)) throw new Error("Invalid WhatsApp number");
   return number;
 }
 
 const checked = (v: unknown) => v === "on" || v === "true";
 
 function oneOf<T extends string>(raw: unknown, allowed: readonly T[], label: string): T {
-  if (typeof raw !== "string" || !(allowed as readonly string[]).includes(raw)) throw new Error(`${label} wajib dipilih`);
+  if (typeof raw !== "string" || !(allowed as readonly string[]).includes(raw)) throw new Error(`${label} is required`);
   return raw as T;
 }
 
 function parseAddress(raw: unknown): string {
-  const v = parseText(raw, "Alamat", 300).replace(/\s+/g, " ");
-  if (v.length < 5) throw new Error("Alamat minimal 5 karakter");
+  const v = parseText(raw, "Address", 300).replace(/\s+/g, " ");
+  if (v.length < 5) throw new Error("Address must be at least 5 characters");
   return v;
 }
 
 export function parseRegistration(get: (key: string) => unknown): Registration {
-  const fullName = parseText(get("full_name"), "Nama lengkap", 60).replace(/\s+/g, " ");
-  if (fullName.length < 2) throw new Error("Nama lengkap minimal 2 karakter");
-  const bladerName = parseText(get("blader_name"), "Nama blader", 40).replace(/\s+/g, " ");
-  if (bladerName.length < 2) throw new Error("Nama blader minimal 2 karakter");
+  const fullName = parseText(get("full_name"), "Full name", 60).replace(/\s+/g, " ");
+  if (fullName.length < 2) throw new Error("Full name must be at least 2 characters");
+  const bladerName = parseText(get("blader_name"), "Blader name", 40).replace(/\s+/g, " ");
+  if (bladerName.length < 2) throw new Error("Blader name must be at least 2 characters");
 
-  const ageGroup = oneOf(get("age_group"), AGE_GROUPS.map(([v]) => v), "Kelompok usia");
+  const ageGroup = oneOf(get("age_group"), AGE_GROUPS.map(([v]) => v), "Age group");
   const minor = ageGroup === "under12";
-  const guardianName = minor ? parseText(get("guardian_name"), "Nama wali", 60) : null;
+  const guardianName = minor ? parseText(get("guardian_name"), "Guardian name", 60) : null;
   const guardianWhatsapp = minor ? normalizeWhatsapp(get("guardian_whatsapp")) : null;
 
-  if (!checked(get("accepted_payment"))) throw new Error("Setujui pernyataan pembayaran untuk lanjut");
+  if (!checked(get("accepted_payment"))) throw new Error("Accept the payment statement to continue");
 
   return {
     fullName,

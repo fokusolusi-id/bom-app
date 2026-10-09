@@ -9,13 +9,14 @@ export const dynamic = "force-dynamic";
 
 const sections = [
   ["/admin", "Match"],
-  ["/admin/turnamen", "Turnamen"],
-  ["/admin/komunitas", "Sub Komunitas"],
-  ["/admin/jadwal", "Jadwal"],
+  ["/admin/turnamen", "Tournaments"],
+  ["/admin/players", "Players"],
+  ["/admin/komunitas", "Sub Communities"],
+  ["/admin/jadwal", "Schedule"],
   ["/admin/tim", "Founding Team"],
-  ["/admin/media", "Slider & Galeri"],
+  ["/admin/media", "Slider & Gallery"],
   ["/admin/sponsor", "Sponsor"],
-  ["/admin/pendaftar", "Pendaftar"],
+  ["/admin/pendaftar", "Sign-ups"],
 ] as const;
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -31,7 +32,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           </Link>
           <AdminNav sections={sections} />
           <div className="flex shrink-0 items-center gap-2">
-            <form action={signOut}><Button variant="outline" size="sm">Keluar</Button></form>
+            <form action={signOut}><Button variant="outline" size="sm">Sign out</Button></form>
           </div>
         </div>
       </header>

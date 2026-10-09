@@ -1,15 +1,15 @@
 export const subs = [
-  ["Turcil", "Sabtu malam"],
-  ["DXM", "Sabtu malam"],
-  ["3R WAR", "Sabtu malam"],
-  ["Beyground", "Kamis malam"],
-  ["Doys Party", "Sabtu malam"],
+  ["Turcil", "Saturday night"],
+  ["DXM", "Saturday night"],
+  ["3R WAR", "Saturday night"],
+  ["Beyground", "Thursday night"],
+  ["Doys Party", "Saturday night"],
 ] as const;
 
 export const umbrella = [
-  "Satu dokumen rules, satu suara wasit",
-  "HTM seragam untuk tiap jenis event",
-  "Satu leaderboard untuk semua sub komunitas",
+  "One rulebook, one voice for every judge",
+  "One entry fee for every type of event",
+  "One leaderboard for every sub community",
 ];
 
 /** [tier, how often, what it is]. Points are not listed here: the ladder shows each level's multiplier from the domain. */
@@ -21,16 +21,18 @@ export const competitionPath = [
   ["Championship", "Yearly", ["The highest and most prestigious tier of BOM tournaments.", "Bladers from across Sumatera, with exclusive prizes.", "The champion represents BOM at G1."]],
 ] as const;
 
-/** Headline numbers for the homepage and About BOM. Member count is a hand-kept estimate. */
-export const communityStats = (subCount: number) => ["50+ active members", `${subCount} Sub Komunitas`, "Ranked every week", "Cup every month"];
+export type CommunityCounts = { members: number; subCommunities: number; weeklyRanked: number };
 
-/** The same headline numbers split into the figure and its label, so the homepage can highlight the figure. */
-export const communityNumbers = (subCount: number) => [
-  { value: "50+", label: "active members" },
-  { value: String(subCount), label: "Sub Komunitas" },
-  { value: "Weekly", label: "Ranked" },
+/** Headline numbers, split into the figure and its label so the homepage can highlight the figure. All come from live data. */
+export const communityNumbers = ({ members, subCommunities, weeklyRanked }: CommunityCounts) => [
+  { value: String(members), label: "active members" },
+  { value: String(subCommunities), label: "Sub Communities" },
+  { value: String(weeklyRanked), label: "Weekly Ranked" },
   { value: "Monthly", label: "Cup" },
 ];
+
+/** The same numbers as one-line badges for About BOM. */
+export const communityStats = (counts: CommunityCounts) => communityNumbers(counts).map(({ value, label }) => `${value} ${label}`);
 
 export const MEMBERSHIP_FEE = "IDR 100.000";
 
@@ -56,3 +58,23 @@ export const faq = [
   ["Can kids join?", "Yes. Under 12 needs a guardian's name and WhatsApp number on the form."],
   ["Who sees my data?", "Only your blader name, BOM ID and results are public. Your full name, address and WhatsApp stay with the committee."],
 ] as const;
+
+/** Tournament points by placing and by number of participants. Source: the BOM points sheet. */
+export const POINTS_SIZES = ["< 39", "40", "50", "60", "70", "80", "90"] as const;
+export const POINTS_BY_RANK: { label: string; values: readonly number[] }[] = [
+  { label: "1", values: [4, 5, 6, 7, 8, 9, 10] },
+  { label: "2", values: [3, 4, 5, 6, 7, 8, 9] },
+  { label: "3", values: [2, 3, 4, 5, 6, 7, 8] },
+  { label: "4", values: [1, 2, 3, 4.5, 5.5, 6.5, 7] },
+  { label: "5", values: [0, 0, 0, 2.5, 3.5, 4.5, 6] },
+  { label: "6", values: [0, 0, 0, 2, 3, 4, 5] },
+  { label: "7", values: [0, 0, 0, 1.5, 2, 3, 4] },
+  { label: "8", values: [0, 0, 0, 1, 1.5, 2, 3] },
+];
+/** Extra categories, shown below the ranks. */
+export const POINTS_BY_CATEGORY: { label: string; values: readonly number[] }[] = [
+  { label: "Participant", values: [0.25, 0.35, 0.45, 0.55, 0.65, 0.75, 1] },
+  { label: "Top Cut", values: [0.5, 0.65, 0.75, 1, 1.25, 1.5, 2] },
+  { label: "Tiger King", values: [1, 1.1, 1.2, 1.3, 1.4, 1.5, 1.5] },
+];
+export const POINTS_NOTE = "Positions 1-4 do not get points for Top Cut.";

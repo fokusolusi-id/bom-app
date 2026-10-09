@@ -17,7 +17,7 @@ export async function prepareSiteMediaUpload(section: string, contentType: strin
   try {
     return await createImageUpload(supabase, parseSection(section), contentType);
   } catch (e) {
-    return { error: e instanceof Error ? e.message : "Gagal menyiapkan upload" };
+    return { error: e instanceof Error ? e.message : "Could not prepare the upload" };
   }
 }
 
@@ -30,7 +30,7 @@ export async function saveSiteMedia(_prev: FormState, formData: FormData): Promi
     await repo.save(input);
     if (previous && previous !== input.path) await removeMedia(supabase, [previous]);
     revalidate();
-  }, "Disimpan");
+  }, "Saved");
 }
 
 export async function deleteSiteMedia(id: string): Promise<FormState> {

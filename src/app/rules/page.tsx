@@ -15,13 +15,13 @@ export default function RulesPage() {
   return (
     <main className="mx-auto max-w-4xl px-4 py-12">
       <RibbonBanner>Rules</RibbonBanner>
-      <p className="text-muted-foreground mt-4 max-w-xl text-sm">Satu dokumen rules dan satu suara wasit untuk semua sub komunitas BOM.</p>
+      <p className="text-muted-foreground mt-4 max-w-xl text-sm">One rulebook and one voice for every judge across all BOM sub communities.</p>
 
       <ul className="mt-6 grid gap-2 md:grid-cols-3">
         {umbrella.map((u) => <li key={u} className="border-primary border-l-2 pl-3 text-sm">{u}</li>)}
       </ul>
 
-      <section aria-label="Rulebook resmi" className="mt-10 space-y-3">
+      <section aria-label="Official rulebooks" className="mt-10 space-y-3">
         {rulebooks.map((r) => (
           <Card key={r.href}>
             <CardHeader>
@@ -29,11 +29,11 @@ export default function RulesPage() {
               <CardDescription>{r.note}</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button asChild><a href={r.href} target="_blank" rel="noopener noreferrer"><Download aria-hidden />Unduh PDF</a></Button>
+              <Button asChild><a href={r.href} target="_blank" rel="noopener noreferrer"><Download aria-hidden />Download PDF</a></Button>
             </CardContent>
           </Card>
         ))}
-        <p className="text-muted-foreground text-sm">Ringkasan rules BOM (format 3-on-3, poin finish, deck, dan sanksi) segera hadir di halaman ini.</p>
+        <p className="text-muted-foreground text-sm">A summary of the BOM rules (3-on-3 format, finish points, decks and penalties) is coming soon.</p>
       </section>
     </main>
   );

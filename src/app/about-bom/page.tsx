@@ -9,6 +9,7 @@ import { RibbonBanner } from "@/components/bom/ribbon-banner";
 import { SubCommunityChart } from "@/components/bom/sub-community-chart";
 import { SectionHeading } from "@/components/bom/section-heading";
 import { communityStats, umbrella } from "@/lib/content";
+import { loadCommunityCounts } from "@/server/community-counts";
 import { INSTAGRAM, PARTNER_EMAIL, WHATSAPP_INVITE } from "@/lib/venue";
 import { teamStrip } from "@/domain/team";
 import { publicTeam } from "@/server/team";
@@ -20,7 +21,8 @@ export const revalidate = 60;
 export default async function AboutUsPage() {
   const [subs, roles] = await Promise.all([publicSubCommunities().listActive(), publicTeam().list()]);
   const founders = teamStrip(roles);
-  const stats = communityStats(subs.length);
+  const counts = await loadCommunityCounts(subs.length);
+  const stats = communityStats(counts);
   return (
     <main className="mx-auto max-w-6xl space-y-16 px-4 py-12">
       <section className="grid items-center gap-10 md:grid-cols-2">
@@ -30,7 +32,7 @@ export default async function AboutUsPage() {
           <div>
             <div className="text-muted-foreground max-w-xl space-y-4">
               <p>We build a structured place to play: from relaxed weekly Ranked sessions to an official path toward national and regional tournaments.</p>
-              <p>It started in 2026 when friends began gathering to battle. What began as a small meetup is now 50+ active members, {subs.length} sub komunitas, a regular schedule, and a leaderboard open to everyone. We believe Medan deserves its own stage on the Indonesian Beyblade X map.</p>
+              <p>It started in 2026 when friends began gathering to battle. What began as a small meetup is now {counts.members} active members, {subs.length} sub communities, a regular schedule, and a leaderboard open to everyone. We believe Medan deserves its own stage on the Indonesian Beyblade X map.</p>
             </div>
             <ul aria-label="At a glance" className="mt-6 flex flex-wrap gap-2">
               {stats.map((t) => <li key={t}><Badge variant="outline" className="px-3 py-1 text-sm">{t}</Badge></li>)}
@@ -42,12 +44,12 @@ export default async function AboutUsPage() {
 
       <section aria-labelledby="path">
         <SectionHeading id="path">Competition path</SectionHeading>
-        <CompetitionLadder bullets={false} />
+        <CompetitionLadder details={false} />
       </section>
 
       <section aria-labelledby="sub-komunitas">
-        <SectionHeading id="sub-komunitas" className="mb-0">{subs.length} Sub Komunitas</SectionHeading>
-        <p className="text-muted-foreground mt-2 max-w-xl text-sm">Satu aturan main untuk semua sub komunitas. Poin dari semua gathering masuk satu leaderboard.</p>
+        <SectionHeading id="sub-komunitas" className="mb-0">{subs.length} Sub Communities</SectionHeading>
+        <p className="text-muted-foreground mt-2 max-w-xl text-sm">One rulebook for every sub community. Points from every gathering go into one leaderboard.</p>
       <div className="mt-10"><SubCommunityChart subs={subs} /></div>
       <ul className="mt-6 grid gap-2 md:grid-cols-3">
         {umbrella.map((u) => (
@@ -67,10 +69,10 @@ export default async function AboutUsPage() {
         <SectionHeading id="join">Join us</SectionHeading>
         <p className="max-w-xl">New to this? Just come to a weekly Ranked session. Bring your bey and we&apos;ll help with the rest.</p>
         <div className="mt-4 flex flex-wrap gap-3">
-          <Button size="lg" asChild><Link href="/membership">Daftar Membership</Link></Button>
+          <Button size="lg" asChild><Link href="/membership">Join Membership</Link></Button>
           {WHATSAPP_INVITE && (
             <Button size="lg" className="bg-[#25D366] text-black hover:bg-[#1EBE5A]" asChild>
-              <a href={WHATSAPP_INVITE} target="_blank" rel="noopener noreferrer"><WhatsappIcon />Join Grup WhatsApp</a>
+              <a href={WHATSAPP_INVITE} target="_blank" rel="noopener noreferrer"><WhatsappIcon />Join the WhatsApp group</a>
             </Button>
           )}
           <Button size="lg" variant="outline" asChild>

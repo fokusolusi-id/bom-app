@@ -5,7 +5,7 @@ export type TierLabel = Tier | "Unrank";
 export const TIER_LABELS: readonly TierLabel[] = ["Unrank", ...TIERS];
 
 export function parseTierLabel(value: unknown): TierLabel {
-  if (typeof value !== "string" || !(TIER_LABELS as readonly string[]).includes(value)) throw new Error("Jenis kompetisi tidak valid");
+  if (typeof value !== "string" || !(TIER_LABELS as readonly string[]).includes(value)) throw new Error("Invalid competition type");
   return value as TierLabel;
 }
 

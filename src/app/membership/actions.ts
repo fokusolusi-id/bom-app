@@ -20,6 +20,6 @@ export async function registerMember(_prev: FormState<RegisteredMember>, formDat
     after(() => sendRegistrationEmail(input, bomId));
     return { ok: true, data: { bomId, bladerName: input.bladerName } };
   } catch (e) {
-    return { error: e instanceof Error ? e.message : "Terjadi kesalahan" };
+    return { error: e instanceof Error ? e.message : "Something went wrong" };
   }
 }

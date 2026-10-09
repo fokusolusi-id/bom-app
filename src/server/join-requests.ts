@@ -13,12 +13,12 @@ export interface JoinRequestRepository {
 }
 
 const ERRORS: Record<string, string> = {
-  rate_limited: "Terlalu banyak pendaftaran. Coba lagi nanti.",
-  duplicate_whatsapp: "Nomor WhatsApp ini sudah terdaftar. Hubungi pengurus lewat grup WhatsApp.",
-  guardian_required: "Nama dan WhatsApp wali wajib untuk usia di bawah 12.",
-  consent_required: "Setujui pernyataan pembayaran untuk lanjut.",
-  proof_required: "Upload screenshot bukti pembayaran.",
-  ids_exhausted: "BOM ID penuh. Hubungi pengurus.",
+  rate_limited: "Too many sign-ups. Try again later.",
+  duplicate_whatsapp: "This WhatsApp number is already registered. Contact the committee through the WhatsApp group.",
+  guardian_required: "Guardian name and WhatsApp are required for ages under 12.",
+  consent_required: "Accept the payment statement to continue.",
+  proof_required: "Upload a screenshot of your payment.",
+  ids_exhausted: "No BOM IDs left. Contact the committee.",
 };
 
 export function supabaseJoinRequests(client: SupabaseClient): JoinRequestRepository {
@@ -56,18 +56,18 @@ export async function sendRegistrationEmail(input: Registration, bomId: string) 
   const committee = committeeEmail();
   if (!committee) return;
   const lines = [
-    `BOM ID: ${formatBomId(bomId)} (Registered, belum Active)`,
-    `Nama: ${input.fullName}`,
-    `Nama blader: ${input.bladerName}`,
+    `BOM ID: ${formatBomId(bomId)} (Registered, not yet Active)`,
+    `Name: ${input.fullName}`,
+    `Blader name: ${input.bladerName}`,
     `WhatsApp: ${input.whatsapp}`,
-    `Usia: ${input.ageGroup}${input.guardianName ? ` | Wali: ${input.guardianName} ${input.guardianWhatsapp}` : ""}`,
-    `Alamat: ${input.address}`,
-    `Tahu BOM dari: ${input.hearFrom ?? "-"}`,
-    `Izin foto/video: ${input.photoConsent ? "ya" : "tidak"}`,
+    `Age: ${input.ageGroup}${input.guardianName ? ` | Guardian: ${input.guardianName} ${input.guardianWhatsapp}` : ""}`,
+    `Address: ${input.address}`,
+    `Heard about BOM from: ${input.hearFrom ?? "-"}`,
+    `Photo/video consent: ${input.photoConsent ? "yes" : "no"}`,
     "Bukti pembayaran: lihat di /admin/pendaftar",
   ];
   try {
-    await sendEmail({ to: committee, subject: `Pendaftar baru BOM: ${input.bladerName} ${formatBomId(bomId)}`, text: lines.join("\n") });
+    await sendEmail({ to: committee, subject: `New BOM sign-up: ${input.bladerName} ${formatBomId(bomId)}`, text: lines.join("\n") });
   } catch (e) {
     console.error(e);
   }

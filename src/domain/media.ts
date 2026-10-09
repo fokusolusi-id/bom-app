@@ -20,10 +20,10 @@ const VIDEO_FOLDERS: MediaFolder[] = ["news"];
 export function mediaExtension(contentType: unknown, folder: MediaFolder): string {
   const video = typeof contentType === "string" ? VIDEO_TYPES[contentType] : undefined;
   if (VIDEO_FOLDERS.includes(folder)) {
-    if (!video) throw new Error("Format video harus MP4 atau WebM");
+    if (!video) throw new Error("Video must be MP4 or WebM");
     return video;
   }
-  if (video) throw new Error("Video hanya untuk bagian What's new");
+  if (video) throw new Error("Video is only for What's new");
   return imageExtension(contentType);
 }
 
@@ -31,7 +31,7 @@ export const isVideoPath = (path: string) => /\.(mp4|webm)$/i.test(path);
 
 export function imageExtension(contentType: unknown): string {
   const ext = typeof contentType === "string" ? IMAGE_TYPES[contentType] : undefined;
-  if (!ext) throw new Error("Format foto harus JPG, PNG, atau WebP");
+  if (!ext) throw new Error("Photo must be JPG, PNG or WebP");
   return ext;
 }
 
@@ -40,7 +40,7 @@ export function parseImagePath(raw: unknown, folder: MediaFolder): string | null
   if (raw === null || raw === undefined || raw === "") return null;
   const exts = VIDEO_FOLDERS.includes(folder) ? "mp4|webm" : "jpg|png|webp";
   const pattern = new RegExp(`^${folder}/${FILE_NAME[folder]}\\.(${exts})$`);
-  if (typeof raw !== "string" || !pattern.test(raw)) throw new Error("Foto tidak valid");
+  if (typeof raw !== "string" || !pattern.test(raw)) throw new Error("Invalid photo");
   return raw;
 }
 
@@ -49,6 +49,6 @@ const PROOF_PATH = /^proofs\/[0-9a-f-]{36}\.(jpg|png|webp)$/;
 
 /** Storage path of an uploaded payment screenshot, e.g. proofs/<uuid>.png. */
 export function parsePaymentProofPath(raw: unknown): string {
-  if (typeof raw !== "string" || !PROOF_PATH.test(raw)) throw new Error("Upload screenshot bukti pembayaran");
+  if (typeof raw !== "string" || !PROOF_PATH.test(raw)) throw new Error("Upload a screenshot of your payment");
   return raw;
 }

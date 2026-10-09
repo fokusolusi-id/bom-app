@@ -30,13 +30,13 @@ export function ImageUpload({ name, label, defaultPath, prepare }: {
 
   async function upload(file: File) {
     setError(null);
-    if (file.size > MAX_IMAGE_BYTES) return setError("Ukuran foto maksimal 5 MB");
+    if (file.size > MAX_IMAGE_BYTES) return setError("Photo must be at most 5 MB");
     setBusy(true);
     try {
       const target = await prepare(file.type);
       if ("error" in target) return setError(target.error);
       const { error } = await createClient().storage.from(MEDIA_BUCKET).uploadToSignedUrl(target.path, target.token, file, { contentType: file.type });
-      if (error) return setError(`Upload gagal: ${error.message}`);
+      if (error) return setError(`Upload failed: ${error.message}`);
       setPath(target.path);
     } finally {
       setBusy(false);
@@ -52,8 +52,8 @@ export function ImageUpload({ name, label, defaultPath, prepare }: {
         <input type="file" accept={IMAGE_ACCEPT} disabled={busy} aria-label={label} className="text-sm"
           onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; if (f) void upload(f); }} />
       </label>
-      {busy && <span className="text-muted-foreground text-sm">Mengunggah…</span>}
-      {path && !busy && <Button type="button" variant="outline" size="sm" onClick={() => setPath(null)}>Hapus foto</Button>}
+      {busy && <span className="text-muted-foreground text-sm">Uploading…</span>}
+      {path && !busy && <Button type="button" variant="outline" size="sm" onClick={() => setPath(null)}>Remove photo</Button>}
       {error && <span role="alert" className="text-destructive text-sm">{error}</span>}
     </div>
   );
