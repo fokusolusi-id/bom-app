@@ -34,7 +34,7 @@ export default async function AdminSubCommunitiesPage() {
       <ItemGrid>
       {rows.map((s) => (
         <Card key={s.id}>
-          <CardHeader><CardTitle>{s.name}{!s.is_active && <span className="text-muted-foreground ml-2 text-sm">(disembunyikan)</span>}</CardTitle></CardHeader>
+          <CardHeader><CardTitle>{s.name}{!s.is_active && <span className="text-muted-foreground ml-2 text-sm">(hidden)</span>}</CardTitle></CardHeader>
           <CardContent className="space-y-3">
             <SubCommunityForm s={s} />
             <ActionForm action={deleteSubCommunity.bind(null, s.id!)}><Button variant="destructive" size="sm">Delete</Button></ActionForm>

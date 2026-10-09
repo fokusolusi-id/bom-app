@@ -8,7 +8,7 @@ import { createImageUpload, removeMedia } from "@/server/media";
 import { supabaseSiteMedia } from "@/server/site-media";
 
 function revalidate() {
-  revalidatePath("/admin/media");
+  revalidatePath("/admin/home");
   revalidatePath("/");
 }
 

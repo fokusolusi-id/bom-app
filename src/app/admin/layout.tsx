@@ -14,8 +14,7 @@ const sections = [
   ["/admin/komunitas", "Sub Communities"],
   ["/admin/jadwal", "Schedule"],
   ["/admin/tim", "Founding Team"],
-  ["/admin/media", "Slider & Gallery"],
-  ["/admin/sponsor", "Sponsor"],
+  ["/admin/home", "Home"],
   ["/admin/pendaftar", "Sign-ups"],
 ] as const;
 

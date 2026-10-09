@@ -79,7 +79,7 @@ export default async function AdminSchedulePage({ searchParams }: { searchParams
             <CardHeader>
               <CardTitle className="flex flex-wrap items-center gap-2 text-base">
                 {e.tier === "Break" ? <Badge variant="muted">Libur / Break</Badge> : <TierBadge tier={e.tier} className="w-auto" />}{e.name}
-                {!e.is_active && <span className="text-muted-foreground text-sm">(disembunyikan)</span>}
+                {!e.is_active && <span className="text-muted-foreground text-sm">(hidden)</span>}
               </CardTitle>
               <p className="text-muted-foreground text-sm">{when.format(new Date(e.starts_at))} WIB · {e.community?.name ?? "BOM"}</p>
             </CardHeader>
