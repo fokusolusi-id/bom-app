@@ -81,6 +81,10 @@
 @utility chamfer-lg {
   clip-path: polygon(var(--chamfer-l) 0, 100% 0, 100% calc(100% - var(--chamfer-l)), calc(100% - var(--chamfer-l)) 100%, 0 100%, 0 var(--chamfer-l));
 }
+/* Chamfer that scales with the box: the path's 24px cut on a 96px tile is 25%, so a small tile keeps the same shape. */
+@utility chamfer-tile {
+  clip-path: polygon(25% 0, 100% 0, 100% 75%, 75% 100%, 0 100%, 0 25%);
+}
 @utility tabular { font-variant-numeric: tabular-nums; }
 @utility text-two-tone {
   background: var(--bom-two-tone);

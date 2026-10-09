@@ -14,15 +14,23 @@ export const umbrella = [
 
 /** [tier, how often, what it is]. Points are not listed here: the ladder shows each level's multiplier from the domain. */
 export const competitionPath = [
-  ["Unrank", "Random, TBA", ["A try corner and beginner battles.", "Parents and kids are welcome.", "Open to everyone, no requirements."]],
-  ["Ranked", "Weekly", ["Held at every sub community.", "Every result feeds one shared leaderboard.", "The main engine of BOM."]],
-  ["Cup", "Monthly", ["Official BOM brackets.", "Winners earn a place on the Wall of Fame."]],
-  ["Major", "Quarterly", ["A big tournament with sponsor prizes.", "Played in the official Beyblade X 3-on-3 format."]],
-  ["Championship", "Yearly", ["The flagship event of the year.", "Open to other Sumatera communities.", "The champion represents BOM at G1."]],
+  ["Unrank", "Random, TBA", ["Fun special-format events: gimmick battles, team play and mini tourneys.", "Themed battles and experimental game modes.", "No ranking points: enjoy the game, test new strategies and have fun with the community."]],
+  ["Ranked", "Weekly", ["A regular gathering with consistent prizes and ranking points.", "Ideal for climbing the rankings and winning the season prize.", "Can also serve as a qualifier for larger tournaments."]],
+  ["Cup", "Monthly", ["Official BOM brackets with bigger ranking points.", "Winners earn a place on the Wall of Fame."]],
+  ["Major", "Quarterly", ["High-stakes competition with big prizes and sponsor support.", "Attracts the best players and shapes the leaderboard standings.", "Played in the official Beyblade X 3-on-3 format."]],
+  ["Championship", "Yearly", ["The highest and most prestigious tier of BOM tournaments.", "Bladers from across Sumatera, with exclusive prizes.", "The champion represents BOM at G1."]],
 ] as const;
 
 /** Headline numbers for the homepage and About BOM. Member count is a hand-kept estimate. */
 export const communityStats = (subCount: number) => ["50+ active members", `${subCount} Sub Komunitas`, "Ranked every week", "Cup every month"];
+
+/** The same headline numbers split into the figure and its label, so the homepage can highlight the figure. */
+export const communityNumbers = (subCount: number) => [
+  { value: "50+", label: "active members" },
+  { value: String(subCount), label: "Sub Komunitas" },
+  { value: "Weekly", label: "Ranked" },
+  { value: "Monthly", label: "Cup" },
+];
 
 export const MEMBERSHIP_FEE = "IDR 100.000";
 

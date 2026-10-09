@@ -42,7 +42,7 @@ export default async function AboutUsPage() {
 
       <section aria-labelledby="path">
         <SectionHeading id="path">Competition path</SectionHeading>
-        <CompetitionLadder />
+        <CompetitionLadder bullets={false} />
       </section>
 
       <section aria-labelledby="sub-komunitas">
