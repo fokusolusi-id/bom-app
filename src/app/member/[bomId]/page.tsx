@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PointsChart } from "@/components/bom/points-chart";
@@ -11,6 +10,7 @@ import { formatBomId, matchHistory, normalizeBomId, pointsSeries, winRate, type 
 import { publicMatchHistory } from "@/server/matches";
 import { publicPlayers } from "@/server/players";
 import { publicPlacements } from "@/server/tournaments";
+import { BomIdBadge } from "@/components/bom/bom-id-badge";
 
 export const revalidate = 60;
 
@@ -66,7 +66,7 @@ export default async function MemberPage({ params }: Props) {
         <Avatar className="size-16"><AvatarFallback className="text-2xl">{player.name[0]}</AvatarFallback></Avatar>
         <div>
           <h1 className="text-4xl leading-none">{player.name}</h1>
-          <Badge variant="secondary" className="mt-2">{formatBomId(player.bom_id)}</Badge>
+          <BomIdBadge id={player.bom_id} className="mt-2" />
         </div>
       </div>
 

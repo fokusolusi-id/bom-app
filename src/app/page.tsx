@@ -2,8 +2,8 @@ import { ArrowRight, CalendarDays, MapPin, Trophy } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { InstagramIcon, WhatsappIcon } from "@/components/bom/brand-icons";
-import { GalleryGrid } from "@/components/bom/gallery-grid";
-import { HeroSlider } from "@/components/bom/hero-slider";
+import { GallerySlideshow } from "@/components/bom/gallery-slideshow";
+import { NewsSlider } from "@/components/bom/news-slider";
 import { CompetitionPath } from "@/components/bom/competition-path";
 import { RibbonBanner } from "@/components/bom/ribbon-banner";
 import { SectionHeading } from "@/components/bom/section-heading";
@@ -26,14 +26,12 @@ const EVENT_LIMIT = 3;
 export default async function Home() {
   const now = new Date();
   const media = publicSiteMedia();
-  const [subs, result, slides, gallery] = await Promise.all([
-    publicSubCommunities().listActive(), latestResult(todayWib(now)), media.list("hero"), media.list("gallery"),
+  const [subs, result, news, gallery] = await Promise.all([
+    publicSubCommunities().listActive(), latestResult(todayWib(now)), media.list("news"), media.list("gallery"),
   ]);
   const events = await loadUpcomingEvents(subs, EVENT_LIMIT, now);
 
   return (
-    <>
-    {slides.length > 0 && <HeroSlider slides={slides.map((m) => ({ kind: m.kind, path: m.path, caption: m.caption }))} />}
     <main className="mx-auto max-w-6xl space-y-16 px-4 py-12">
       <section className="grid items-center gap-10 md:grid-cols-2">
         <div className="space-y-6">
@@ -118,9 +116,19 @@ export default async function Home() {
       </section>
 
       {gallery.length > 0 && (
-        <section aria-labelledby="gallery">
-          <SectionHeading id="gallery">Gallery</SectionHeading>
-          <GalleryGrid items={gallery.map((m) => ({ path: m.path, caption: m.caption }))} />
+        // Breaks out of the page column so the slideshow spans the whole screen.
+        <section aria-labelledby="gallery" className="relative left-1/2 w-screen -translate-x-1/2">
+          <SectionHeading id="gallery" className="mx-auto max-w-6xl px-4">Gallery</SectionHeading>
+          <GallerySlideshow items={gallery.flatMap((m) => (m.path ? [{ path: m.path, caption: m.caption }] : []))} />
+        </section>
+      )}
+
+      {news.length > 0 && (
+        <section aria-labelledby="whats-new">
+          <SectionHeading id="whats-new">What&apos;s new</SectionHeading>
+          <div className="overflow-hidden rounded-lg border">
+          <NewsSlider items={news.flatMap((m) => (m.kind === "image" ? [] : [{ kind: m.kind, path: m.path, youtubeId: m.youtube_id, caption: m.caption }]))} />
+          </div>
         </section>
       )}
 
@@ -146,6 +154,5 @@ export default async function Home() {
         </div>
       </section>
     </main>
-    </>
   );
 }

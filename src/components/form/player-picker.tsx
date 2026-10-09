@@ -4,12 +4,16 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { NativeSelect } from "@/components/ui/input";
 import { formatBomId } from "@/domain/profile";
+import { BomIdBadge } from "@/components/bom/bom-id-badge";
+import { MediaUpload } from "@/components/form/media-upload";
+import { PHOTO_FIELD } from "@/domain/team";
 
-export type PickerPlayer = { id: string; name: string; bomId: string };
+export type PickerPlayer = { id: string; name: string; bomId: string; photo: string | null };
 
-/** Ordered multi-select of existing players. Submits one hidden `name` input per pick, in order. */
-export function PlayerPicker({ name, players, defaultIds = [], max }: {
+/** Ordered multi-select of existing players. Submits one hidden `name` input per pick, in order, plus each pick's photo (`photo:<id>`). */
+export function PlayerPicker({ name, players, defaultIds = [], max, preparePhoto }: {
   name: string; players: PickerPlayer[]; defaultIds?: string[]; max: number;
+  preparePhoto: (contentType: string) => Promise<{ path: string; token: string } | { error: string }>;
 }) {
   const [ids, setIds] = useState(defaultIds);
   const anchor = useRef<HTMLSpanElement>(null);
@@ -35,11 +39,14 @@ export function PlayerPicker({ name, players, defaultIds = [], max }: {
         {ids.map((id, i) => {
           const p = byId.get(id);
           return (
-            <li key={id} className="bg-secondary flex items-center gap-2 rounded px-2 py-1 text-sm">
-              <span className="flex-1 truncate font-bold">{p?.name ?? "Unknown"} <span className="text-muted-foreground font-normal">{p ? formatBomId(p.bomId) : ""}</span></span>
-              <Button type="button" variant="ghost" size="sm" disabled={i === 0} onClick={() => move(i, -1)} aria-label="Naikkan"><ArrowUp /></Button>
-              <Button type="button" variant="ghost" size="sm" disabled={i === ids.length - 1} onClick={() => move(i, 1)} aria-label="Turunkan"><ArrowDown /></Button>
-              <Button type="button" variant="ghost" size="sm" onClick={() => setIds((cur) => cur.filter((x) => x !== id))} aria-label="Hapus"><X /></Button>
+            <li key={id} className="bg-secondary space-y-2 rounded px-2 py-2 text-sm">
+              <div className="flex items-center gap-2">
+                <span className="flex-1 truncate font-bold">{p?.name ?? "Unknown"} {p && <BomIdBadge id={p.bomId} className="ml-1 align-middle" />}</span>
+                <Button type="button" variant="ghost" size="sm" disabled={i === 0} onClick={() => move(i, -1)} aria-label="Naikkan"><ArrowUp /></Button>
+                <Button type="button" variant="ghost" size="sm" disabled={i === ids.length - 1} onClick={() => move(i, 1)} aria-label="Turunkan"><ArrowDown /></Button>
+                <Button type="button" variant="ghost" size="sm" onClick={() => setIds((cur) => cur.filter((x) => x !== id))} aria-label="Hapus"><X /></Button>
+              </div>
+              <MediaUpload name={`${PHOTO_FIELD}${id}`} label={`Foto ${p?.name ?? ""}`} defaultPath={p?.photo} prepare={preparePhoto} kind="image" />
             </li>
           );
         })}

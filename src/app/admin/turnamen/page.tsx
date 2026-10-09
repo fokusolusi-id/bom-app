@@ -10,6 +10,7 @@ import { requireAdmin } from "@/server/admin-session";
 import { supabasePlayers } from "@/server/players";
 import { supabaseTournaments } from "@/server/tournaments";
 import { deleteTournament, removePlacement, saveTournament, setPlacement } from "./actions";
+import { AddCard, AdminPage, ItemGrid } from "@/components/admin/admin-page";
 
 export const metadata = { title: "Turnamen | Admin BOM" };
 
@@ -30,11 +31,9 @@ export default async function AdminTournamentsPage() {
   const [tournaments, players] = await Promise.all([supabaseTournaments(supabase).list(), supabasePlayers(supabase).list(1000, { includeRegistered: true })]);
   const byId = new Map(players.map((p) => [p.id, p]));
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader><CardTitle>Turnamen baru</CardTitle></CardHeader>
-        <CardContent><TournamentForm /></CardContent>
-      </Card>
+    <AdminPage title="Turnamen" hint="Catat turnamen dan posisi akhir pemain.">
+      <AddCard title="Turnamen baru"><TournamentForm /></AddCard>
+      <ItemGrid>
       {tournaments.map((t) => (
         <Card key={t.id}>
           <CardHeader><CardTitle className="flex items-center gap-3"><TierBadge tier={t.tier} className="w-auto" />{t.name}</CardTitle></CardHeader>
@@ -58,6 +57,7 @@ export default async function AdminTournamentsPage() {
           </CardContent>
         </Card>
       ))}
-    </div>
+      </ItemGrid>
+    </AdminPage>
   );
 }

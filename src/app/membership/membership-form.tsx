@@ -9,11 +9,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input, NativeSelect, Textarea } from "@/components/ui/input";
 import { AGE_GROUPS, HEAR_FROM } from "@/domain/join-request";
-import { formatBomId } from "@/domain/profile";
 import { MEMBERSHIP_FEE } from "@/lib/content";
 import { ADMIN_WHATSAPP, ADMIN_WHATSAPP_URL, PAYMENT_ACCOUNT } from "@/lib/venue";
 import { ProofUpload } from "@/components/form/proof-upload";
 import { registerMember } from "./actions";
+import { BomIdBadge } from "@/components/bom/bom-id-badge";
 
 type Props = { since: string; nextEvent: string | null; venue: string; whatsappInvite?: string };
 
@@ -32,7 +32,7 @@ export function MembershipForm({ since, nextEvent, venue, whatsappInvite }: Prop
         <Card className="border-primary">
           <CardHeader>
             <CardTitle>Welcome, {state.data.bladerName}!</CardTitle>
-            <CardDescription>Your BOM ID is {formatBomId(state.data.bomId)}. Save it, take a screenshot: there is no login yet.</CardDescription>
+            <CardDescription>Your BOM ID is <BomIdBadge id={state.data.bomId} />. Save it, take a screenshot: there is no login yet.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
             <p>We received your payment screenshot. The committee will verify it and contact you on WhatsApp for your Emoney Membership Card.</p>

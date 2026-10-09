@@ -262,7 +262,7 @@ import { parseTeamRoleInput, teamStrip } from "@/domain/team";
 describe("team roles", () => {
   const role = (o: Record<string, unknown>, ids: unknown[] = []) => parseTeamRoleInput((k) => o[k], () => ids);
   it("parses a role and dedupes members", () => {
-    expect(role({ title: " Finance & Data ", sort_order: "5" }, [A, B, A, "x"])).toEqual({ title: "Finance & Data", sort_order: 5, playerIds: [A, B] });
+    expect(role({ title: " Finance & Data ", sort_order: "5" }, [A, B, A, "x"])).toEqual({ title: "Finance & Data", sort_order: 5, playerIds: [A, B], photos: {} });
   });
   it("requires a title", () => expect(() => role({ title: " " })).toThrow());
   it("rejects too many members", () => {
@@ -292,25 +292,55 @@ describe("parseImagePath founding-team", () => {
 
 import { parseSiteMediaInput } from "@/domain/site-media";
 import { mediaExtension } from "@/domain/media";
+import { parseYoutubeId } from "@/domain/youtube";
 
 describe("site media", () => {
   const item = (o: Record<string, unknown>) => parseSiteMediaInput((k) => o[k]);
-  it("parses a hero video", () => {
-    expect(item({ section: "hero", path: `hero/${A}.mp4`, caption: " Teaser ", sort_order: "1", is_active: "on" }))
-      .toEqual({ section: "hero", path: `hero/${A}.mp4`, kind: "video", caption: "Teaser", sort_order: 1, is_active: true });
+  it("parses an uploaded news video", () => {
+    expect(item({ section: "news", path: `news/${A}.mp4`, caption: " Teaser ", sort_order: "1", is_active: "on" }))
+      .toEqual({ section: "news", path: `news/${A}.mp4`, youtube_id: null, kind: "video", caption: "Teaser", sort_order: 1, is_active: true });
+  });
+  it("parses a YouTube link and drops the path", () => {
+    expect(item({ section: "news", youtube_url: "https://youtu.be/dQw4w9WgXcQ", is_active: "on" }))
+      .toMatchObject({ kind: "youtube", path: null, youtube_id: "dQw4w9WgXcQ" });
   });
   it("parses a gallery photo and treats a missing checkbox as hidden", () => {
     expect(item({ section: "gallery", path: "gallery/gallery-01.jpg" })).toMatchObject({ kind: "image", caption: null, is_active: false });
   });
-  it("rejects video in the gallery, wrong folder and missing file", () => {
+  it("rejects bad combinations", () => {
     expect(() => item({ section: "gallery", path: `gallery/${A}.mp4` })).toThrow();
-    expect(() => item({ section: "hero", path: "gallery/gallery-01.jpg" })).toThrow();
-    expect(() => item({ section: "hero", path: "" })).toThrow();
-    expect(() => item({ section: "other", path: "hero/x.jpg" })).toThrow();
+    expect(() => item({ section: "news", path: "gallery/gallery-01.jpg" })).toThrow();
+    expect(() => item({ section: "news", path: `news/${A}.jpg` })).toThrow();
+    expect(() => item({ section: "news", path: `news/${A}.mp4`, youtube_url: "https://youtu.be/dQw4w9WgXcQ" })).toThrow();
+    expect(() => item({ section: "news", youtube_url: "https://example.com/x" })).toThrow();
+    expect(() => item({ section: "news" })).toThrow();
+    expect(() => item({ section: "gallery" })).toThrow();
+    expect(() => item({ section: "hero", path: "hero/x.jpg" })).toThrow();
   });
-  it("allows video uploads only for the hero", () => {
-    expect(mediaExtension("video/mp4", "hero")).toBe("mp4");
+  it("allows video uploads only for news and photos everywhere else", () => {
+    expect(mediaExtension("video/mp4", "news")).toBe("mp4");
+    expect(() => mediaExtension("image/png", "news")).toThrow();
     expect(() => mediaExtension("video/mp4", "gallery")).toThrow();
     expect(mediaExtension("image/png", "gallery")).toBe("png");
+  });
+});
+
+describe("parseYoutubeId", () => {
+  it.each([
+    "https://www.youtube.com/watch?v=dQw4w9WgXcQ", "https://youtu.be/dQw4w9WgXcQ?t=5", "youtube.com/shorts/dQw4w9WgXcQ",
+    "https://m.youtube.com/watch?v=dQw4w9WgXcQ&list=x", "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ", "https://www.youtube.com/live/dQw4w9WgXcQ",
+  ])("extracts the id from %s", (u) => expect(parseYoutubeId(u)).toBe("dQw4w9WgXcQ"));
+  it.each(["", "https://vimeo.com/123", "https://www.youtube.com/watch?v=short", "https://evil.com/watch?v=dQw4w9WgXcQ", "not a url", null])("rejects %s", (u) => expect(parseYoutubeId(u)).toBeNull());
+});
+
+describe("team role photos", () => {
+  const parse = (entries: [string, unknown][], ids: string[]) => parseTeamRoleInput((k) => ({ title: "T" })[k as "title"], () => ids, entries);
+  it("keeps photos only for picked members and clears on empty", () => {
+    expect(parse([[`photo:${A}`, "founding-team/dewa.jpg"], [`photo:${B}`, "founding-team/x.jpg"], ["title", "x"]], [A]).photos)
+      .toEqual({ [A]: "founding-team/dewa.jpg" });
+    expect(parse([[`photo:${A}`, ""]], [A]).photos).toEqual({ [A]: null });
+  });
+  it("rejects a photo path outside founding-team", () => {
+    expect(() => parse([[`photo:${A}`, "gallery/x.jpg"]], [A])).toThrow();
   });
 });

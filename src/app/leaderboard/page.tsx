@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatBomId } from "@/domain/profile";
 import { RibbonBanner } from "@/components/bom/ribbon-banner";
 import { publicPlayers } from "@/server/players";
+import { BomIdBadge } from "@/components/bom/bom-id-badge";
 
 export const metadata = { title: "Leaderboard | BOM" };
 export const revalidate = 30;
@@ -30,7 +30,7 @@ export default async function LeaderboardPage() {
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <Avatar><AvatarFallback>{p.name[0]}</AvatarFallback></Avatar>
-                    <div><div className="font-bold">{p.name}</div><Link href={`/member/${p.bom_id.toLowerCase()}`} aria-label={`Profil ${p.name} ${formatBomId(p.bom_id)}`}><Badge variant="secondary" className="hover:bg-primary hover:text-primary-foreground transition-colors">{formatBomId(p.bom_id)}</Badge></Link></div>
+                    <div><div className="font-bold">{p.name}</div><Link href={`/member/${p.bom_id.toLowerCase()}`} aria-label={`Profil ${p.name} ${formatBomId(p.bom_id)}`}><BomIdBadge id={p.bom_id} className="hover:bg-white transition-colors" /></Link></div>
                   </div>
                 </TableCell>
                 <TableCell className="tabular text-success text-right">{p.wins}</TableCell>

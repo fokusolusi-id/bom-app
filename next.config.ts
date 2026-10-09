@@ -7,11 +7,11 @@ const csp = [
   "default-src 'self'",
   `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https://*.supabase.co",
+  "img-src 'self' data: blob: https://*.supabase.co https://i.ytimg.com",
   "font-src 'self' data:",
   "media-src 'self' https://*.supabase.co", // slider videos from the media bucket
   "connect-src 'self' https://*.supabase.co wss://*.supabase.co" + (isDev ? " ws:" : ""),
-  "frame-src https://www.google.com", // Google Maps embed on /about-us
+  "frame-src https://www.google.com https://www.youtube-nocookie.com", // Google Maps embed on /about-us, YouTube in What's new
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",
