@@ -17,11 +17,11 @@ function RoleForm({ role, players }: { role?: TeamRole; players: PickerPlayer[] 
     <ActionForm action={saveTeamRole} resetOnSuccess={!role} className="grid gap-3 sm:grid-cols-[1fr_8rem]">
       {role?.id && <input type="hidden" name="id" value={role.id} />}
       <Input name="title" defaultValue={role?.title} placeholder="Role title (English)" aria-label="Role title" maxLength={60} required />
-      <Input name="sort_order" type="number" min={0} max={999} defaultValue={role?.sort_order ?? 0} aria-label="Urutan" />
+      <Input name="sort_order" type="number" min={0} max={999} defaultValue={role?.sort_order ?? 0} aria-label="Order" />
       <div className="sm:col-span-2">
         <PlayerPicker name="player_id" players={players} defaultIds={role?.members.map((m) => m.playerId)} max={MAX_ROLE_MEMBERS} preparePhoto={prepareMemberPhotoUpload} />
       </div>
-      <Button type="submit" className="sm:col-span-2">{role ? "Simpan" : "Tambah peran"}</Button>
+      <Button type="submit" className="sm:col-span-2">{role ? "Save" : "Add role"}</Button>
     </ActionForm>
   );
 }
@@ -31,15 +31,15 @@ export default async function AdminTeamPage() {
   const [roles, all] = await Promise.all([supabaseTeam(supabase).list(), supabasePlayers(supabase).list(1000, { includeRegistered: true })]);
   const players: PickerPlayer[] = all.filter((p) => p.id).map((p) => ({ id: p.id!, name: p.name, bomId: p.bom_id, photo: p.photo_path ?? null }));
   return (
-    <AdminPage title="Founding Team" hint="Pilih anggota dari pemain yang ada; foto diatur tepat di bawah nama anggota. Urutannya sama dengan di halaman About.">
-      <AddCard title="Peran baru"><RoleForm players={players} /></AddCard>
+    <AdminPage title="Founding Team" hint="Pick members from existing players; each member's photo is set right under their name. The order matches the About page.">
+      <AddCard title="New role"><RoleForm players={players} /></AddCard>
       <ItemGrid>
       {roles.map((r) => (
         <Card key={r.id}>
           <CardHeader><CardTitle>{r.title}</CardTitle></CardHeader>
           <CardContent className="space-y-3">
             <RoleForm role={r} players={players} />
-            <ActionForm action={deleteTeamRole.bind(null, r.id!)}><Button variant="destructive" size="sm">Hapus</Button></ActionForm>
+            <ActionForm action={deleteTeamRole.bind(null, r.id!)}><Button variant="destructive" size="sm">Delete</Button></ActionForm>
           </CardContent>
         </Card>
       ))}

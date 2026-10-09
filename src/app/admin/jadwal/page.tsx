@@ -14,36 +14,36 @@ import { supabaseSubCommunities } from "@/server/sub-communities";
 import { cn } from "@/lib/utils";
 import { deleteScheduleEvent, saveScheduleEvent } from "./actions";
 
-export const metadata = { title: "Jadwal | Admin BOM" };
+export const metadata = { title: "Schedule | Admin BOM" };
 
-const when = new Intl.DateTimeFormat("id-ID", { weekday: "short", day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "Asia/Jakarta" });
+const when = new Intl.DateTimeFormat("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "Asia/Jakarta" });
 const DAY = 86_400_000;
 
 function EventForm({ e, communities, defaultCommunity }: { e?: ScheduleEventView; communities: { id: string; name: string }[]; defaultCommunity?: string }) {
   return (
     <ActionForm action={saveScheduleEvent} resetOnSuccess={!e} className="grid gap-3 sm:grid-cols-2">
       {e?.id && <input type="hidden" name="id" value={e.id} />}
-      <Input name="name" defaultValue={e?.name} placeholder="Nama event (mis. Weekly Ranked)" aria-label="Nama event" maxLength={80} required className="sm:col-span-2" />
-      <NativeSelect name="sub_community_id" aria-label="Komunitas" defaultValue={e ? (e.sub_community_id ?? "") : (defaultCommunity ?? "")}>
-        <option value="">Semua komunitas (BOM)</option>
+      <Input name="name" defaultValue={e?.name} placeholder="Event name (e.g. Weekly Ranked)" aria-label="Event name" maxLength={80} required className="sm:col-span-2" />
+      <NativeSelect name="sub_community_id" aria-label="Community" defaultValue={e ? (e.sub_community_id ?? "") : (defaultCommunity ?? "")}>
+        <option value="">All communities (BOM)</option>
         {communities.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
       </NativeSelect>
-      <NativeSelect name="tier" aria-label="Jenis kompetisi" defaultValue={e?.tier ?? "Ranked"}>
+      <NativeSelect name="tier" aria-label="Competition type" defaultValue={e?.tier ?? "Ranked"}>
         {EVENT_TYPES.map((t) => <option key={t} value={t}>{t === "Break" ? "Libur / Break" : `BOM ${t}`}</option>)}
       </NativeSelect>
-      <label className="text-muted-foreground flex flex-col gap-1 text-xs">Tanggal dan jam (WIB)
+      <label className="text-muted-foreground flex flex-col gap-1 text-xs">Date and time (WIB)
         <Input name="starts_at" type="datetime-local" defaultValue={e ? isoToWibLocal(e.starts_at) : ""} required className="text-base text-white" />
       </label>
-      <label className="text-muted-foreground flex flex-col gap-1 text-xs">Tempat
+      <label className="text-muted-foreground flex flex-col gap-1 text-xs">Place
         <Input name="place" defaultValue={e?.place ?? VENUE} maxLength={120} required className="text-base text-white" />
       </label>
-      <label className="flex items-center gap-2 text-sm sm:col-span-2"><input type="checkbox" name="is_active" defaultChecked={e?.is_active ?? true} /> Tampil di website</label>
-      <Button type="submit" className="sm:col-span-2">{e ? "Simpan" : "Tambah"}</Button>
+      <label className="flex items-center gap-2 text-sm sm:col-span-2"><input type="checkbox" name="is_active" defaultChecked={e?.is_active ?? true} /> Show on website</label>
+      <Button type="submit" className="sm:col-span-2">{e ? "Save" : "Add"}</Button>
     </ActionForm>
   );
 }
 
-/** Filter value for events that belong to BOM as a whole rather than one sub komunitas. */
+/** Filter value for events that belong to BOM as a whole rather than one sub community. */
 const BOM = "bom";
 
 export default async function AdminSchedulePage({ searchParams }: { searchParams: Promise<{ c?: string }> }) {
@@ -60,10 +60,10 @@ export default async function AdminSchedulePage({ searchParams }: { searchParams
   const requested = (await searchParams).c;
   const filter = requested === BOM || communities.some((c) => c.id === requested) ? requested! : (communities[0]?.id ?? BOM);
   const shown = events.filter((e) => (filter === BOM ? e.sub_community_id === null : e.sub_community_id === filter));
-  const chips = [...communities.map((c) => ({ key: c.id, label: c.name })), { key: BOM, label: "BOM (semua)" }];
+  const chips = [...communities.map((c) => ({ key: c.id, label: c.name })), { key: BOM, label: "BOM (all)" }];
   return (
-    <AdminPage title="Jadwal" hint="Event di halaman Schedule dan beranda. Menampilkan 30 hari terakhir sampai satu tahun ke depan.">
-      <nav aria-label="Komunitas" className="flex flex-wrap gap-2">
+    <AdminPage title="Schedule" hint="Events on the Schedule page and the homepage. Shows the last 30 days up to one year ahead.">
+      <nav aria-label="Community" className="flex flex-wrap gap-2">
         {chips.map((c) => (
           <Link
             key={c.key} href={`/admin/jadwal?c=${c.key}`} aria-current={c.key === filter ? "page" : undefined}
@@ -71,8 +71,8 @@ export default async function AdminSchedulePage({ searchParams }: { searchParams
           >{c.label}</Link>
         ))}
       </nav>
-      <AddCard title="Event baru"><EventForm communities={communities} defaultCommunity={filter === BOM ? "" : filter} /></AddCard>
-      {shown.length === 0 && <p className="text-muted-foreground text-sm">Belum ada event untuk pilihan ini.</p>}
+      <AddCard title="New event"><EventForm communities={communities} defaultCommunity={filter === BOM ? "" : filter} /></AddCard>
+      {shown.length === 0 && <p className="text-muted-foreground text-sm">No events for this selection yet.</p>}
       <ItemGrid>
         {shown.map((e) => (
           <Card key={e.id}>
@@ -85,7 +85,7 @@ export default async function AdminSchedulePage({ searchParams }: { searchParams
             </CardHeader>
             <CardContent className="space-y-3">
               <EventForm e={e} communities={communities} />
-              <ActionForm action={deleteScheduleEvent.bind(null, e.id!)}><Button variant="destructive" size="sm">Hapus</Button></ActionForm>
+              <ActionForm action={deleteScheduleEvent.bind(null, e.id!)}><Button variant="destructive" size="sm">Delete</Button></ActionForm>
             </CardContent>
           </Card>
         ))}

@@ -28,13 +28,13 @@ export function ProofUpload({ name }: { name: string }) {
   async function upload(file: File) {
     setError(null);
     const ext = EXT[file.type];
-    if (!ext) return setError("Format harus JPG, PNG, atau WebP");
-    if (file.size > MAX_IMAGE_BYTES) return setError("Ukuran file maksimal 5 MB");
+    if (!ext) return setError("Format must be JPG, PNG or WebP");
+    if (file.size > MAX_IMAGE_BYTES) return setError("The file must be at most 5 MB");
     setBusy(true);
     try {
       const target = `proofs/${crypto.randomUUID()}.${ext}`;
       const { error } = await createClient().storage.from(PROOF_BUCKET).upload(target, file, { contentType: file.type });
-      if (error) return setError(`Upload gagal: ${error.message}`);
+      if (error) return setError(`Upload failed: ${error.message}`);
       setPath(target);
       setFileName(file.name);
     } finally {
@@ -61,7 +61,7 @@ export function ProofUpload({ name }: { name: string }) {
           onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; if (f) void upload(f); }}
         />
       )}
-      {busy && <span className="text-muted-foreground text-sm">Mengunggah…</span>}
+      {busy && <span className="text-muted-foreground text-sm">Uploading…</span>}
       {error && <span role="alert" className="text-destructive block text-sm">{error}</span>}
     </div>
   );

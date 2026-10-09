@@ -1,6 +1,8 @@
+import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { MemberCard } from "@/components/bom/member-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PointsChart } from "@/components/bom/points-chart";
@@ -8,6 +10,8 @@ import { RibbonBanner } from "@/components/bom/ribbon-banner";
 import { TierBadge } from "@/components/bom/tier-badge";
 import { formatBomId, matchHistory, normalizeBomId, pointsSeries, winRate, type Result } from "@/domain/profile";
 import { publicMatchHistory } from "@/server/matches";
+import { SITE_URL } from "@/lib/venue";
+import { qrDataUrl } from "@/server/qr";
 import { publicPlayers } from "@/server/players";
 import { publicPlacements } from "@/server/tournaments";
 import { BomIdBadge } from "@/components/bom/bom-id-badge";
@@ -16,11 +20,12 @@ export const revalidate = 60;
 
 type Props = { params: Promise<{ bomId: string }> };
 
-const date = new Intl.DateTimeFormat("id-ID", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Jakarta" });
+const sinceFmt = new Intl.DateTimeFormat("en-GB", { month: "2-digit", year: "numeric", timeZone: "Asia/Jakarta" });
+const date = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Jakarta" });
 const fmt = (iso: string) => (iso ? date.format(new Date(iso)) : "-");
 
 const resultStyle: Record<Result, string> = { win: "text-success", loss: "text-destructive", draw: "text-muted-foreground" };
-const resultLabel: Record<Result, string> = { win: "Menang", loss: "Kalah", draw: "Seri" };
+const resultLabel: Record<Result, string> = { win: "Win", loss: "Loss", draw: "Draw" };
 
 async function loadPlayer(raw: string) {
   const id = normalizeBomId(decodeURIComponent(raw));
@@ -44,6 +49,8 @@ export default async function MemberPage({ params }: Props) {
   if (decodeURIComponent(bomId) !== canonical) permanentRedirect(`/member/${canonical}`);
 
   // Sample players (no Supabase) have no id and no history.
+  const qr = await qrDataUrl(`${SITE_URL}/member/${canonical}`);
+  const since = player.created_at ? sinceFmt.format(new Date(player.created_at)).replace("/", ".") : "-";
   const [matches, placements, rank] = await Promise.all([
     playerId ? publicMatchHistory().listFinishedForPlayer(playerId) : [],
     playerId ? publicPlacements().placementsForPlayer(playerId) : [],
@@ -52,22 +59,27 @@ export default async function MemberPage({ params }: Props) {
   const history = matchHistory(matches, playerId);
   const series = [{ at: "", points: 0 }, ...pointsSeries(matches, playerId)];
   const stats = [
-    ["Poin", player.points],
-    ["Peringkat", `#${rank}`],
-    ["Menang", player.wins],
-    ["Kalah", player.losses],
+    ["Points", player.points],
+    ["Rank", `#${rank}`],
+    ["Wins", player.wins],
+    ["Losses", player.losses],
     ["Win rate", `${winRate(player.wins, player.losses)}%`],
   ] as const;
 
   return (
-    <main className="mx-auto max-w-4xl space-y-6 px-4 py-10">
-      <RibbonBanner>Profil Member</RibbonBanner>
-      <div className="flex items-center gap-4">
-        <Avatar className="size-16"><AvatarFallback className="text-2xl">{player.name[0]}</AvatarFallback></Avatar>
-        <div>
-          <h1 className="text-4xl leading-none">{player.name}</h1>
-          <BomIdBadge id={player.bom_id} className="mt-2" />
+    <main className="mx-auto max-w-5xl space-y-6 px-4 py-10">
+      <div className="grid items-center gap-8 md:grid-cols-[1fr_26rem]">
+        <div className="space-y-5">
+          <div className="space-y-3">
+            <Link href="/leaderboard" className="text-muted-foreground hover:text-primary flex w-fit items-center gap-1 text-sm"><ArrowLeft className="size-4" aria-hidden />Back to leaderboard</Link>
+            <RibbonBanner>Member profile</RibbonBanner>
+          </div>
+          <div>
+            <h1 className="text-4xl leading-none">{player.name}</h1>
+            <BomIdBadge id={player.bom_id} className="mt-2" />
+          </div>
         </div>
+        <MemberCard bomId={player.bom_id} bladerName={player.name} since={since} qr={qr} />
       </div>
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
@@ -82,16 +94,16 @@ export default async function MemberPage({ params }: Props) {
       </div>
 
       <Card>
-        <CardHeader><CardTitle>Grafik poin</CardTitle></CardHeader>
+        <CardHeader><CardTitle>Points chart</CardTitle></CardHeader>
         <CardContent><PointsChart series={series} /></CardContent>
       </Card>
 
       <Card>
-        <CardHeader><CardTitle>Turnamen</CardTitle></CardHeader>
+        <CardHeader><CardTitle>Tournaments</CardTitle></CardHeader>
         <CardContent>
-          {placements.length === 0 ? <p className="text-muted-foreground text-sm">Belum ada hasil turnamen.</p> : (
+          {placements.length === 0 ? <p className="text-muted-foreground text-sm">No tournament results yet.</p> : (
             <Table>
-              <TableHeader><TableRow><TableHead>Turnamen</TableHead><TableHead>Tier</TableHead><TableHead>Tanggal</TableHead><TableHead className="text-right">Posisi</TableHead></TableRow></TableHeader>
+              <TableHeader><TableRow><TableHead>Tournament</TableHead><TableHead>Tier</TableHead><TableHead>Date</TableHead><TableHead className="text-right">Place</TableHead></TableRow></TableHeader>
               <TableBody>
                 {placements.map((p) => (
                   <TableRow key={p.tournament.id}>
@@ -108,14 +120,14 @@ export default async function MemberPage({ params }: Props) {
       </Card>
 
       <Card>
-        <CardHeader><CardTitle>Riwayat match</CardTitle></CardHeader>
+        <CardHeader><CardTitle>Match history</CardTitle></CardHeader>
         <CardContent>
-          {history.length === 0 ? <p className="text-muted-foreground text-sm">Belum ada match selesai.</p> : (
+          {history.length === 0 ? <p className="text-muted-foreground text-sm">No finished matches yet.</p> : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Tanggal</TableHead><TableHead>Tier</TableHead><TableHead>Lawan</TableHead>
-                  <TableHead className="text-right">Skor</TableHead><TableHead>Hasil</TableHead><TableHead>Combo</TableHead>
+                  <TableHead>Date</TableHead><TableHead>Tier</TableHead><TableHead>Opponent</TableHead>
+                  <TableHead className="text-right">Score</TableHead><TableHead>Result</TableHead><TableHead>Combo</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -137,7 +149,7 @@ export default async function MemberPage({ params }: Props) {
           )}
         </CardContent>
       </Card>
-      {!live && <p className="text-muted-foreground text-xs">Data contoh. Set NEXT_PUBLIC_SUPABASE_URL untuk data asli.</p>}
+      {!live && <p className="text-muted-foreground text-xs">Sample data. Set NEXT_PUBLIC_SUPABASE_URL for real data.</p>}
     </main>
   );
 }

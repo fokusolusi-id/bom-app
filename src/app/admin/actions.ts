@@ -17,7 +17,7 @@ export async function createMatch(_prev: FormState, formData: FormData): Promise
     const players = await supabasePlayers(supabase).list(1000, { includeRegistered: true });
     const a = players.find((p) => p.id === input.aId);
     const b = players.find((p) => p.id === input.bId);
-    if (!a || !b) throw new Error("Blader tidak ditemukan");
+    if (!a || !b) throw new Error("Blader not found");
     await supabaseMatches(supabase).create(input, { a: a.name, b: b.name });
     revalidatePath("/admin");
   });

@@ -42,6 +42,6 @@ export async function prepareMemberPhotoUpload(contentType: string): Promise<{ p
   try {
     return await createImageUpload(supabase, "founding-team", contentType);
   } catch (e) {
-    return { error: e instanceof Error ? e.message : "Gagal menyiapkan upload" };
+    return { error: e instanceof Error ? e.message : "Could not prepare the upload" };
   }
 }

@@ -1,6 +1,5 @@
-import { Mail } from "lucide-react";
 import Image from "next/image";
-import { INSTAGRAM, PARTNER_EMAIL } from "@/lib/venue";
+import { INSTAGRAM } from "@/lib/venue";
 import { InstagramIcon } from "./brand-icons";
 
 export function SiteFooter() {
@@ -16,10 +15,6 @@ export function SiteFooter() {
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-            <a href={`mailto:${PARTNER_EMAIL}`} className="hover:text-primary flex items-center gap-2 text-sm text-white">
-              <Mail className="size-5 shrink-0" aria-hidden />
-              {PARTNER_EMAIL}
-            </a>
             <a href={`https://www.instagram.com/${INSTAGRAM}`} target="_blank" rel="noopener noreferrer" className="hover:text-primary flex items-center gap-2 text-sm text-white">
               <InstagramIcon />
               @{INSTAGRAM}

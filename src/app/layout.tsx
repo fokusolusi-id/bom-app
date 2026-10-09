@@ -24,7 +24,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="id" className="dark">
+    <html lang="en" className="dark">
       <body>
         <HideOnAdmin><SiteHeader /></HideOnAdmin>
         {children}

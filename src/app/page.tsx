@@ -16,6 +16,7 @@ import type { EventType } from "@/domain/event";
 import { formatWhen, todayWib } from "@/domain/next-event";
 import { EVENT_STYLE, EVENT_TYPE_LABEL } from "@/lib/event-style";
 import { communityNumbers } from "@/lib/content";
+import { loadCommunityCounts } from "@/server/community-counts";
 import { DIRECTIONS_URL, GATHERING_SCHEDULE, INSTAGRAM, PARTNER_EMAIL, VENUE, WHATSAPP_INVITE } from "@/lib/venue";
 import { loadUpcomingEvents } from "@/server/events";
 import { latestResult } from "@/server/latest-result";
@@ -34,7 +35,7 @@ export default async function Home() {
   const [subs, result, news, gallery, sponsors] = await Promise.all([
     publicSubCommunities().listActive(), latestResult(todayWib(now)), media.list("news"), media.list("gallery"), publicSponsors().list(),
   ]);
-  const events = await loadUpcomingEvents(EVENT_LIMIT, now);
+  const [events, counts] = await Promise.all([loadUpcomingEvents(EVENT_LIMIT, now), loadCommunityCounts(subs.length, now)]);
 
   return (
     <main className="mx-auto max-w-6xl space-y-16 px-4 py-12">
@@ -92,7 +93,7 @@ export default async function Home() {
           <Card>
             <CardContent className="space-y-3">
               <p className="text-lg">Next event is being scheduled. Join the group to hear first.</p>
-              {WHATSAPP_INVITE && <Button className="bg-[#25D366] text-black hover:bg-[#1EBE5A]" asChild><a href={WHATSAPP_INVITE} target="_blank" rel="noopener noreferrer"><WhatsappIcon />Join Grup WhatsApp</a></Button>}
+              {WHATSAPP_INVITE && <Button className="bg-[#25D366] text-black hover:bg-[#1EBE5A]" asChild><a href={WHATSAPP_INVITE} target="_blank" rel="noopener noreferrer"><WhatsappIcon />Join the WhatsApp group</a></Button>}
             </CardContent>
           </Card>
         )}
@@ -122,7 +123,7 @@ export default async function Home() {
       </section>
 
       <section aria-labelledby="sub-komunitas">
-        <SectionHeading id="sub-komunitas">Sub Komunitas</SectionHeading>
+        <SectionHeading id="sub-komunitas">Sub Communities</SectionHeading>
         <SubCommunityChart subs={subs} />
         <Button variant="outline" className="mt-6" asChild><Link href="/about-bom">About BOM<ArrowRight aria-hidden /></Link></Button>
       </section>
@@ -130,7 +131,7 @@ export default async function Home() {
       <section aria-labelledby="numbers">
         <SectionHeading id="numbers">By the numbers</SectionHeading>
         <ul className="grid grid-cols-2 gap-3 md:grid-cols-4">
-          {communityNumbers(subs.length).map(({ value, label }) => (
+          {communityNumbers(counts).map(({ value, label }) => (
             <li key={label}>
               <Card className="h-full items-center justify-center gap-1 py-6 text-center">
                 <span className="font-display text-4xl leading-none font-black text-white italic uppercase md:text-5xl">{value}</span>

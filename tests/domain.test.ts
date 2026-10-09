@@ -429,3 +429,67 @@ describe("one event per day", () => {
     expect(eventUsesBomLogo("Ranked")).toBe(false);
   });
 });
+
+import { rankedDays } from "@/domain/event";
+
+describe("rankedDays", () => {
+  const at = (day: string, tier: "Ranked" | "Cup" | "Unrank") => ({ starts_at: `${day}T11:00:00.000Z`, tier });
+  it("counts the different days with a Ranked event, not the events", () => {
+    expect(rankedDays([at("2026-10-10", "Ranked"), at("2026-10-10", "Ranked"), at("2026-10-15", "Ranked"), at("2026-10-12", "Unrank"), at("2026-10-14", "Cup")])).toBe(2);
+    expect(rankedDays([])).toBe(0);
+  });
+});
+
+import { parsePlayerInput } from "@/domain/player-input";
+import { ranks, searchPlayers, sortPlayers } from "@/domain/leaderboard";
+
+describe("leaderboard search and sort", () => {
+  const rows = [
+    { bom_id: "BoM-012", name: "Sora", points: 50 },
+    { bom_id: "BoM-001", name: "Dewa", points: 90 },
+    { bom_id: "BoM-100", name: "alpha", points: 90 },
+    { bom_id: "BoM-007", name: "Zenn X", points: 10 },
+  ];
+  it("finds by blader name or BOM ID, however the ID is typed", () => {
+    expect(searchPlayers(rows, "sor").map((p) => p.name)).toEqual(["Sora"]);
+    expect(searchPlayers(rows, "bom-012").map((p) => p.name)).toEqual(["Sora"]);
+    expect(searchPlayers(rows, "bom 7").map((p) => p.name)).toEqual(["Zenn X"]);
+    expect(searchPlayers(rows, "  ")).toHaveLength(4);
+    expect(searchPlayers(rows, "nobody")).toEqual([]);
+  });
+  it("sorts by points (highest first, ties by name), by name, and by BOM ID number", () => {
+    expect(sortPlayers(rows, "points", "desc").map((p) => p.name)).toEqual(["alpha", "Dewa", "Sora", "Zenn X"]);
+    expect(sortPlayers(rows, "name", "asc").map((p) => p.name)).toEqual(["alpha", "Dewa", "Sora", "Zenn X"]);
+    expect(sortPlayers(rows, "name", "desc").map((p) => p.name)).toEqual(["Zenn X", "Sora", "Dewa", "alpha"]);
+    expect(sortPlayers(rows, "bom_id", "asc").map((p) => p.bom_id)).toEqual(["BoM-001", "BoM-007", "BoM-012", "BoM-100"]);
+  });
+  it("numbers players by position in the default order, so equal points still get 1, 2, 3", () => {
+    expect([...ranks(rows)].sort((a, b) => a[1] - b[1])).toEqual([["BoM-100", 1], ["BoM-001", 2], ["BoM-012", 3], ["BoM-007", 4]]);
+  });
+});
+
+describe("parsePlayerInput", () => {
+  const ok = { id: A, bom_id: "BoM-012", name: " Sora ", points: "50", wins: "3", losses: "1", status: "active" };
+  const player = (o: Record<string, unknown>) => parsePlayerInput((k) => o[k]);
+  it("parses an edit", () => expect(player(ok)).toEqual({ id: A, bom_id: "BoM-012", name: "Sora", points: 50, wins: 3, losses: 1, status: "active" }));
+  it("rejects bad ids, numbers and status", () => {
+    expect(() => player({ ...ok, id: "x" })).toThrow();
+    expect(() => player({ ...ok, bom_id: "BoM 12!" })).toThrow();
+    expect(() => player({ ...ok, points: "-1" })).toThrow();
+    expect(() => player({ ...ok, wins: "1.5" })).toThrow();
+    expect(() => player({ ...ok, status: "banned" })).toThrow();
+    expect(() => player({ ...ok, name: "" })).toThrow();
+  });
+});
+
+import { POINTS_BY_CATEGORY, POINTS_BY_RANK, POINTS_SIZES } from "@/lib/content";
+
+describe("points table", () => {
+  it("has a value for every participant size in every row", () => {
+    for (const r of [...POINTS_BY_RANK, ...POINTS_BY_CATEGORY]) expect(r.values).toHaveLength(POINTS_SIZES.length);
+  });
+  it("pays more for a better place and for a bigger field", () => {
+    for (let c = 0; c < POINTS_SIZES.length; c++) for (let r = 1; r < POINTS_BY_RANK.length; r++) expect(POINTS_BY_RANK[r - 1].values[c]).toBeGreaterThanOrEqual(POINTS_BY_RANK[r].values[c]);
+    for (const r of POINTS_BY_RANK) for (let c = 1; c < r.values.length; c++) expect(r.values[c]).toBeGreaterThanOrEqual(r.values[c - 1]);
+  });
+});

@@ -17,8 +17,8 @@ import { publicScheduleEvents } from "@/server/schedule-events";
 export const metadata: Metadata = { title: "Schedule | BOM" };
 export const revalidate = 60;
 
-const DAY_NAMES = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"];
-const monthName = new Intl.DateTimeFormat("id-ID", { month: "long", year: "numeric", timeZone: "UTC" });
+const DAY_NAMES = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const monthName = new Intl.DateTimeFormat("en-GB", { month: "long", year: "numeric", timeZone: "UTC" });
 
 function currentMonth(): Month {
   const [year, month] = new Intl.DateTimeFormat("en-CA", { year: "numeric", month: "2-digit", timeZone: "Asia/Jakarta" }).format(new Date()).split("-").map(Number);
@@ -68,12 +68,12 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
   return (
     <main className="mx-auto max-w-6xl px-4 py-12">
       <RibbonBanner>Schedule</RibbonBanner>
-      <p className="text-muted-foreground mt-4 max-w-xl text-sm">Jadwal gathering dan kompetisi BOM. Ikon menunjukkan jenis kompetisi, logo menunjukkan sub komunitas.</p>
+      <p className="text-muted-foreground mt-4 max-w-xl text-sm">BOM gatherings and competitions. The icon shows the competition type and the logo shows the sub community.</p>
 
       <div className="mt-8 flex items-center justify-between">
-        <Link href={`/schedule?m=${prev}`} aria-label="Bulan sebelumnya" className="hover:text-primary p-2"><ChevronLeft /></Link>
+        <Link href={`/schedule?m=${prev}`} aria-label="Previous month" className="hover:text-primary p-2"><ChevronLeft /></Link>
         <h2 className="flex items-center gap-2 text-2xl capitalize md:text-4xl"><CalendarDays className="text-primary size-6 md:size-8" aria-hidden />{monthName.format(new Date(Date.UTC(view.year, view.month - 1, 1)))}</h2>
-        <Link href={`/schedule?m=${next}`} aria-label="Bulan berikutnya" className="hover:text-primary p-2"><ChevronRight /></Link>
+        <Link href={`/schedule?m=${next}`} aria-label="Next month" className="hover:text-primary p-2"><ChevronRight /></Link>
       </div>
 
       {/* md+: month grid. Below md: agenda list of only the days that have an event. */}
@@ -106,7 +106,7 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
           </Card></li>
         ))}
       </ul>
-      {events.length === 0 && <p className="text-muted-foreground mt-6 text-sm">Belum ada jadwal bulan ini.</p>}
+      {events.length === 0 && <p className="text-muted-foreground mt-6 text-sm">No events this month.</p>}
 
       <section aria-labelledby="types" className="mt-16">
         <SectionHeading id="types">Competition types</SectionHeading>

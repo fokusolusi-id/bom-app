@@ -40,7 +40,7 @@ export function MembershipForm({ since, nextEvent, venue, whatsappInvite }: Prop
             <p className="flex items-start gap-2"><MapPin className="text-primary size-5 shrink-0" aria-hidden />{venue}</p>
             {whatsappInvite && (
               <Button className="bg-[#25D366] text-black hover:bg-[#1EBE5A]" asChild>
-                <a href={whatsappInvite} target="_blank" rel="noopener noreferrer"><WhatsappIcon />Join Grup WhatsApp</a>
+                <a href={whatsappInvite} target="_blank" rel="noopener noreferrer"><WhatsappIcon />Join the WhatsApp group</a>
               </Button>
             )}
           </CardContent>
@@ -52,7 +52,7 @@ export function MembershipForm({ since, nextEvent, venue, whatsappInvite }: Prop
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Daftar BOM</CardTitle>
+        <CardTitle>Join BOM</CardTitle>
         <CardDescription>Get your BOM Membership Card, join the leaderboard, and battle at the next Ranked. Fields marked * are required.</CardDescription>
       </CardHeader>
       <CardContent>
@@ -99,7 +99,7 @@ export function MembershipForm({ since, nextEvent, venue, whatsappInvite }: Prop
             <input name="website" tabIndex={-1} autoComplete="off" aria-hidden className="hidden" />
             <div className="bg-muted/40 space-y-2 rounded-md border p-3 text-sm">
               <p className="font-bold">Payment: {MEMBERSHIP_FEE}, paid once</p>
-              <Image src="/print/qris.jpg" alt="QRIS pembayaran BOM" width={740} height={1043} className="mx-auto w-full max-w-xs rounded-md" />
+              <Image src="/print/qris.jpg" alt="BOM payment QRIS" width={740} height={1043} className="mx-auto w-full max-w-xs rounded-md" />
               <p>{PAYMENT_ACCOUNT}</p>
               <p className="text-muted-foreground">
                 Please contact our admin (<a href={ADMIN_WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="text-primary underline">{ADMIN_WHATSAPP}</a>) if you have any question, like wanting to choose a certain number as your ID number or to pick up the card.
@@ -108,11 +108,11 @@ export function MembershipForm({ since, nextEvent, venue, whatsappInvite }: Prop
             <div>
               <label className={label}>Upload screenshot of payment<Req /></label>
               <ProofUpload name="payment_proof" />
-              {proofMissing && <p role="alert" className="text-destructive mt-1 text-sm">Upload screenshot bukti pembayaran.</p>}
+              {proofMissing && <p role="alert" className="text-destructive mt-1 text-sm">Upload a screenshot of your payment.</p>}
             </div>
             <label className="flex items-start gap-2 text-sm"><input type="checkbox" name="accepted_payment" required className="mt-1" /><span>I understand that I will have to pay the exact amount once for this membership ({PAYMENT_ACCOUNT}).<Req /></span></label>
             <label className="text-muted-foreground flex items-start gap-2 text-sm"><input type="checkbox" name="photo_consent" className="mt-1" /><span>Photos and videos of me at events may be posted (optional).</span></label>
-            <Button type="submit" size="lg">{pending ? "Mengirim..." : "Daftar sekarang"}</Button>
+            <Button type="submit" size="lg">{pending ? "Sending..." : "Register now"}</Button>
             <p className="text-muted-foreground text-center text-xs">{MEMBERSHIP_FEE} for the Emoney Membership Card. Takes about 30 seconds.</p>
           </fieldset>
           {state.error && <p role="alert" className="text-destructive text-sm">{state.error}</p>}

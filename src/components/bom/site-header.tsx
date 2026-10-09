@@ -20,7 +20,7 @@ export function SiteHeader() {
           <Image src="/brand/logo-768.png" alt="BOM Beyblade of Medan" width={44} height={44} />
           <span className="font-display text-lg font-extrabold italic uppercase">Beyblade of Medan</span>
         </Link>
-        <nav aria-label="Utama" className="hidden gap-6 md:flex">
+        <nav aria-label="Main" className="hidden gap-6 md:flex">
           {nav.map(([href, label]) => <NavLink key={href} href={href} className={linkCls}>{label}</NavLink>)}
         </nav>
         <details className="relative md:hidden">

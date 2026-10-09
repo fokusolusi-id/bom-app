@@ -9,6 +9,6 @@ export async function toFormState(run: () => Promise<void>, message?: string): P
     await run();
     return { ok: true, message };
   } catch (e) {
-    return { error: e instanceof Error ? e.message : "Terjadi kesalahan" };
+    return { error: e instanceof Error ? e.message : "Something went wrong" };
   }
 }

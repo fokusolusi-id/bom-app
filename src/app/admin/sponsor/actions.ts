@@ -17,7 +17,7 @@ export async function prepareSponsorLogoUpload(contentType: string): Promise<{ p
   try {
     return await createImageUpload(supabase, "sponsors", contentType);
   } catch (e) {
-    return { error: e instanceof Error ? e.message : "Gagal menyiapkan upload" };
+    return { error: e instanceof Error ? e.message : "Could not prepare the upload" };
   }
 }
 
@@ -30,7 +30,7 @@ export async function saveSponsor(_prev: FormState, formData: FormData): Promise
     await repo.save(input);
     if (previous && previous !== input.logo_path) await removeMedia(supabase, [previous]);
     revalidate();
-  }, "Disimpan");
+  }, "Saved");
 }
 
 export async function deleteSponsor(id: string): Promise<FormState> {

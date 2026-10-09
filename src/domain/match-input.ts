@@ -8,10 +8,10 @@ export type MatchInput = {
 export function parseMatchInput(get: (key: string) => unknown): MatchInput {
   const aId = get("a_id");
   const bId = get("b_id");
-  if (!isUuid(aId) || !isUuid(bId)) throw new Error("Pilih dua blader");
-  if (aId === bId) throw new Error("Blader A dan B harus berbeda");
+  if (!isUuid(aId) || !isUuid(bId)) throw new Error("Pick two bladers");
+  if (aId === bId) throw new Error("Blader A and B must be different");
   const target = Number(get("target") ?? 4);
-  if (!Number.isInteger(target) || target < 1 || target > 10) throw new Error("Target harus 1-10");
+  if (!Number.isInteger(target) || target < 1 || target > 10) throw new Error("Target must be 1-10");
   return {
     tier: parseTier(get("tier") ?? "Ranked"),
     round: parseText(get("round"), "Round", 40, "Round 1"),

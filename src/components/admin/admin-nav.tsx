@@ -2,7 +2,7 @@
 
 import { NavLink } from "@/components/nav-link";
 
-/** Horizontal admin navigation, right-aligned next to "Keluar"; scrolls sideways on narrow screens. The current section is orange. */
+/** Horizontal admin navigation, right-aligned next to "Sign out"; scrolls sideways on narrow screens. The current section is orange. */
 export function AdminNav({ sections }: { sections: readonly (readonly [href: string, label: string])[] }) {
   return (
     <nav aria-label="Admin" className="font-display flex min-w-0 flex-1 gap-1 overflow-x-auto text-sm font-bold italic uppercase [scrollbar-width:none] [&>*:first-child]:ml-auto">
