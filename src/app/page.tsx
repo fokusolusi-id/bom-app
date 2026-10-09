@@ -2,6 +2,8 @@ import { ArrowRight, CalendarDays, MapPin, Trophy } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { InstagramIcon, WhatsappIcon } from "@/components/bom/brand-icons";
+import { GalleryGrid } from "@/components/bom/gallery-grid";
+import { HeroSlider } from "@/components/bom/hero-slider";
 import { CompetitionPath } from "@/components/bom/competition-path";
 import { RibbonBanner } from "@/components/bom/ribbon-banner";
 import { SectionHeading } from "@/components/bom/section-heading";
@@ -13,6 +15,7 @@ import { communityStats } from "@/lib/content";
 import { DIRECTIONS_URL, INSTAGRAM, PARTNER_EMAIL, VENUE, WHATSAPP_INVITE } from "@/lib/venue";
 import { loadUpcomingEvents } from "@/server/events";
 import { latestResult } from "@/server/latest-result";
+import { publicSiteMedia } from "@/server/site-media";
 import { publicSubCommunities } from "@/server/sub-communities";
 
 export const revalidate = 60;
@@ -22,10 +25,15 @@ const EVENT_LIMIT = 3;
 
 export default async function Home() {
   const now = new Date();
-  const [subs, result] = await Promise.all([publicSubCommunities().listActive(), latestResult(todayWib(now))]);
+  const media = publicSiteMedia();
+  const [subs, result, slides, gallery] = await Promise.all([
+    publicSubCommunities().listActive(), latestResult(todayWib(now)), media.list("hero"), media.list("gallery"),
+  ]);
   const events = await loadUpcomingEvents(subs, EVENT_LIMIT, now);
 
   return (
+    <>
+    {slides.length > 0 && <HeroSlider slides={slides.map((m) => ({ kind: m.kind, path: m.path, caption: m.caption }))} />}
     <main className="mx-auto max-w-6xl space-y-16 px-4 py-12">
       <section className="grid items-center gap-10 md:grid-cols-2">
         <div className="space-y-6">
@@ -109,6 +117,13 @@ export default async function Home() {
         </ul>
       </section>
 
+      {gallery.length > 0 && (
+        <section aria-labelledby="gallery">
+          <SectionHeading id="gallery">Gallery</SectionHeading>
+          <GalleryGrid items={gallery.map((m) => ({ path: m.path, caption: m.caption }))} />
+        </section>
+      )}
+
       <section aria-labelledby="sponsors">
         <SectionHeading id="sponsors">Supported by</SectionHeading>
         <p className="text-muted-foreground max-w-xl text-sm">
@@ -131,5 +146,6 @@ export default async function Home() {
         </div>
       </section>
     </main>
+    </>
   );
 }

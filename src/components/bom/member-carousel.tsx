@@ -44,13 +44,13 @@ export function MemberCarousel({ members, label = "Founding team" }: { members: 
     >
       <ul ref={track} aria-label={label} className="flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {members.map((m) => (
-          <li key={`${m.role}-${m.bomId}`} className="w-40 shrink-0 snap-start sm:w-48">
+          <li key={`${m.role}-${m.bomId}`} className="w-32 shrink-0 snap-start sm:w-40 lg:w-44">
             <Link
               href={`/member/${m.bomId.toLowerCase()}`}
-              className="bg-card hover:border-primary group relative block aspect-[3/5] overflow-hidden rounded border transition-colors"
+              className="bg-card hover:border-primary group relative block aspect-[2/5] overflow-hidden rounded border transition-colors"
             >
               {m.photo ? (
-                <Image src={mediaUrl(m.photo)} alt="" fill sizes="(min-width: 640px) 192px, 160px" className="object-cover object-top" />
+                <Image src={mediaUrl(m.photo)} alt="" fill sizes="(min-width: 1024px) 176px, (min-width: 640px) 160px, 128px" className="object-cover object-top" />
               ) : (
                 <span className="font-display text-primary/20 absolute inset-0 grid place-items-center text-8xl font-black italic" aria-hidden>{m.name[0]}</span>
               )}
