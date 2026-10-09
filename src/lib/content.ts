@@ -1,3 +1,4 @@
+import type { PointsTable } from "@/domain/points-table";
 export const subs = [
   ["Turcil", "Saturday night"],
   ["DXM", "Saturday night"],
@@ -59,22 +60,23 @@ export const faq = [
   ["Who sees my data?", "Only your blader name, BOM ID and results are public. Your full name, address and WhatsApp stay with the committee."],
 ] as const;
 
-/** Tournament points by placing and by number of participants. Source: the BOM points sheet. */
-export const POINTS_SIZES = ["< 39", "40", "50", "60", "70", "80", "90"] as const;
-export const POINTS_BY_RANK: { label: string; values: readonly number[] }[] = [
-  { label: "1", values: [4, 5, 6, 7, 8, 9, 10] },
-  { label: "2", values: [3, 4, 5, 6, 7, 8, 9] },
-  { label: "3", values: [2, 3, 4, 5, 6, 7, 8] },
-  { label: "4", values: [1, 2, 3, 4.5, 5.5, 6.5, 7] },
-  { label: "5", values: [0, 0, 0, 2.5, 3.5, 4.5, 6] },
-  { label: "6", values: [0, 0, 0, 2, 3, 4, 5] },
-  { label: "7", values: [0, 0, 0, 1.5, 2, 3, 4] },
-  { label: "8", values: [0, 0, 0, 1, 1.5, 2, 3] },
-];
-/** Extra categories, shown below the ranks. */
-export const POINTS_BY_CATEGORY: { label: string; values: readonly number[] }[] = [
-  { label: "Participant", values: [0.25, 0.35, 0.45, 0.55, 0.65, 0.75, 1] },
-  { label: "Top Cut", values: [0.5, 0.65, 0.75, 1, 1.25, 1.5, 2] },
-  { label: "Tiger King", values: [1, 1.1, 1.2, 1.3, 1.4, 1.5, 1.5] },
-];
-export const POINTS_NOTE = "Positions 1-4 do not get points for Top Cut.";
+/** Default "How points are distributed" table, used until an admin edits it (and if it cannot be loaded). Source: the BOM points sheet. */
+export const DEFAULT_POINTS_TABLE: PointsTable = {
+  sizes: ["< 39", "40", "50", "60", "70", "80", "90"],
+  ranks: [
+    { label: "1", values: [4, 5, 6, 7, 8, 9, 10] },
+    { label: "2", values: [3, 4, 5, 6, 7, 8, 9] },
+    { label: "3", values: [2, 3, 4, 5, 6, 7, 8] },
+    { label: "4", values: [1, 2, 3, 4.5, 5.5, 6.5, 7] },
+    { label: "5", values: [0, 0, 0, 2.5, 3.5, 4.5, 6] },
+    { label: "6", values: [0, 0, 0, 2, 3, 4, 5] },
+    { label: "7", values: [0, 0, 0, 1.5, 2, 3, 4] },
+    { label: "8", values: [0, 0, 0, 1, 1.5, 2, 3] },
+  ],
+  categories: [
+    { label: "Participant", values: [0.25, 0.35, 0.45, 0.55, 0.65, 0.75, 1] },
+    { label: "Top Cut", values: [0.5, 0.65, 0.75, 1, 1.25, 1.5, 2] },
+    { label: "Tiger King", values: [1, 1.1, 1.2, 1.3, 1.4, 1.5, 1.5] },
+  ],
+  note: "Positions 1-4 do not get points for Top Cut.",
+};

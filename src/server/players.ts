@@ -10,7 +10,7 @@ export interface PlayerRepository {
   /** Active players by points. Admin screens pass `includeRegistered` to also pick not-yet-active members. */
   list(limit?: number, opts?: { includeRegistered?: boolean }): Promise<Player[]>;
   setStatus(playerId: string, status: PlayerStatus): Promise<void>;
-  /** Admin edit of a player's name, BOM ID, record and status. */
+  /** Admin edit of a player's name, BOM ID and status. Their record is never touched here. */
   update(input: PlayerInput): Promise<void>;
   /** Case-insensitive: "bom-001" finds "BoM-001". */
   getByBomId(bomId: string): Promise<Player | null>;
@@ -61,10 +61,10 @@ export function supabasePlayers(client: SupabaseClient): PlayerRepository {
 
 // Used when Supabase env vars are not set (local preview).
 export const samplePlayers: Player[] = [
-  { bom_id: "BOM-0001", name: "Rakha", points: 1240, wins: 31, losses: 6 },
-  { bom_id: "BOM-0007", name: "Dimas", points: 1105, wins: 28, losses: 8 },
-  { bom_id: "BOM-0012", name: "Fadil", points: 980, wins: 24, losses: 9 },
-  { bom_id: "BOM-0003", name: "Putra", points: 915, wins: 22, losses: 11 },
+  { bom_id: "BOM-0001", name: "Rakha", points: 1240 },
+  { bom_id: "BOM-0007", name: "Dimas", points: 1105 },
+  { bom_id: "BOM-0012", name: "Fadil", points: 980 },
+  { bom_id: "BOM-0003", name: "Putra", points: 915 },
 ];
 
 export function memoryPlayers(players: Player[] = samplePlayers): PlayerRepository {

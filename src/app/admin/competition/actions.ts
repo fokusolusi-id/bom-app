@@ -1,10 +1,12 @@
 "use server";
 import { revalidatePath } from "next/cache";
 import { parsePlacementInput } from "@/domain/result";
+import { parsePointsTable } from "@/domain/points-table";
 import { isUuid } from "@/domain/validation";
 import { toFormState, type FormState } from "@/lib/form-state";
 import { requireAdmin } from "@/server/admin-session";
 import { supabaseResults } from "@/server/results";
+import { supabaseSettings } from "@/server/settings";
 
 function revalidate() {
   revalidatePath("/admin/competition");
@@ -27,4 +29,13 @@ export async function removePlacement(eventId: string, playerId: string): Promis
     await supabaseResults(supabase).removePlacement(eventId, playerId);
     revalidate();
   });
+}
+
+export async function savePointsTable(_prev: FormState, formData: FormData): Promise<FormState> {
+  const supabase = await requireAdmin();
+  return toFormState(async () => {
+    await supabaseSettings(supabase).savePointsTable(parsePointsTable((k) => formData.get(k)));
+    revalidatePath("/admin/competition");
+    revalidatePath("/leaderboard");
+  }, "Saved");
 }

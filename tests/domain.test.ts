@@ -1,50 +1,24 @@
 import { describe, expect, it } from "vitest";
-import { formatBomId, matchHistory, normalizeBomId, pointsSeries, rankOf, resultFor, winRate } from "@/domain/profile";
+import { formatBomId, normalizeBomId, rankOf } from "@/domain/profile";
 import { parsePlacementInput } from "@/domain/result";
-import type { Match } from "@/domain/types";
 import { nextWeekly, upcomingEvents } from "@/domain/next-event";
 import { monthKey, monthWeeks, parseMonth, parseWeekday, shiftMonth, weekdayOf } from "@/domain/schedule";
-import { parseMatchInput } from "@/domain/match-input";
-import { clampScore, outcome, pointsFor, tierMultiplier } from "@/domain/scoring";
+import { tierMultiplier } from "@/domain/scoring";
 import { parseTier, parseTierLabel, usesBomLogo } from "@/domain/tier";
 import { eventUsesBomLogo, isoToWibLocal, parseEventInput, pickOnePerDay, wibDay, wibLocalToIso, wibTime } from "@/domain/event";
 
 const A = "11111111-1111-1111-1111-111111111111";
 const B = "22222222-2222-2222-2222-222222222222";
-const input = (o: Record<string, unknown>) => parseMatchInput((k) => o[k]);
 
 describe("scoring", () => {
-  it("awards 30/10 for Ranked", () => expect(pointsFor("Ranked")).toEqual({ winner: 30, loser: 10 }));
-  it.each([["Cup", 60, 20], ["Major", 90, 30], ["Championship", 120, 40]] as const)("scales %s to %i/%i", (t, winner, loser) => expect(pointsFor(t)).toEqual({ winner, loser }));
   it("multiplies 1x, 2x, 3x, 4x up the ladder", () => {
     expect((["Ranked", "Cup", "Major", "Championship"] as const).map(tierMultiplier)).toEqual([1, 2, 3, 4]);
-  });
-  it("clamps scores at zero and truncates", () => {
-    expect(clampScore(-3)).toBe(0);
-    expect(clampScore(2.9)).toBe(2);
-    expect(clampScore(NaN)).toBe(0);
-  });
-  it("detects outcome", () => {
-    expect(outcome(3, 1)).toBe("a");
-    expect(outcome(1, 3)).toBe("b");
-    expect(outcome(2, 2)).toBe("draw");
   });
 });
 
 describe("parseTier", () => {
   it("accepts known tiers", () => expect(parseTier("Cup")).toBe("Cup"));
   it("rejects unknown", () => expect(() => parseTier("Casual")).toThrow());
-});
-
-describe("parseMatchInput", () => {
-  it("applies defaults", () => {
-    expect(input({ a_id: A, b_id: B })).toMatchObject({ tier: "Ranked", round: "Round 1", stadium: "Stadium 1", target: 4 });
-  });
-  it("rejects same player", () => expect(() => input({ a_id: A, b_id: A })).toThrow());
-  it("rejects bad ids", () => expect(() => input({ a_id: "x", b_id: B })).toThrow());
-  it("rejects bad target", () => expect(() => input({ a_id: A, b_id: B, target: 11 })).toThrow());
-  it("rejects unknown tier", () => expect(() => input({ a_id: A, b_id: B, tier: "Nope" })).toThrow());
-  it("rejects overlong text", () => expect(() => input({ a_id: A, b_id: B, round: "x".repeat(41) })).toThrow());
 });
 
 import { parseSubCommunityInput } from "@/domain/sub-community";
@@ -137,51 +111,11 @@ describe("parseInstagram", () => {
 });
 
 describe("member profile", () => {
-  const P = "11111111-1111-1111-1111-111111111111";
-  const Q = "22222222-2222-2222-2222-222222222222";
-  const m = (o: Partial<Match>): Match => ({
-    id: "m", tier: "Ranked", round: "R1", stadium: "S1", target: 4, a_id: P, b_id: Q,
-    a_name: "A", b_name: "B", a_score: 4, b_score: 2, status: "finished", updated_at: "2026-01-01T00:00:00Z", ...o,
-  });
-
   it.each([["bom-001", "bom-001"], [" BoM-001 ", "BoM-001"], ["a_b", null], ["", null], ["x".repeat(21), null], ["a%b", null]])("normalizeBomId(%j)", (raw, want) => {
     expect(normalizeBomId(raw)).toBe(want);
   });
-
-  it("resultFor works from either side", () => {
-    expect(resultFor(m({}), P)).toBe("win");
-    expect(resultFor(m({}), Q)).toBe("loss");
-    expect(resultFor(m({ a_score: 3, b_score: 3 }), P)).toBe("draw");
-  });
-
-  it("matchHistory flips perspective and sorts newest first", () => {
-    const rows = matchHistory([
-      m({ id: "old", updated_at: "2026-01-01T00:00:00Z" }),
-      m({ id: "new", a_id: Q, b_id: P, a_name: "B", b_name: "A", a_score: 1, b_score: 4, a_combo: "x", b_combo: "y", updated_at: "2026-02-01T00:00:00Z" }),
-      m({ id: "live", status: "live" }),
-    ], P);
-    expect(rows.map((r) => r.id)).toEqual(["new", "old"]);
-    expect(rows[0]).toMatchObject({ opponent: "B", score: 4, opponentScore: 1, result: "win", combo: "y", opponentCombo: "x" });
-  });
-
-  it("pointsSeries replays finish_match, skipping draws and unknown opponents", () => {
-    const series = pointsSeries([
-      m({ id: "1", updated_at: "2026-01-01T00:00:00Z" }),
-      m({ id: "2", tier: "Cup", a_score: 1, b_score: 4, updated_at: "2026-01-02T00:00:00Z" }),
-      m({ id: "3", a_score: 2, b_score: 2, updated_at: "2026-01-03T00:00:00Z" }),
-      m({ id: "4", b_id: null, updated_at: "2026-01-04T00:00:00Z" }),
-    ], P);
-    expect(series.map((s) => s.points)).toEqual([30, 50]);
-  });
-
-  it("formatBomId brackets and upper-cases", () => {
-    expect(formatBomId("BoM-001")).toBe("[BOM-001]");
-    expect(formatBomId("bom-777")).toBe("[BOM-777]");
-  });
-
-  it("winRate and rankOf", () => {
-    expect(winRate(0, 0)).toBe(0);
-    expect(winRate(3, 1)).toBe(75);
+  it("formatBomId shows the id in brackets, upper-case", () => expect(formatBomId("BoM-001")).toBe("[BOM-001]"));
+  it("rankOf shares the better rank on ties", () => {
     expect(rankOf(100, [300, 100, 100, 50])).toBe(2);
   });
 });
@@ -464,27 +398,46 @@ describe("leaderboard search and sort", () => {
 });
 
 describe("parsePlayerInput", () => {
-  const ok = { id: A, bom_id: "BoM-012", name: " Sora ", points: "50", wins: "3", losses: "1", status: "active" };
+  const ok = { id: A, bom_id: "BoM-012", name: " Sora ", points: "999", wins: "9", losses: "9", status: "active" };
   const player = (o: Record<string, unknown>) => parsePlayerInput((k) => o[k]);
-  it("parses an edit", () => expect(player(ok)).toEqual({ id: A, bom_id: "BoM-012", name: "Sora", points: 50, wins: 3, losses: 1, status: "active" }));
-  it("rejects bad ids, numbers and status", () => {
+  it("parses an edit and ignores the record fields", () => expect(player(ok)).toEqual({ id: A, bom_id: "BoM-012", name: "Sora", status: "active" }));
+  it("rejects bad ids and status", () => {
     expect(() => player({ ...ok, id: "x" })).toThrow();
     expect(() => player({ ...ok, bom_id: "BoM 12!" })).toThrow();
-    expect(() => player({ ...ok, points: "-1" })).toThrow();
-    expect(() => player({ ...ok, wins: "1.5" })).toThrow();
     expect(() => player({ ...ok, status: "banned" })).toThrow();
     expect(() => player({ ...ok, name: "" })).toThrow();
   });
 });
 
-import { POINTS_BY_CATEGORY, POINTS_BY_RANK, POINTS_SIZES } from "@/lib/content";
+import { DEFAULT_POINTS_TABLE } from "@/lib/content";
+import { asPointsTable, parsePointsTable } from "@/domain/points-table";
 
 describe("points table", () => {
-  it("has a value for every participant size in every row", () => {
-    for (const r of [...POINTS_BY_RANK, ...POINTS_BY_CATEGORY]) expect(r.values).toHaveLength(POINTS_SIZES.length);
+  const T = DEFAULT_POINTS_TABLE;
+  it("is a valid table with a value for every column in every row", () => {
+    expect(asPointsTable(JSON.parse(JSON.stringify(T)))).toEqual(T);
+    for (const r of [...T.ranks, ...T.categories]) expect(r.values).toHaveLength(T.sizes.length);
   });
   it("pays more for a better place and for a bigger field", () => {
-    for (let c = 0; c < POINTS_SIZES.length; c++) for (let r = 1; r < POINTS_BY_RANK.length; r++) expect(POINTS_BY_RANK[r - 1].values[c]).toBeGreaterThanOrEqual(POINTS_BY_RANK[r].values[c]);
-    for (const r of POINTS_BY_RANK) for (let c = 1; c < r.values.length; c++) expect(r.values[c]).toBeGreaterThanOrEqual(r.values[c - 1]);
+    for (let c = 0; c < T.sizes.length; c++) for (let r = 1; r < T.ranks.length; r++) expect(T.ranks[r - 1].values[c]).toBeGreaterThanOrEqual(T.ranks[r].values[c]);
+    for (const r of T.ranks) for (let c = 1; c < r.values.length; c++) expect(r.values[c]).toBeGreaterThanOrEqual(r.values[c - 1]);
+  });
+  it("rejects a broken table read back from the database", () => {
+    expect(asPointsTable(null)).toBeNull();
+    expect(asPointsTable({ ...T, ranks: [{ label: "1", values: [1] }] })).toBeNull();
+    expect(asPointsTable({ ...T, sizes: [] })).toBeNull();
+  });
+  it("parses the editor's form fields", () => {
+    const form: Record<string, string> = { sizes: "2", ranks: "1", cats: "1", size_0: "< 39", size_1: "40", rank_label_0: "1", rank_0_0: "4", rank_0_1: "5.555", cat_label_0: "Top Cut", cat_0_0: "0.5", cat_0_1: "0.65", note: " n " };
+    expect(parsePointsTable((k) => form[k])).toEqual({
+      sizes: ["< 39", "40"], ranks: [{ label: "1", values: [4, 5.56] }], categories: [{ label: "Top Cut", values: [0.5, 0.65] }], note: "n",
+    });
+  });
+  it("rejects missing, negative or oversized input", () => {
+    const base: Record<string, string> = { sizes: "1", ranks: "1", cats: "0", size_0: "40", rank_label_0: "1", rank_0_0: "4", note: "" };
+    expect(() => parsePointsTable((k) => ({ ...base, rank_0_0: "" })[k])).toThrow();
+    expect(() => parsePointsTable((k) => ({ ...base, rank_0_0: "-1" })[k])).toThrow();
+    expect(() => parsePointsTable((k) => ({ ...base, sizes: "99" })[k])).toThrow();
+    expect(() => parsePointsTable((k) => ({ ...base, size_0: "" })[k])).toThrow();
   });
 });

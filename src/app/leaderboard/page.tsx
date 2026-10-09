@@ -4,6 +4,7 @@ import { PointsTable } from "@/components/bom/points-table";
 import { RibbonBanner } from "@/components/bom/ribbon-banner";
 import { Button } from "@/components/ui/button";
 import { publicPlayers } from "@/server/players";
+import { publicPointsTable } from "@/server/settings";
 
 export const metadata = { title: "Leaderboard | BOM" };
 export const revalidate = 30;
@@ -16,7 +17,7 @@ const prizes = [
 
 export default async function LeaderboardPage() {
   const { repo, live } = publicPlayers();
-  const players = await repo.list(100);
+  const [players, pointsTable] = await Promise.all([repo.list(100), publicPointsTable()]);
   return (
     <main className="mx-auto max-w-4xl px-4 py-10">
       <RibbonBanner>BOM Leaderboard Season 2026</RibbonBanner>
@@ -35,8 +36,8 @@ export default async function LeaderboardPage() {
         </p>
       </section>
 
-      <LeaderboardTable players={players.map(({ bom_id, name, points, wins, losses }) => ({ bom_id, name, points, wins, losses }))} />
-      <PointsTable />
+      <LeaderboardTable players={players.map(({ bom_id, name, points }) => ({ bom_id, name, points }))} />
+      <PointsTable table={pointsTable} />
       {!live && <p className="text-muted-foreground mt-3 text-xs">Sample data. Set NEXT_PUBLIC_SUPABASE_URL for real data.</p>}
     </main>
   );
