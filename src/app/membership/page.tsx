@@ -7,7 +7,6 @@ import { formatWhen } from "@/domain/next-event";
 import { faq, MEMBERSHIP_FEE, memberBenefits, registrationSteps } from "@/lib/content";
 import { VENUE, WHATSAPP_INVITE } from "@/lib/venue";
 import { loadUpcomingEvents } from "@/server/events";
-import { publicSubCommunities } from "@/server/sub-communities";
 import { MembershipForm } from "./membership-form";
 
 export const metadata = { title: "Membership | BOM" };
@@ -16,8 +15,7 @@ export const revalidate = 60;
 const sinceFmt = new Intl.DateTimeFormat("en-GB", { month: "2-digit", year: "numeric", timeZone: "Asia/Jakarta" });
 
 export default async function MembershipPage() {
-  const subs = await publicSubCommunities().listActive();
-  const [next] = await loadUpcomingEvents(subs, 1);
+  const [next] = await loadUpcomingEvents(1);
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-12">

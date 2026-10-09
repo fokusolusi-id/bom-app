@@ -16,18 +16,20 @@ export function nextWeekly(now: Date, weekday: number, time: string): Date {
 export type NextEvent = { title: string; at: Date; hasTime: boolean };
 
 /**
- * Upcoming events, soonest first: the next weekly Ranked sessions (when a weekly slot exists) merged with
- * scheduled tournaments. Tournaments only have a date, so they start at 00:00 WIB and carry `hasTime: false`.
+ * Upcoming events, soonest first: scheduled events (admin calendar), the next weekly Ranked sessions (when a weekly slot
+ * is given) and scheduled tournaments. Tournaments only have a date, so they start at 00:00 WIB and carry `hasTime: false`.
  * A tournament today still counts.
  */
 export function upcomingEvents(opts: {
   now: Date;
   weekly: { weekday: number; time: string } | null;
   tournaments: { name: string; tier: string; held_on: string }[];
+  /** Events with an exact time. Past ones are ignored. */
+  scheduled?: { title: string; at: Date }[];
   limit: number;
 }): NextEvent[] {
-  const { now, weekly, tournaments, limit } = opts;
-  const events: NextEvent[] = [];
+  const { now, weekly, tournaments, limit, scheduled = [] } = opts;
+  const events: NextEvent[] = scheduled.filter((e) => e.at.getTime() >= now.getTime()).map((e) => ({ title: e.title, at: e.at, hasTime: true }));
   if (weekly) {
     let from = now;
     for (let i = 0; i < limit; i++) {

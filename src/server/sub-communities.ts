@@ -14,7 +14,7 @@ export interface SubCommunityRepository {
   remove(id: string): Promise<void>;
 }
 
-const COLS = "id,name,schedule,focus,sort_order,is_active,image_path,instagram";
+const COLS = "id,name,focus,sort_order,is_active,image_path,instagram";
 
 export function supabaseSubCommunities(client: SupabaseClient): SubCommunityRepository {
   const list = async (activeOnly: boolean) => {
@@ -48,7 +48,7 @@ export function supabaseSubCommunities(client: SupabaseClient): SubCommunityRepo
 
 // Used when Supabase env vars are not set (local preview).
 export function staticSubCommunities(): SubCommunityRepository {
-  const rows: SubCommunity[] = subs.map(([name, schedule], i) => ({ name, schedule, focus: null, sort_order: i + 1, is_active: true, image_path: null, instagram: null }));
+  const rows: SubCommunity[] = subs.map(([name], i) => ({ name, focus: null, sort_order: i + 1, is_active: true, image_path: null, instagram: null }));
   const readOnly = async () => { throw new Error("Supabase belum dikonfigurasi"); };
   return { listActive: async () => rows, listAll: async () => rows, get: async () => null, save: readOnly, remove: readOnly };
 }

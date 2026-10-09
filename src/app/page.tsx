@@ -31,7 +31,7 @@ export default async function Home() {
   const [subs, result, news, gallery, sponsors] = await Promise.all([
     publicSubCommunities().listActive(), latestResult(todayWib(now)), media.list("news"), media.list("gallery"), publicSponsors().list(),
   ]);
-  const events = await loadUpcomingEvents(subs, EVENT_LIMIT, now);
+  const events = await loadUpcomingEvents(EVENT_LIMIT, now);
 
   return (
     <main className="mx-auto max-w-6xl space-y-16 px-4 py-12">

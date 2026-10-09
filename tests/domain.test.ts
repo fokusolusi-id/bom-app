@@ -6,7 +6,8 @@ import { nextWeekly, upcomingEvents } from "@/domain/next-event";
 import { monthKey, monthWeeks, parseMonth, parseWeekday, shiftMonth, weekdayOf } from "@/domain/schedule";
 import { parseMatchInput } from "@/domain/match-input";
 import { clampScore, outcome, pointsFor, tierMultiplier } from "@/domain/scoring";
-import { parseTier } from "@/domain/tier";
+import { parseTier, parseTierLabel } from "@/domain/tier";
+import { isoToWibLocal, parseEventInput, wibDay, wibLocalToIso, wibTime } from "@/domain/event";
 
 const A = "11111111-1111-1111-1111-111111111111";
 const B = "22222222-2222-2222-2222-222222222222";
@@ -51,18 +52,17 @@ import { parseSubCommunityInput } from "@/domain/sub-community";
 describe("parseSubCommunityInput", () => {
   const sub = (o: Record<string, unknown>) => parseSubCommunityInput((k) => o[k]);
   it("parses a valid row", () => {
-    expect(sub({ name: " DXM ", schedule: "Sabtu malam", focus: "", sort_order: "2", is_active: "on" }))
-      .toEqual({ name: "DXM", schedule: "Sabtu malam", focus: null, sort_order: 2, is_active: true, image_path: null, instagram: null });
+    expect(sub({ name: " DXM ", focus: "", sort_order: "2", is_active: "on" }))
+      .toEqual({ name: "DXM", focus: null, sort_order: 2, is_active: true, image_path: null, instagram: null });
   });
-  it("requires name and schedule", () => {
-    expect(() => sub({ schedule: "x" })).toThrow();
-    expect(() => sub({ name: "x" })).toThrow();
+  it("requires a name", () => {
+    expect(() => sub({ focus: "x" })).toThrow();
   });
   it("rejects bad id and order", () => {
-    expect(() => sub({ id: "nope", name: "a", schedule: "b" })).toThrow();
-    expect(() => sub({ name: "a", schedule: "b", sort_order: 1000 })).toThrow();
+    expect(() => sub({ id: "nope", name: "a" })).toThrow();
+    expect(() => sub({ name: "a", sort_order: 1000 })).toThrow();
   });
-  it("treats missing checkbox as inactive", () => expect(sub({ name: "a", schedule: "b" }).is_active).toBe(false));
+  it("treats missing checkbox as inactive", () => expect(sub({ name: "a" }).is_active).toBe(false));
 });
 
 import { normalizeWhatsapp, parseRegistration } from "@/domain/join-request";
@@ -366,5 +366,32 @@ describe("sponsors", () => {
     expect(() => sp({ ...base, logo_path: "" })).toThrow();
     expect(() => sp({ ...base, logo_path: "gallery/x.png" })).toThrow();
     expect(() => sp({ ...base, tier: "platinum" })).toThrow();
+  });
+});
+
+describe("schedule events", () => {
+  const ev = (o: Record<string, unknown>) => parseEventInput((k) => o[k]);
+  const base = { name: " Weekly Ranked ", sub_community_id: A, starts_at: "2026-10-10T18:00", place: " Deli Park ", tier: "Ranked", is_active: "on" };
+  it("reads the date and time as Medan time", () => {
+    expect(wibLocalToIso("2026-10-10T18:00")).toBe("2026-10-10T11:00:00.000Z");
+    expect(isoToWibLocal("2026-10-10T11:00:00.000Z")).toBe("2026-10-10T18:00");
+    expect(wibDay("2026-10-10T18:30:00.000Z")).toBe("2026-10-11"); // 01:30 WIB the next day
+    expect(wibTime("2026-10-10T11:05:00.000Z")).toBe("18:05");
+  });
+  it("rejects a bad date", () => {
+    for (const bad of ["", "2026-13-40T99:00", "tomorrow", null]) expect(() => wibLocalToIso(bad)).toThrow();
+  });
+  it("parses an event", () => {
+    expect(ev(base)).toEqual({ sub_community_id: A, name: "Weekly Ranked", starts_at: "2026-10-10T11:00:00.000Z", place: "Deli Park", tier: "Ranked", is_active: true });
+  });
+  it("allows an event without a community and the Unrank level", () => {
+    expect(ev({ ...base, sub_community_id: "", tier: "Unrank" })).toMatchObject({ sub_community_id: null, tier: "Unrank" });
+    expect(parseTierLabel("Championship")).toBe("Championship");
+  });
+  it("rejects bad community, tier, name and place", () => {
+    expect(() => ev({ ...base, sub_community_id: "x" })).toThrow();
+    expect(() => ev({ ...base, tier: "Casual" })).toThrow();
+    expect(() => ev({ ...base, name: "" })).toThrow();
+    expect(() => ev({ ...base, place: "" })).toThrow();
   });
 });
