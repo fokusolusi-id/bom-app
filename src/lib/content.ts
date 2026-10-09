@@ -12,11 +12,13 @@ export const umbrella = [
   "Satu leaderboard untuk semua sub komunitas",
 ];
 
+/** [tier, how often, what it is]. Points are not listed here: the ladder shows each level's multiplier from the domain. */
 export const competitionPath = [
-  ["Ranked", "Weekly", "The entry point and source of seasonal points."],
-  ["Cup", "Monthly", "Official BOM brackets."],
-  ["Major", "Quarterly", "Bigger prizes and sponsors."],
-  ["Championship", "Yearly", "The BOM title."],
+  ["Unrank", "Random, TBA", ["A try corner and beginner battles.", "Parents and kids are welcome.", "Open to everyone, no requirements."]],
+  ["Ranked", "Weekly", ["Held at every sub community.", "Every result feeds one shared leaderboard.", "The main engine of BOM."]],
+  ["Cup", "Monthly", ["Official BOM brackets.", "Winners earn a place on the Wall of Fame."]],
+  ["Major", "Quarterly", ["A big tournament with sponsor prizes.", "Played in the official Beyblade X 3-on-3 format."]],
+  ["Championship", "Yearly", ["The flagship event of the year.", "Open to other Sumatera communities.", "The champion represents BOM at G1."]],
 ] as const;
 
 /** Headline numbers for the homepage and About BOM. Member count is a hand-kept estimate. */

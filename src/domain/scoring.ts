@@ -3,9 +3,11 @@ import type { Tier } from "./tier";
 export const WIN_POINTS = 30;
 export const LOSS_POINTS = 10;
 
-/** Ranked counts once; Cup, Major and Championship count double. */
-export function tierMultiplier(tier: Tier): 1 | 2 {
-  return tier === "Ranked" ? 1 : 2;
+/** Ranked counts 1x, Cup 2x, Major 3x and Championship 4x. */
+const MULTIPLIER: Record<Tier, 1 | 2 | 3 | 4> = { Ranked: 1, Cup: 2, Major: 3, Championship: 4 };
+
+export function tierMultiplier(tier: Tier): 1 | 2 | 3 | 4 {
+  return MULTIPLIER[tier];
 }
 
 export function pointsFor(tier: Tier): { winner: number; loser: number } {

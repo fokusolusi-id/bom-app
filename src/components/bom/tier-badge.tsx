@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { BombIcon, type BombLevel } from "./bomb-icon";
 
 const styles: Record<TierLabel, { variant: "muted" | "secondary" | "outline" | "default" | "destructive"; level: BombLevel }> = {
-  "Casual": { variant: "muted", level: 1 },
+  Unrank: { variant: "muted", level: 1 },
   Ranked: { variant: "secondary", level: 2 },
   Cup: { variant: "outline", level: 3 },
   Major: { variant: "default", level: 4 },

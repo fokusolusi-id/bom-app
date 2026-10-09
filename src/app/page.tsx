@@ -1,19 +1,19 @@
-import { ArrowRight, CalendarDays, MapPin, Trophy } from "lucide-react";
+import { ArrowRight, CalendarDays, Mail, MapPin, Trophy } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { InstagramIcon, WhatsappIcon } from "@/components/bom/brand-icons";
 import { GallerySlideshow } from "@/components/bom/gallery-slideshow";
 import { NewsSlider } from "@/components/bom/news-slider";
-import { CompetitionPath } from "@/components/bom/competition-path";
+import { CompetitionLadder } from "@/components/bom/competition-ladder";
 import { RibbonBanner } from "@/components/bom/ribbon-banner";
 import { SectionHeading } from "@/components/bom/section-heading";
+import { SponsorSlider } from "@/components/bom/sponsor-slider";
 import { SubCommunityChart } from "@/components/bom/sub-community-chart";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatWhen, todayWib } from "@/domain/next-event";
 import { communityStats } from "@/lib/content";
-import { mediaUrl } from "@/lib/media";
-import { DIRECTIONS_URL, INSTAGRAM, PARTNER_EMAIL, VENUE, WHATSAPP_INVITE } from "@/lib/venue";
+import { DIRECTIONS_URL, GATHERING_SCHEDULE, INSTAGRAM, PARTNER_EMAIL, VENUE, WHATSAPP_INVITE } from "@/lib/venue";
 import { loadUpcomingEvents } from "@/server/events";
 import { latestResult } from "@/server/latest-result";
 import { publicSiteMedia } from "@/server/site-media";
@@ -81,7 +81,7 @@ export default async function Home() {
 
       <section aria-labelledby="path">
         <SectionHeading id="path">Competition path</SectionHeading>
-        <CompetitionPath />
+        <CompetitionLadder details={false} />
       </section>
 
       <section aria-labelledby="latest">
@@ -136,25 +136,22 @@ export default async function Home() {
 
       <section aria-labelledby="sponsors">
         <SectionHeading id="sponsors">Supported by</SectionHeading>
-        {sponsors.length > 0 && (
-          <ul className="mb-6 flex flex-wrap items-center gap-4">
-            {sponsors.map((sp) => {
-              const logo = (
-                // eslint-disable-next-line @next/next/no-img-element -- sponsor logos come in any size and format
-                <img src={mediaUrl(sp.logo_path)} alt={sp.name} loading="lazy" className="h-12 w-auto max-w-40 object-contain sm:h-14" />
-              );
-              return (
-                <li key={sp.id} className="rounded-lg bg-white px-5 py-3">
-                  {sp.website ? <a href={sp.website} target="_blank" rel="noopener noreferrer" aria-label={sp.name}>{logo}</a> : logo}
-                </li>
-              );
-            })}
-          </ul>
-        )}
-        <p className="text-muted-foreground max-w-xl text-sm">
-          Want to put your brand in front of Medan&apos;s Beyblade X scene?{" "}
-          <a href={`mailto:${PARTNER_EMAIL}`} className="hover:text-primary text-white underline">{PARTNER_EMAIL}</a>
-        </p>
+        {sponsors.length > 0 && <SponsorSlider sponsors={sponsors.map((sp) => ({ id: sp.id, name: sp.name, logo: sp.logo_path, website: sp.website }))} />}
+        <div className="grid gap-6 md:grid-cols-2">
+          <div className="border-primary space-y-3 border-t-[3px] pt-4">
+            <h3 className="font-display text-2xl font-extrabold italic uppercase">For Business inquiries</h3>
+            <p className="text-muted-foreground">
+              Want to become our sponsor? Put your brand in front of Medan&apos;s Beyblade X community. Get in touch and we will send you our sponsorship options.
+            </p>
+            <p className="flex items-center gap-2"><Mail className="text-primary size-5 shrink-0" aria-hidden /><a href={`mailto:${PARTNER_EMAIL}`} className="hover:text-primary font-bold underline">{PARTNER_EMAIL}</a></p>
+          </div>
+          <div className="border-primary space-y-3 border-t-[3px] pt-4">
+            <h3 className="font-display text-2xl font-extrabold italic uppercase">Gathering Location</h3>
+            <p className="flex items-center gap-2 font-bold"><MapPin className="text-primary size-5 shrink-0" aria-hidden />{VENUE}</p>
+            <p className="flex items-center gap-2"><CalendarDays className="text-primary size-5 shrink-0" aria-hidden />{GATHERING_SCHEDULE}</p>
+            <Button variant="outline" asChild><a href={DIRECTIONS_URL} target="_blank" rel="noopener noreferrer"><MapPin aria-hidden />Get Direction</a></Button>
+          </div>
+        </div>
       </section>
 
       <section aria-labelledby="join" className="bg-card rounded-lg border p-8 text-center">

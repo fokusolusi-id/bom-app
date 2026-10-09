@@ -3,14 +3,13 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { InstagramIcon, WhatsappIcon } from "@/components/bom/brand-icons";
-import { MapPin } from "lucide-react";
 import { MemberCarousel } from "@/components/bom/member-carousel";
-import { CompetitionPath } from "@/components/bom/competition-path";
+import { CompetitionLadder } from "@/components/bom/competition-ladder";
 import { RibbonBanner } from "@/components/bom/ribbon-banner";
 import { SubCommunityChart } from "@/components/bom/sub-community-chart";
 import { SectionHeading } from "@/components/bom/section-heading";
 import { communityStats, umbrella } from "@/lib/content";
-import { DIRECTIONS_URL, INSTAGRAM, MAP_EMBED_URL, PARTNER_EMAIL, VENUE, WHATSAPP_INVITE } from "@/lib/venue";
+import { INSTAGRAM, PARTNER_EMAIL, WHATSAPP_INVITE } from "@/lib/venue";
 import { teamStrip } from "@/domain/team";
 import { publicTeam } from "@/server/team";
 import { publicSubCommunities } from "@/server/sub-communities";
@@ -43,7 +42,7 @@ export default async function AboutUsPage() {
 
       <section aria-labelledby="path">
         <SectionHeading id="path">Competition path</SectionHeading>
-        <CompetitionPath showDescriptions />
+        <CompetitionLadder />
       </section>
 
       <section aria-labelledby="sub-komunitas">
@@ -63,26 +62,6 @@ export default async function AboutUsPage() {
           <MemberCarousel members={founders} />
         </section>
       )}
-
-      <section aria-labelledby="where">
-        <SectionHeading id="where">Where and when</SectionHeading>
-        <div className="grid items-start gap-6 md:grid-cols-2">
-          <div className="space-y-6">
-            <dl className="grid gap-x-6 gap-y-2 sm:grid-cols-[10rem_1fr]">
-              <dt className="text-muted-foreground">Venue</dt><dd className="font-bold">{VENUE}</dd>
-              <dt className="text-muted-foreground">Weekly Ranked</dt><dd className="font-bold">Saturday, 18:00 WIB</dd>
-            </dl>
-            <Button size="lg" asChild><a href={DIRECTIONS_URL} target="_blank" rel="noopener noreferrer"><MapPin aria-hidden />Get Directions</a></Button>
-          </div>
-          <iframe
-            src={MAP_EMBED_URL}
-            title={`Peta lokasi: ${VENUE}`}
-            loading="lazy"
-            referrerPolicy="no-referrer-when-downgrade"
-            className="border-border aspect-4/3 w-full rounded-lg border"
-          />
-        </div>
-      </section>
 
       <section aria-labelledby="join">
         <SectionHeading id="join">Join us</SectionHeading>

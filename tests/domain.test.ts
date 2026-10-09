@@ -5,7 +5,7 @@ import type { Match } from "@/domain/types";
 import { nextWeekly, upcomingEvents } from "@/domain/next-event";
 import { monthKey, monthWeeks, parseMonth, parseWeekday, shiftMonth, weekdayOf } from "@/domain/schedule";
 import { parseMatchInput } from "@/domain/match-input";
-import { clampScore, outcome, pointsFor } from "@/domain/scoring";
+import { clampScore, outcome, pointsFor, tierMultiplier } from "@/domain/scoring";
 import { parseTier } from "@/domain/tier";
 
 const A = "11111111-1111-1111-1111-111111111111";
@@ -14,7 +14,10 @@ const input = (o: Record<string, unknown>) => parseMatchInput((k) => o[k]);
 
 describe("scoring", () => {
   it("awards 30/10 for Ranked", () => expect(pointsFor("Ranked")).toEqual({ winner: 30, loser: 10 }));
-  it.each(["Cup", "Major", "Championship"] as const)("doubles for %s", (t) => expect(pointsFor(t)).toEqual({ winner: 60, loser: 20 }));
+  it.each([["Cup", 60, 20], ["Major", 90, 30], ["Championship", 120, 40]] as const)("scales %s to %i/%i", (t, winner, loser) => expect(pointsFor(t)).toEqual({ winner, loser }));
+  it("multiplies 1x, 2x, 3x, 4x up the ladder", () => {
+    expect((["Ranked", "Cup", "Major", "Championship"] as const).map(tierMultiplier)).toEqual([1, 2, 3, 4]);
+  });
   it("clamps scores at zero and truncates", () => {
     expect(clampScore(-3)).toBe(0);
     expect(clampScore(2.9)).toBe(2);
