@@ -256,3 +256,36 @@ describe("next event", () => {
     expect(upcomingEvents({ now, weekly: null, tournaments: [{ name: "Today", tier: "Cup", held_on: "2026-10-08" }], limit: 3 })[0].hasTime).toBe(false);
   });
 });
+
+import { parseTeamRoleInput, teamStrip } from "@/domain/team";
+
+describe("team roles", () => {
+  const role = (o: Record<string, unknown>, ids: unknown[] = []) => parseTeamRoleInput((k) => o[k], () => ids);
+  it("parses a role and dedupes members", () => {
+    expect(role({ title: " Finance & Data ", sort_order: "5" }, [A, B, A, "x"])).toEqual({ title: "Finance & Data", sort_order: 5, playerIds: [A, B] });
+  });
+  it("requires a title", () => expect(() => role({ title: " " })).toThrow());
+  it("rejects too many members", () => {
+    const many = Array.from({ length: 13 }, (_, i) => `00000000-0000-0000-0000-${String(i).padStart(12, "0")}`);
+    expect(() => role({ title: "x" }, many)).toThrow();
+  });
+  it("flattens roles into a labelled strip", () => {
+    const strip = teamStrip([{ title: "Chair", sort_order: 1, members: [{ playerId: A, name: "Dewa", bomId: "BoM-001", photo: null }] }]);
+    expect(strip).toEqual([{ playerId: A, name: "Dewa", bomId: "BoM-001", photo: null, role: "Chair" }]);
+  });
+});
+
+
+describe("parseImagePath founding-team", () => {
+  it("accepts hand-named and uuid files", () => {
+    expect(parseImagePath("founding-team/dewa.jpg", "founding-team")).toBe("founding-team/dewa.jpg");
+    expect(parseImagePath(`founding-team/${A}.png`, "founding-team")).toBe(`founding-team/${A}.png`);
+  });
+  it("treats empty as no image", () => expect(parseImagePath("", "founding-team")).toBeNull());
+  it("rejects traversal, other folders and bad types", () => {
+    expect(() => parseImagePath("founding-team/../x.jpg", "founding-team")).toThrow();
+    expect(() => parseImagePath("sub-communities/dewa.jpg", "founding-team")).toThrow();
+    expect(() => parseImagePath("founding-team/dewa.gif", "founding-team")).toThrow();
+  });
+  it("keeps sub-community uploads uuid-only", () => expect(() => parseImagePath("sub-communities/dewa.jpg", "sub-communities")).toThrow());
+});
