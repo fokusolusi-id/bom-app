@@ -8,3 +8,5 @@ export const TIER_ICON: Record<TierLabel, string> = {
   Major: "/competition-path/3-bom-major.png",
   Championship: "/competition-path/4-bomb-championship.png",
 };
+
+export const BOM_LOGO = "/brand/logo-768.png";

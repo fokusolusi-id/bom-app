@@ -17,3 +17,6 @@ export function parseTier(value: unknown): Tier {
   if (!isTier(value)) throw new Error(`Invalid tier: ${String(value)}`);
   return value;
 }
+
+/** Cup, Major and Championship belong to BOM as a whole, so they show the BOM logo, not a sub community's. */
+export const usesBomLogo = (tier: TierLabel) => tier === "Cup" || tier === "Major" || tier === "Championship";

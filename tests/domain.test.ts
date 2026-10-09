@@ -6,8 +6,8 @@ import { nextWeekly, upcomingEvents } from "@/domain/next-event";
 import { monthKey, monthWeeks, parseMonth, parseWeekday, shiftMonth, weekdayOf } from "@/domain/schedule";
 import { parseMatchInput } from "@/domain/match-input";
 import { clampScore, outcome, pointsFor, tierMultiplier } from "@/domain/scoring";
-import { parseTier, parseTierLabel } from "@/domain/tier";
-import { isoToWibLocal, parseEventInput, wibDay, wibLocalToIso, wibTime } from "@/domain/event";
+import { parseTier, parseTierLabel, usesBomLogo } from "@/domain/tier";
+import { eventUsesBomLogo, isoToWibLocal, parseEventInput, pickOnePerDay, wibDay, wibLocalToIso, wibTime } from "@/domain/event";
 
 const A = "11111111-1111-1111-1111-111111111111";
 const B = "22222222-2222-2222-2222-222222222222";
@@ -393,5 +393,39 @@ describe("schedule events", () => {
     expect(() => ev({ ...base, tier: "Casual" })).toThrow();
     expect(() => ev({ ...base, name: "" })).toThrow();
     expect(() => ev({ ...base, place: "" })).toThrow();
+  });
+});
+
+describe("event logo", () => {
+  it("shows the BOM logo for Cup and above, the sub komunitas logo for Unrank and Ranked", () => {
+    expect((["Unrank", "Ranked", "Cup", "Major", "Championship"] as const).map(usesBomLogo)).toEqual([false, false, true, true, true]);
+  });
+});
+
+describe("one event per day", () => {
+  const e = (day: string, tier: "Unrank" | "Ranked" | "Cup" | "Major" | "Championship" | "Break", id: string) => ({ id, tier, starts_at: `${day}T11:00:00.000Z` });
+  const sat = ["a", "b", "c", "d", "e"].map((id) => e("2026-10-10", "Ranked", id));
+  it("keeps exactly one of several same-day community events", () => {
+    expect(pickOnePerDay(sat)).toHaveLength(1);
+  });
+  it("is stable for a given day, so the calendar does not flicker", () => {
+    expect(pickOnePerDay(sat)[0].id).toBe(pickOnePerDay([...sat].reverse())[0].id);
+  });
+  it("varies across days instead of always taking the first", () => {
+    const picks = new Set(Array.from({ length: 28 }, (_, i) => pickOnePerDay(["a", "b", "c", "d", "e"].map((id) => e(`2026-11-${String(i + 1).padStart(2, "0")}`, "Ranked", id)))[0].id));
+    expect(picks.size).toBeGreaterThan(1);
+  });
+  it("lets a break, then the bigger competition, win the day", () => {
+    expect(pickOnePerDay([...sat, e("2026-10-10", "Cup", "cup")]).map((x) => x.id)).toEqual(["cup"]);
+    expect(pickOnePerDay([...sat, e("2026-10-10", "Cup", "cup"), e("2026-10-10", "Break", "off")]).map((x) => x.id)).toEqual(["off"]);
+  });
+  it("keeps one event for each different day, in the given order", () => {
+    const list = [e("2026-10-10", "Ranked", "x"), e("2026-10-11", "Unrank", "y")];
+    expect(pickOnePerDay(list).map((x) => x.id)).toEqual(["x", "y"]);
+  });
+  it("accepts Break as an event type and shows the BOM logo for it", () => {
+    expect(parseEventInput((k) => ({ name: "Libur", starts_at: "2026-12-25T10:00", place: "-", tier: "Break" })[k as "name"])).toMatchObject({ tier: "Break" });
+    expect(eventUsesBomLogo("Break")).toBe(true);
+    expect(eventUsesBomLogo("Ranked")).toBe(false);
   });
 });
