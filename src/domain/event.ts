@@ -1,8 +1,20 @@
-import { parseTierLabel, type TierLabel } from "./tier";
+import { TIER_LABELS, usesBomLogo, type TierLabel } from "./tier";
 import { isUuid, parseText } from "./validation";
 
+/** What kind of day it is: a competition level, or a break / holiday with no gathering. */
+export type EventType = TierLabel | "Break";
+export const EVENT_TYPES: readonly EventType[] = [...TIER_LABELS, "Break"];
+
+export function parseEventType(value: unknown): EventType {
+  if (typeof value !== "string" || !(EVENT_TYPES as readonly string[]).includes(value)) throw new Error("Jenis event tidak valid");
+  return value as EventType;
+}
+
+/** Cup and above, and breaks, belong to BOM as a whole and show the BOM logo. */
+export const eventUsesBomLogo = (type: EventType) => type === "Break" || usesBomLogo(type);
+
 export type ScheduleEvent = {
-  id?: string; sub_community_id: string | null; name: string; starts_at: string; place: string; tier: TierLabel; is_active: boolean;
+  id?: string; sub_community_id: string | null; name: string; starts_at: string; place: string; tier: EventType; is_active: boolean;
 };
 export type ScheduleEventInput = Omit<ScheduleEvent, "id"> & { id?: string };
 
@@ -41,7 +53,39 @@ export function parseEventInput(get: (key: string) => unknown): ScheduleEventInp
     name: parseText(get("name"), "Nama event", 80),
     starts_at: wibLocalToIso(get("starts_at")),
     place: parseText(get("place"), "Tempat", 120),
-    tier: parseTierLabel(get("tier")),
+    tier: parseEventType(get("tier")),
     is_active: get("is_active") === "on" || get("is_active") === "true",
   };
+}
+
+// Which type wins a day: breaks first, then bigger competitions. Unrank and Ranked (one per sub komunitas) tie.
+const PRIORITY: Record<EventType, number> = { Break: 0, Championship: 1, Major: 2, Cup: 3, Ranked: 4, Unrank: 4 };
+
+const sortKey = (e: { starts_at: string }) => `${(e as { id?: string }).id ?? ""}|${e.starts_at}`;
+
+function hash(text: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < text.length; i++) h = Math.imul(h ^ text.charCodeAt(i), 16777619);
+  return h >>> 0;
+}
+
+/**
+ * One event per day. The day's top-priority type wins; when several sub komunitas tie (e.g. five Saturday gatherings)
+ * one is picked at random. The pick is seeded by the date, so it does not flicker between page loads.
+ * Input order is kept for the days returned.
+ */
+export function pickOnePerDay<T extends { starts_at: string; tier: EventType }>(events: T[]): T[] {
+  const byDay = new Map<string, T[]>();
+  for (const e of events) {
+    const day = wibDay(e.starts_at);
+    byDay.set(day, [...(byDay.get(day) ?? []), e]);
+  }
+  const winners = new Set<T>();
+  for (const [day, list] of byDay) {
+    const best = Math.min(...list.map((e) => PRIORITY[e.tier]));
+    // Sorted so the pick does not depend on the order the database returns rows in.
+    const tied = list.filter((e) => PRIORITY[e.tier] === best).sort((a, b) => sortKey(a).localeCompare(sortKey(b)));
+    winners.add(tied[hash(day) % tied.length]);
+  }
+  return events.filter((e) => winners.has(e));
 }

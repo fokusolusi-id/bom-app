@@ -1,15 +1,17 @@
+import Link from "next/link";
 import { AddCard, AdminPage, ItemGrid } from "@/components/admin/admin-page";
 import { TierBadge } from "@/components/bom/tier-badge";
 import { ActionForm } from "@/components/form/action-form";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input, NativeSelect } from "@/components/ui/input";
-import { isoToWibLocal, type ScheduleEventView } from "@/domain/event";
-import { TIER_LABELS } from "@/domain/tier";
+import { EVENT_TYPES, isoToWibLocal, type ScheduleEventView } from "@/domain/event";
 import { VENUE } from "@/lib/venue";
 import { requireAdmin } from "@/server/admin-session";
 import { supabaseScheduleEvents } from "@/server/schedule-events";
 import { supabaseSubCommunities } from "@/server/sub-communities";
+import { cn } from "@/lib/utils";
 import { deleteScheduleEvent, saveScheduleEvent } from "./actions";
 
 export const metadata = { title: "Jadwal | Admin BOM" };
@@ -17,17 +19,17 @@ export const metadata = { title: "Jadwal | Admin BOM" };
 const when = new Intl.DateTimeFormat("id-ID", { weekday: "short", day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "Asia/Jakarta" });
 const DAY = 86_400_000;
 
-function EventForm({ e, communities }: { e?: ScheduleEventView; communities: { id: string; name: string }[] }) {
+function EventForm({ e, communities, defaultCommunity }: { e?: ScheduleEventView; communities: { id: string; name: string }[]; defaultCommunity?: string }) {
   return (
     <ActionForm action={saveScheduleEvent} resetOnSuccess={!e} className="grid gap-3 sm:grid-cols-2">
       {e?.id && <input type="hidden" name="id" value={e.id} />}
       <Input name="name" defaultValue={e?.name} placeholder="Nama event (mis. Weekly Ranked)" aria-label="Nama event" maxLength={80} required className="sm:col-span-2" />
-      <NativeSelect name="sub_community_id" aria-label="Komunitas" defaultValue={e?.sub_community_id ?? ""}>
+      <NativeSelect name="sub_community_id" aria-label="Komunitas" defaultValue={e ? (e.sub_community_id ?? "") : (defaultCommunity ?? "")}>
         <option value="">Semua komunitas (BOM)</option>
         {communities.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
       </NativeSelect>
       <NativeSelect name="tier" aria-label="Jenis kompetisi" defaultValue={e?.tier ?? "Ranked"}>
-        {TIER_LABELS.map((t) => <option key={t} value={t}>BOM {t}</option>)}
+        {EVENT_TYPES.map((t) => <option key={t} value={t}>{t === "Break" ? "Libur / Break" : `BOM ${t}`}</option>)}
       </NativeSelect>
       <label className="text-muted-foreground flex flex-col gap-1 text-xs">Tanggal dan jam (WIB)
         <Input name="starts_at" type="datetime-local" defaultValue={e ? isoToWibLocal(e.starts_at) : ""} required className="text-base text-white" />
@@ -41,7 +43,10 @@ function EventForm({ e, communities }: { e?: ScheduleEventView; communities: { i
   );
 }
 
-export default async function AdminSchedulePage() {
+/** Filter value for events that belong to BOM as a whole rather than one sub komunitas. */
+const BOM = "bom";
+
+export default async function AdminSchedulePage({ searchParams }: { searchParams: Promise<{ c?: string }> }) {
   const supabase = await requireAdmin();
   const now = new Date();
   const from = new Date(now.getTime() - 30 * DAY).toISOString();
@@ -51,15 +56,29 @@ export default async function AdminSchedulePage() {
     supabaseSubCommunities(supabase).listAll(),
   ]);
   const communities = subs.flatMap((s) => (s.id ? [{ id: s.id, name: s.name }] : []));
+  // One komunitas at a time: the list is filtered by ?c=<id> (or "bom" for events without a community).
+  const requested = (await searchParams).c;
+  const filter = requested === BOM || communities.some((c) => c.id === requested) ? requested! : (communities[0]?.id ?? BOM);
+  const shown = events.filter((e) => (filter === BOM ? e.sub_community_id === null : e.sub_community_id === filter));
+  const chips = [...communities.map((c) => ({ key: c.id, label: c.name })), { key: BOM, label: "BOM (semua)" }];
   return (
     <AdminPage title="Jadwal" hint="Event di halaman Schedule dan beranda. Menampilkan 30 hari terakhir sampai satu tahun ke depan.">
-      <AddCard title="Event baru"><EventForm communities={communities} /></AddCard>
+      <nav aria-label="Komunitas" className="flex flex-wrap gap-2">
+        {chips.map((c) => (
+          <Link
+            key={c.key} href={`/admin/jadwal?c=${c.key}`} aria-current={c.key === filter ? "page" : undefined}
+            className={cn("font-label rounded border px-3 py-1.5 text-sm font-bold uppercase italic", c.key === filter ? "text-primary border-primary" : "hover:text-primary")}
+          >{c.label}</Link>
+        ))}
+      </nav>
+      <AddCard title="Event baru"><EventForm communities={communities} defaultCommunity={filter === BOM ? "" : filter} /></AddCard>
+      {shown.length === 0 && <p className="text-muted-foreground text-sm">Belum ada event untuk pilihan ini.</p>}
       <ItemGrid>
-        {events.map((e) => (
+        {shown.map((e) => (
           <Card key={e.id}>
             <CardHeader>
               <CardTitle className="flex flex-wrap items-center gap-2 text-base">
-                <TierBadge tier={e.tier} className="w-auto" />{e.name}
+                {e.tier === "Break" ? <Badge variant="muted">Libur / Break</Badge> : <TierBadge tier={e.tier} className="w-auto" />}{e.name}
                 {!e.is_active && <span className="text-muted-foreground text-sm">(disembunyikan)</span>}
               </CardTitle>
               <p className="text-muted-foreground text-sm">{when.format(new Date(e.starts_at))} WIB · {e.community?.name ?? "BOM"}</p>
