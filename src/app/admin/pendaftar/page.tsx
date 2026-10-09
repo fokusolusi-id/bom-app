@@ -1,13 +1,13 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ActionForm } from "@/components/form/action-form";
-import { Badge } from "@/components/ui/badge";
 import { AGE_GROUPS } from "@/domain/join-request";
-import { formatBomId } from "@/domain/profile";
 import { requireAdmin } from "@/server/admin-session";
 import { supabaseJoinRequests } from "@/server/join-requests";
 import { setPlayerStatus } from "./actions";
+import { BomIdBadge } from "@/components/bom/bom-id-badge";
+import { AdminPage } from "@/components/admin/admin-page";
 
 export const metadata = { title: "Pendaftar | Admin BOM" };
 
@@ -18,8 +18,8 @@ const wa = (n: string) => `https://wa.me/${n.slice(1)}`;
 export default async function AdminJoinRequestsPage() {
   const rows = await supabaseJoinRequests(await requireAdmin()).listRecent();
   return (
+    <AdminPage title="Pendaftar" hint="Pendaftar baru dari form membership. Aktifkan agar muncul di leaderboard.">
     <Card>
-      <CardHeader><CardTitle>Pendaftar</CardTitle></CardHeader>
       <CardContent>
         {rows.length === 0 ? <p className="text-muted-foreground text-sm">Belum ada pendaftar.</p> : (
           <Table>
@@ -31,7 +31,7 @@ export default async function AdminJoinRequestsPage() {
                 <TableRow key={r.id}>
                   <TableCell>
                     <div className="font-bold">{r.blader_name ?? r.name}</div>
-                    {r.player && <Badge variant="secondary">{formatBomId(r.player.bom_id)}</Badge>}
+                    {r.player && <BomIdBadge id={r.player.bom_id} />}
                   </TableCell>
                   <TableCell className="space-y-1 text-sm">
                     <div>{r.name}</div>
@@ -61,5 +61,6 @@ export default async function AdminJoinRequestsPage() {
         )}
       </CardContent>
     </Card>
+    </AdminPage>
   );
 }

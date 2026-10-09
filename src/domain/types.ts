@@ -5,7 +5,7 @@ export type MatchStatus = "scheduled" | "live" | "finished";
 export type PlayerStatus = "registered" | "active";
 
 /** Registered players have a BOM ID but stay off the leaderboard until an admin activates them. */
-export type Player = { id?: string; bom_id: string; name: string; points: number; wins: number; losses: number; status?: PlayerStatus };
+export type Player = { id?: string; bom_id: string; name: string; points: number; wins: number; losses: number; status?: PlayerStatus; photo_path?: string | null };
 
 export type Match = {
   id: string; tier: Tier; round: string; stadium: string; target: number;

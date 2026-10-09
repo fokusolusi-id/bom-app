@@ -6,9 +6,9 @@ import { createClient } from "@/lib/supabase/client";
 
 type Prepare = (contentType: string) => Promise<{ path: string; token: string } | { error: string }>;
 
-/** Like ImageUpload, but also takes video (when `video`) and previews either. Submits only the storage path. */
-export function MediaUpload({ name, label, defaultPath, prepare, video }: {
-  name: string; label: string; defaultPath?: string | null; prepare: Prepare; video?: boolean;
+/** Upload of one photo (`kind="image"`) or one video (`kind="video"`) with a preview. Submits only the storage path. */
+export function MediaUpload({ name, label, defaultPath, prepare, kind }: {
+  name: string; label: string; defaultPath?: string | null; prepare: Prepare; kind: "image" | "video";
 }) {
   const [path, setPath] = useState(defaultPath ?? null);
   const [busy, setBusy] = useState(false);
@@ -25,7 +25,7 @@ export function MediaUpload({ name, label, defaultPath, prepare, video }: {
   async function upload(file: File) {
     setError(null);
     const isVideo = file.type.startsWith("video/");
-    if (isVideo && !video) return setError("Video hanya untuk slider beranda");
+    if (isVideo !== (kind === "video")) return setError(kind === "video" ? "Pilih file video (MP4/WebM)" : "Pilih file foto (JPG/PNG/WebP)");
     if (file.size > (isVideo ? MAX_VIDEO_BYTES : MAX_IMAGE_BYTES)) return setError(`Ukuran maksimal ${isVideo ? "20" : "5"} MB`);
     setBusy(true);
     try {
@@ -39,7 +39,7 @@ export function MediaUpload({ name, label, defaultPath, prepare, video }: {
     }
   }
 
-  const accept = video ? MEDIA_ACCEPT : MEDIA_ACCEPT.split(",").filter((t) => !t.startsWith("video/")).join(",");
+  const accept = MEDIA_ACCEPT.split(",").filter((t) => t.startsWith("video/") === (kind === "video")).join(",");
   return (
     <div className="col-span-full flex flex-wrap items-center gap-3">
       <input ref={hidden} type="hidden" name={name} value={path ?? ""} />

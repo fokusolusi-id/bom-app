@@ -9,18 +9,17 @@ import { TierBadge } from "@/components/bom/tier-badge";
 import { requireAdmin } from "@/server/admin-session";
 import { ActionForm } from "@/components/form/action-form";
 import { bumpScore, createMatch, finishMatch } from "./actions";
+import { AddCard, AdminPage, ItemGrid } from "@/components/admin/admin-page";
 
 export const metadata = { title: "Admin | BOM" };
 
-export default async function AdminPage() {
+export default async function AdminMatchPage() {
   const supabase = await requireAdmin();
   const [matches, players] = await Promise.all([supabaseMatches(supabase).listOpen(), supabasePlayers(supabase).list(1000, { includeRegistered: true })]);
 
   return (
-    <main className="mx-auto space-y-6">
-      <Card>
-        <CardHeader><CardTitle>Match baru</CardTitle></CardHeader>
-        <CardContent>
+    <AdminPage title="Match" hint="Mulai match, atur skor, lalu selesaikan untuk memberi poin.">
+      <AddCard title="Match baru">
           <ActionForm action={createMatch} resetOnSuccess className="grid gap-3 sm:grid-cols-2">
             <NativeSelect name="a_id" aria-label="Blader A" required defaultValue=""><option value="" disabled>Blader A</option>{players.map((p) => <option key={p.id} value={p.id}>{p.name} {formatBomId(p.bom_id)}</option>)}</NativeSelect>
             <NativeSelect name="b_id" aria-label="Blader B" required defaultValue=""><option value="" disabled>Blader B</option>{players.map((p) => <option key={p.id} value={p.id}>{p.name} {formatBomId(p.bom_id)}</option>)}</NativeSelect>
@@ -30,9 +29,9 @@ export default async function AdminPage() {
             <Input name="target" type="number" min={1} max={10} defaultValue={4} aria-label="Target poin" />
             <Button type="submit" className="sm:col-span-2">Mulai match (live)</Button>
           </ActionForm>
-        </CardContent>
-      </Card>
+      </AddCard>
 
+      <ItemGrid>
       {matches.map((m) => (
         <Card key={m.id}>
           <CardHeader><CardTitle className="flex items-center gap-3"><TierBadge tier={m.tier} />{m.round} &middot; {m.stadium}</CardTitle></CardHeader>
@@ -51,6 +50,7 @@ export default async function AdminPage() {
           </CardContent>
         </Card>
       ))}
-    </main>
+      </ItemGrid>
+    </AdminPage>
   );
 }

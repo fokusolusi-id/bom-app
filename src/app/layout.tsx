@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { SiteHeader } from "@/components/bom/site-header";
+import { HideOnAdmin } from "@/components/bom/hide-on-admin";
 import { SiteFooter } from "@/components/bom/site-footer";
 
 export const metadata: Metadata = {
@@ -25,9 +26,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="id" className="dark">
       <body>
-        <SiteHeader />
+        <HideOnAdmin><SiteHeader /></HideOnAdmin>
         {children}
-        <SiteFooter />
+        <HideOnAdmin><SiteFooter /></HideOnAdmin>
       </body>
     </html>
   );

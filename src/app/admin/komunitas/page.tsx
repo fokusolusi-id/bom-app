@@ -7,6 +7,7 @@ import { supabaseSubCommunities } from "@/server/sub-communities";
 import { ActionForm } from "@/components/form/action-form";
 import { ImageUpload } from "@/components/form/image-upload";
 import { deleteSubCommunity, prepareSubCommunityImageUpload, saveSubCommunity } from "./actions";
+import { AddCard, AdminPage, ItemGrid } from "@/components/admin/admin-page";
 
 export const metadata = { title: "Sub Komunitas | Admin BOM" };
 
@@ -29,11 +30,9 @@ function SubCommunityForm({ s }: { s?: SubCommunity }) {
 export default async function AdminSubCommunitiesPage() {
   const rows = await supabaseSubCommunities(await requireAdmin()).listAll();
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader><CardTitle>Sub komunitas baru</CardTitle></CardHeader>
-        <CardContent><SubCommunityForm /></CardContent>
-      </Card>
+    <AdminPage title="Sub Komunitas" hint="Tampil di halaman About dan Schedule.">
+      <AddCard title="Sub komunitas baru"><SubCommunityForm /></AddCard>
+      <ItemGrid>
       {rows.map((s) => (
         <Card key={s.id}>
           <CardHeader><CardTitle>{s.name}{!s.is_active && <span className="text-muted-foreground ml-2 text-sm">(disembunyikan)</span>}</CardTitle></CardHeader>
@@ -43,6 +42,7 @@ export default async function AdminSubCommunitiesPage() {
           </CardContent>
         </Card>
       ))}
-    </div>
+      </ItemGrid>
+    </AdminPage>
   );
 }

@@ -12,7 +12,7 @@ export interface SiteMediaRepository {
   remove(id: string): Promise<void>;
 }
 
-const COLS = "id,section,kind,path,caption,sort_order,is_active";
+const COLS = "id,section,kind,path,youtube_id,caption,sort_order,is_active";
 
 export function supabaseSiteMedia(client: SupabaseClient): SiteMediaRepository {
   return {

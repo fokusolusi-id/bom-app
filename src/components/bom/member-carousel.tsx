@@ -1,10 +1,9 @@
 "use client";
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { formatBomId } from "@/domain/profile";
+import { BomIdBadge } from "@/components/bom/bom-id-badge";
 import { mediaUrl } from "@/lib/media";
 import { Button } from "@/components/ui/button";
 
@@ -44,22 +43,24 @@ export function MemberCarousel({ members, label = "Founding team" }: { members: 
     >
       <ul ref={track} aria-label={label} className="flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {members.map((m) => (
-          <li key={`${m.role}-${m.bomId}`} className="w-32 shrink-0 snap-start sm:w-40 lg:w-44">
+          <li key={`${m.role}-${m.bomId}`} className="shrink-0 snap-start">
             <Link
               href={`/member/${m.bomId.toLowerCase()}`}
-              className="bg-card hover:border-primary group relative block aspect-[2/5] overflow-hidden rounded border transition-colors"
+              className="bg-card hover:border-primary group relative block h-80 overflow-hidden rounded border transition-colors sm:h-96 lg:h-[28rem]"
             >
               {m.photo ? (
-                <Image src={mediaUrl(m.photo)} alt="" fill sizes="(min-width: 1024px) 176px, (min-width: 640px) 160px, 128px" className="object-cover object-top" />
+                // Same height for every card, natural width: the photos are tall strips and must not be cropped.
+                // eslint-disable-next-line @next/next/no-img-element -- width follows each photo's own aspect ratio
+                <img src={mediaUrl(m.photo)} alt="" loading="lazy" className="h-full w-auto max-w-none" />
               ) : (
-                <span className="font-display text-primary/20 absolute inset-0 grid place-items-center text-8xl font-black italic" aria-hidden>{m.name[0]}</span>
+                <span className="font-display text-primary/20 grid h-full w-32 place-items-center text-8xl font-black italic" aria-hidden>{m.name[0]}</span>
               )}
               {/* Black protection fade so the text stays readable over any photo. */}
-              <span className="absolute inset-0 bg-gradient-to-t from-black via-black/10 to-black/40" aria-hidden />
-              <span className="text-primary font-label absolute inset-x-3 top-3 text-xs font-bold tracking-[0.08em] uppercase italic">{m.role}</span>
-              <span className="absolute inset-x-3 bottom-3 space-y-1">
-                <span className="font-display block truncate text-lg font-extrabold italic uppercase">{m.name}</span>
-                <span className="bg-secondary inline-block rounded px-2 py-0.5 text-xs font-bold underline-offset-2 group-hover:underline">{formatBomId(m.bomId)}</span>
+              <span className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/40" aria-hidden />
+              <span className="absolute inset-x-2 bottom-2 space-y-1">
+                <span className="text-primary font-label line-clamp-2 min-h-[2lh] text-xs leading-tight font-bold tracking-[0.08em] text-balance uppercase italic">{m.role}</span>
+                <span className="font-display block truncate text-base font-extrabold italic uppercase">{m.name}</span>
+                <BomIdBadge id={m.bomId} className="group-hover:underline" />
               </span>
             </Link>
           </li>
