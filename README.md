@@ -35,7 +35,7 @@ Without env vars the app runs on mock data.
 
 ## Routes
 - `/` landing, `/kompetisi`, `/komunitas`, `/mulai`, `/leaderboard` (from DB, revalidates every 30s)
-- `/login`, `/admin` admin area: `/admin` matches, `/admin/komunitas` sub community CMS (shown on `/komunitas`). Create match, +/- score, finish match (awards points: win +30, loss +10, x2 for Cup/Major/Championship)
+- `/login`, `/admin` admin area: `/admin` matches, `/admin/komunitas` sub community CMS (shown on `/komunitas`). Create match, +/- score, finish match (awards points: win +30, loss +10, x1 Ranked, x2 Cup, x3 Major, x4 Championship)
 
 ## Security model
 Anon key is public by design. All writes are blocked by RLS unless the user is in `admins`. `finish_match` is security definer and re-checks `is_admin()`.
