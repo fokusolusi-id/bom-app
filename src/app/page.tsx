@@ -13,7 +13,7 @@ import { SubCommunityChart } from "@/components/bom/sub-community-chart";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import type { EventType } from "@/domain/event";
-import { formatWhen, todayWib } from "@/domain/next-event";
+import { formatWhen } from "@/domain/next-event";
 import { EVENT_STYLE, EVENT_TYPE_LABEL } from "@/lib/event-style";
 import { communityNumbers } from "@/lib/content";
 import { loadCommunityCounts } from "@/server/community-counts";
@@ -33,7 +33,7 @@ export default async function Home() {
   const now = new Date();
   const media = publicSiteMedia();
   const [subs, result, news, gallery, sponsors] = await Promise.all([
-    publicSubCommunities().listActive(), latestResult(todayWib(now)), media.list("news"), media.list("gallery"), publicSponsors().list(),
+    publicSubCommunities().listActive(), latestResult(now), media.list("news"), media.list("gallery"), publicSponsors().list(),
   ]);
   const [events, counts] = await Promise.all([loadUpcomingEvents(EVENT_LIMIT, now), loadCommunityCounts(subs.length, now)]);
 

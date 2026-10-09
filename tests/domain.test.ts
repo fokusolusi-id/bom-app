@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { formatBomId, matchHistory, normalizeBomId, pointsSeries, rankOf, resultFor, winRate } from "@/domain/profile";
-import { parsePlacementInput, parseTournamentInput } from "@/domain/tournament";
+import { parsePlacementInput } from "@/domain/result";
 import type { Match } from "@/domain/types";
 import { nextWeekly, upcomingEvents } from "@/domain/next-event";
 import { monthKey, monthWeeks, parseMonth, parseWeekday, shiftMonth, weekdayOf } from "@/domain/schedule";
@@ -186,18 +186,13 @@ describe("member profile", () => {
   });
 });
 
-describe("tournament input", () => {
+describe("placement input", () => {
   const U = "11111111-1111-1111-1111-111111111111";
-  const T = (o: Record<string, unknown>) => parseTournamentInput((k) => o[k]);
-  it("parses a tournament", () => {
-    expect(T({ name: " Cup 1 ", tier: "Cup", held_on: "2026-03-01" })).toEqual({ name: "Cup 1", tier: "Cup", held_on: "2026-03-01" });
-  });
-  it.each([{ name: "", tier: "Cup", held_on: "2026-03-01" }, { name: "x", tier: "Nope", held_on: "2026-03-01" }, { name: "x", tier: "Cup", held_on: "03/01/2026" }])("rejects %j", (o) => {
-    expect(() => T(o)).toThrow();
-  });
   it("parses placements", () => {
-    expect(parsePlacementInput((k) => ({ tournament_id: U, player_id: U, place: "2" })[k as "place"])).toEqual({ tournamentId: U, playerId: U, place: 2 });
-    expect(() => parsePlacementInput((k) => ({ tournament_id: U, player_id: U, place: "0" })[k as "place"])).toThrow();
+    expect(parsePlacementInput((k) => ({ event_id: U, player_id: U, place: "2" })[k as "place"])).toEqual({ eventId: U, playerId: U, place: 2 });
+  });
+  it.each([{ event_id: U, player_id: U, place: "0" }, { event_id: U, player_id: U, place: "1000" }, { event_id: "x", player_id: U, place: "1" }, { event_id: U, player_id: "x", place: "1" }])("rejects %j", (o) => {
+    expect(() => parsePlacementInput((k) => (o as Record<string, string>)[k])).toThrow();
   });
 });
 
@@ -241,22 +236,22 @@ describe("next event", () => {
   });
   it("upcomingEvents lists weekly Ranked sessions up to the limit", () => {
     const now = new Date("2026-10-08T05:00:00Z");
-    const events = upcomingEvents({ now, weekly: { weekday: 6, time: "18:00" }, tournaments: [], limit: 3 });
+    const events = upcomingEvents({ now, weekly: { weekday: 6, time: "18:00" }, limit: 3 });
     expect(events.map((e) => e.at.toISOString())).toEqual(["2026-10-10T11:00:00.000Z", "2026-10-17T11:00:00.000Z", "2026-10-24T11:00:00.000Z"]);
     expect(events[0]).toMatchObject({ title: "Ranked", hasTime: true });
   });
-  it("upcomingEvents merges tournaments in date order and trims to the limit", () => {
+  it("upcomingEvents merges scheduled events in date order and trims to the limit", () => {
     const now = new Date("2026-10-08T05:00:00Z");
     const events = upcomingEvents({
       now, weekly: { weekday: 6, time: "18:00" }, limit: 3,
-      tournaments: [{ name: "Cup 1", tier: "Cup", held_on: "2026-10-12" }, { name: "Cup 2", tier: "Cup", held_on: "2026-12-01" }],
+      scheduled: [{ title: "Cup 1", at: new Date("2026-10-12T06:00:00Z") }, { title: "Cup 2", at: new Date("2026-12-01T06:00:00Z") }],
     });
-    expect(events.map((e) => e.title)).toEqual(["Ranked", "Cup: Cup 1", "Ranked"]);
+    expect(events.map((e) => e.title)).toEqual(["Ranked", "Cup 1", "Ranked"]);
   });
-  it("upcomingEvents ignores past tournaments and is empty with nothing scheduled", () => {
+  it("upcomingEvents ignores past scheduled events and is empty with nothing scheduled", () => {
     const now = new Date("2026-10-08T05:00:00Z");
-    expect(upcomingEvents({ now, weekly: null, tournaments: [{ name: "Old", tier: "Cup", held_on: "2026-09-01" }], limit: 3 })).toEqual([]);
-    expect(upcomingEvents({ now, weekly: null, tournaments: [{ name: "Today", tier: "Cup", held_on: "2026-10-08" }], limit: 3 })[0].hasTime).toBe(false);
+    expect(upcomingEvents({ now, weekly: null, scheduled: [{ title: "Old", at: new Date("2026-09-01T06:00:00Z") }], limit: 3 })).toEqual([]);
+    expect(upcomingEvents({ now, weekly: null, limit: 3 })).toEqual([]);
   });
 });
 

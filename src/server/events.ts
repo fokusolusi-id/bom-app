@@ -1,19 +1,15 @@
 import "server-only";
 import { eventUsesBomLogo, pickOnePerDay } from "@/domain/event";
-import { type NextEvent, todayWib, upcomingEvents } from "@/domain/next-event";
+import { type NextEvent, upcomingEvents } from "@/domain/next-event";
 import { mediaUrl } from "@/lib/media";
 import { BOM_LOGO } from "@/lib/tier-icon";
 import { publicScheduleEvents } from "./schedule-events";
-import { publicTournaments } from "./tournaments";
 
-/** The next scheduled events (admin calendar, one per day) merged with scheduled tournaments, soonest first. */
+/** The next scheduled events (admin calendar, one per day), soonest first. */
 export async function loadUpcomingEvents(limit: number, now = new Date()): Promise<NextEvent[]> {
-  const [scheduled, tournaments] = await Promise.all([
-    publicScheduleEvents().upcoming(now.toISOString(), limit * 12),
-    publicTournaments().upcoming(todayWib(now), limit),
-  ]);
+  const scheduled = await publicScheduleEvents().upcoming(now.toISOString(), limit * 12);
   return upcomingEvents({
-    now, weekly: null, tournaments, limit,
+    now, weekly: null, limit,
     scheduled: pickOnePerDay(scheduled).map((e) => {
       const bom = eventUsesBomLogo(e.tier) || !e.community?.image_path;
       return {

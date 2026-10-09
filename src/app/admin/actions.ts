@@ -19,7 +19,7 @@ export async function createMatch(_prev: FormState, formData: FormData): Promise
     const b = players.find((p) => p.id === input.bId);
     if (!a || !b) throw new Error("Blader not found");
     await supabaseMatches(supabase).create(input, { a: a.name, b: b.name });
-    revalidatePath("/admin");
+    revalidatePath("/admin/competition");
   });
 }
 
@@ -28,7 +28,7 @@ export async function bumpScore(id: string, side: Side, delta: 1 | -1): Promise<
   return toFormState(async () => {
     if (!isUuid(id) || (side !== "a" && side !== "b") || (delta !== 1 && delta !== -1)) throw new Error("Invalid input");
     await supabaseMatches(supabase).bump(id, side, delta);
-    revalidatePath("/admin");
+    revalidatePath("/admin/competition");
   });
 }
 
@@ -42,7 +42,7 @@ export async function finishMatch(id: string): Promise<FormState> {
     // finish_match picks the winner under a row lock and awards nothing on a draw.
     const pts = pointsFor(match.tier);
     await repo.finish(id, pts.winner, pts.loser);
-    revalidatePath("/admin");
+    revalidatePath("/admin/competition");
     revalidatePath("/leaderboard");
   });
 }

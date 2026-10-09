@@ -13,7 +13,7 @@ import { publicMatchHistory } from "@/server/matches";
 import { SITE_URL } from "@/lib/venue";
 import { qrDataUrl } from "@/server/qr";
 import { publicPlayers } from "@/server/players";
-import { publicPlacements } from "@/server/tournaments";
+import { publicResults } from "@/server/results";
 import { BomIdBadge } from "@/components/bom/bom-id-badge";
 
 export const revalidate = 60;
@@ -53,7 +53,7 @@ export default async function MemberPage({ params }: Props) {
   const since = player.created_at ? sinceFmt.format(new Date(player.created_at)).replace("/", ".") : "-";
   const [matches, placements, rank] = await Promise.all([
     playerId ? publicMatchHistory().listFinishedForPlayer(playerId) : [],
-    playerId ? publicPlacements().placementsForPlayer(playerId) : [],
+    playerId ? publicResults().placementsForPlayer(playerId) : [],
     repo.rank(player.points),
   ]);
   const history = matchHistory(matches, playerId);
@@ -99,17 +99,17 @@ export default async function MemberPage({ params }: Props) {
       </Card>
 
       <Card>
-        <CardHeader><CardTitle>Tournaments</CardTitle></CardHeader>
+        <CardHeader><CardTitle>Tournament results</CardTitle></CardHeader>
         <CardContent>
           {placements.length === 0 ? <p className="text-muted-foreground text-sm">No tournament results yet.</p> : (
             <Table>
-              <TableHeader><TableRow><TableHead>Tournament</TableHead><TableHead>Tier</TableHead><TableHead>Date</TableHead><TableHead className="text-right">Place</TableHead></TableRow></TableHeader>
+              <TableHeader><TableRow><TableHead>Event</TableHead><TableHead>Tier</TableHead><TableHead>Date</TableHead><TableHead className="text-right">Place</TableHead></TableRow></TableHeader>
               <TableBody>
                 {placements.map((p) => (
-                  <TableRow key={p.tournament.id}>
-                    <TableCell className="font-bold">{p.tournament.name}</TableCell>
-                    <TableCell><TierBadge tier={p.tournament.tier} className="w-auto" /></TableCell>
-                    <TableCell>{fmt(p.tournament.held_on)}</TableCell>
+                  <TableRow key={p.event.id}>
+                    <TableCell className="font-bold">{p.event.name}</TableCell>
+                    <TableCell><TierBadge tier={p.event.tier} className="w-auto" /></TableCell>
+                    <TableCell>{fmt(p.event.starts_at)}</TableCell>
                     <TableCell className="font-num tabular text-primary text-right text-xl font-black italic">#{p.place}</TableCell>
                   </TableRow>
                 ))}

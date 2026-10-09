@@ -15,7 +15,5 @@ export type Match = {
   status: MatchStatus;
 };
 
-export type Tournament = { id?: string; name: string; tier: Tier; held_on: string };
-
-/** A player's final place at a tournament, joined with the tournament. */
-export type PlacementRow = { place: number; tournament: Tournament };
+/** A player's final place at an event (Cup, Major or Championship), joined with the event. */
+export type PlacementRow = { place: number; event: { id: string; name: string; tier: Tier; starts_at: string } };

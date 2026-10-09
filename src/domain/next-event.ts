@@ -19,19 +19,17 @@ export type NextEvent = {
 };
 
 /**
- * Upcoming events, soonest first: scheduled events (admin calendar), the next weekly Ranked sessions (when a weekly slot
- * is given) and scheduled tournaments. Tournaments only have a date, so they start at 00:00 WIB and carry `hasTime: false`.
- * A tournament today still counts.
+ * Upcoming events, soonest first: scheduled events (admin calendar) and the next weekly Ranked sessions (when a weekly slot
+ * is given).
  */
 export function upcomingEvents(opts: {
   now: Date;
   weekly: { weekday: number; time: string } | null;
-  tournaments: { name: string; tier: string; held_on: string }[];
   /** Events with an exact time. Past ones are ignored. */
   scheduled?: { title: string; at: Date; name?: string; type?: string; logo?: { src: string; alt: string }; place?: string }[];
   limit: number;
 }): NextEvent[] {
-  const { now, weekly, tournaments, limit, scheduled = [] } = opts;
+  const { now, weekly, limit, scheduled = [] } = opts;
   const events: NextEvent[] = scheduled.filter((e) => e.at.getTime() >= now.getTime()).map((e) => ({ ...e, hasTime: true }));
   if (weekly) {
     let from = now;
@@ -40,10 +38,6 @@ export function upcomingEvents(opts: {
       events.push({ title: "Ranked", at, hasTime: true });
       from = at;
     }
-  }
-  for (const t of tournaments) {
-    const at = new Date(`${t.held_on}T00:00:00+07:00`);
-    if (!Number.isNaN(at.getTime()) && at.getTime() + DAY_MS > now.getTime()) events.push({ title: `${t.tier}: ${t.name}`, at, hasTime: false, name: t.name, type: t.tier });
   }
   return events.sort((a, b) => a.at.getTime() - b.at.getTime()).slice(0, limit);
 }

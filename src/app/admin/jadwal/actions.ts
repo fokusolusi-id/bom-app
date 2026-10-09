@@ -7,7 +7,7 @@ import { requireAdmin } from "@/server/admin-session";
 import { supabaseScheduleEvents } from "@/server/schedule-events";
 
 function revalidate() {
-  revalidatePath("/admin/jadwal");
+  revalidatePath("/admin/competition");
   revalidatePath("/schedule");
   revalidatePath("/");
 }

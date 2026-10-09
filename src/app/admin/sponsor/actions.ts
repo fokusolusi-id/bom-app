@@ -8,7 +8,7 @@ import { createImageUpload, removeMedia } from "@/server/media";
 import { supabaseSponsors } from "@/server/sponsors";
 
 function revalidate() {
-  revalidatePath("/admin/sponsor");
+  revalidatePath("/admin/home");
   revalidatePath("/");
 }
 
