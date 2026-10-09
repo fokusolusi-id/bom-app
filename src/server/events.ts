@@ -1,6 +1,8 @@
 import "server-only";
-import { pickOnePerDay } from "@/domain/event";
+import { eventUsesBomLogo, pickOnePerDay } from "@/domain/event";
 import { type NextEvent, todayWib, upcomingEvents } from "@/domain/next-event";
+import { mediaUrl } from "@/lib/media";
+import { BOM_LOGO } from "@/lib/tier-icon";
 import { publicScheduleEvents } from "./schedule-events";
 import { publicTournaments } from "./tournaments";
 
@@ -12,6 +14,13 @@ export async function loadUpcomingEvents(limit: number, now = new Date()): Promi
   ]);
   return upcomingEvents({
     now, weekly: null, tournaments, limit,
-    scheduled: pickOnePerDay(scheduled).map((e) => ({ title: `${e.tier === "Unrank" ? "" : e.tier === "Break" ? "Break: " : `BOM ${e.tier}: `}${e.name}`, at: new Date(e.starts_at) })),
+    scheduled: pickOnePerDay(scheduled).map((e) => {
+      const bom = eventUsesBomLogo(e.tier) || !e.community?.image_path;
+      return {
+        title: `${e.tier === "Unrank" ? "" : e.tier === "Break" ? "Break: " : `BOM ${e.tier}: `}${e.name}`,
+        at: new Date(e.starts_at), name: e.name, type: e.tier, place: e.place,
+        logo: bom ? { src: BOM_LOGO, alt: "BOM" } : { src: mediaUrl(e.community!.image_path!), alt: e.community!.name },
+      };
+    }),
   });
 }

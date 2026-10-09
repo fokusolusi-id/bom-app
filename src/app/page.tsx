@@ -7,12 +7,15 @@ import { NewsSlider } from "@/components/bom/news-slider";
 import { CompetitionLadder } from "@/components/bom/competition-ladder";
 import { RibbonBanner } from "@/components/bom/ribbon-banner";
 import { SectionHeading } from "@/components/bom/section-heading";
+import { TIER_TILE, TierTile } from "@/components/bom/tier-tile";
 import { SponsorSlider } from "@/components/bom/sponsor-slider";
 import { SubCommunityChart } from "@/components/bom/sub-community-chart";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import type { EventType } from "@/domain/event";
 import { formatWhen, todayWib } from "@/domain/next-event";
-import { communityStats } from "@/lib/content";
+import { EVENT_STYLE, EVENT_TYPE_LABEL } from "@/lib/event-style";
+import { communityNumbers } from "@/lib/content";
 import { DIRECTIONS_URL, GATHERING_SCHEDULE, INSTAGRAM, PARTNER_EMAIL, VENUE, WHATSAPP_INVITE } from "@/lib/venue";
 import { loadUpcomingEvents } from "@/server/events";
 import { latestResult } from "@/server/latest-result";
@@ -23,7 +26,7 @@ import { publicSubCommunities } from "@/server/sub-communities";
 export const revalidate = 60;
 
 /** Events shown on the homepage; the rest are behind "View all". */
-const EVENT_LIMIT = 3;
+const EVENT_LIMIT = 2;
 
 export default async function Home() {
   const now = new Date();
@@ -52,19 +55,35 @@ export default async function Home() {
         <SectionHeading id="next-event">Next events</SectionHeading>
         {events.length > 0 ? (
           <>
-            <ul className="grid gap-4 md:grid-cols-3">
-              {events.map((e) => (
-                <li key={`${e.title}-${e.at.toISOString()}`}>
-                  <Card className={`h-full ${e === events[0] ? "border-primary" : ""}`}>
-                    <CardContent className="flex h-full flex-col gap-3">
-                      <div className="font-display text-2xl font-extrabold italic uppercase">{e.title}</div>
-                      <p className="flex items-center gap-2"><CalendarDays className="text-primary size-5 shrink-0" aria-hidden />{formatWhen(e)}</p>
-                      <p className="flex items-center gap-2"><MapPin className="text-primary size-5 shrink-0" aria-hidden />{VENUE}</p>
-                      <Button variant="outline" size="sm" className="mt-auto self-start" asChild><a href={DIRECTIONS_URL} target="_blank" rel="noopener noreferrer"><MapPin aria-hidden />Map</a></Button>
-                    </CardContent>
-                  </Card>
-                </li>
-              ))}
+            <ul className="grid gap-4 md:grid-cols-2">
+              {events.map((e) => {
+                const type = e.type && e.type in EVENT_STYLE ? (e.type as EventType) : null;
+                const style = type ? EVENT_STYLE[type] : null;
+                                return (
+                  <li key={`${e.title}-${e.at.toISOString()}`}>
+                    <Card className={`h-full border-[3px] ${style ? style.edge : ""}`}>
+                      <CardContent className="flex h-full gap-4">
+                        {e.logo && <Image src={e.logo.src} alt={e.logo.alt} width={112} height={112} className="size-24 shrink-0 object-contain" />}
+                        <div className="flex min-w-0 flex-1 flex-col gap-2">
+                          {type && (
+                            <div className="font-label flex items-center gap-3 text-xl font-bold tracking-[0.08em] uppercase italic">
+                              <TierTile tier={type} className="size-16" />
+                              {/* The level's own text colour, as in the competition path below. */}
+                              <span className={TIER_TILE[type].title}>{EVENT_TYPE_LABEL(type)}</span>
+                            </div>
+                          )}
+                          <div className="font-display text-2xl leading-tight font-extrabold italic uppercase">{e.name ?? e.title}</div>
+                          <p className="flex items-center gap-2"><CalendarDays className="text-primary size-5 shrink-0" aria-hidden />{formatWhen(e)}</p>
+                          <p className="flex items-center gap-2"><MapPin className="text-primary size-5 shrink-0" aria-hidden />{e.place ?? VENUE}</p>
+                          <Button variant="outline" size="sm" className="mt-auto self-start border-2 border-[var(--bom-orange)] bg-black/60 text-[var(--bom-orange)] hover:bg-black/80 hover:text-[var(--bom-orange)]" asChild>
+                            <a href={!e.place || e.place === VENUE ? DIRECTIONS_URL : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(e.place)}`} target="_blank" rel="noopener noreferrer"><MapPin aria-hidden />Map</a>
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </li>
+                );
+              })}
             </ul>
             <p className="text-muted-foreground mt-3 text-sm">Bring your bey, we&apos;ll help with the rest.</p>
             <Button variant="outline" className="mt-4" asChild><Link href="/schedule">View all<ArrowRight aria-hidden /></Link></Button>
@@ -111,8 +130,13 @@ export default async function Home() {
       <section aria-labelledby="numbers">
         <SectionHeading id="numbers">By the numbers</SectionHeading>
         <ul className="grid grid-cols-2 gap-3 md:grid-cols-4">
-          {communityStats(subs.length).map((t) => (
-            <li key={t}><Card className="h-full justify-center py-6 text-center"><span className="font-display text-primary text-xl font-extrabold italic uppercase">{t}</span></Card></li>
+          {communityNumbers(subs.length).map(({ value, label }) => (
+            <li key={label}>
+              <Card className="h-full items-center justify-center gap-1 py-6 text-center">
+                <span className="font-display text-4xl leading-none font-black text-white italic uppercase md:text-5xl">{value}</span>
+                <span className="font-label text-primary text-base font-bold tracking-[0.08em] uppercase italic">{label}</span>
+              </Card>
+            </li>
           ))}
         </ul>
       </section>

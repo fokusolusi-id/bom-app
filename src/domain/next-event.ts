@@ -13,7 +13,10 @@ export function nextWeekly(now: Date, weekday: number, time: string): Date {
   return new Date(dayStart + ahead * DAY_MS + (h * 60 + m) * 60_000 - WIB_OFFSET_HOURS * HOUR_MS);
 }
 
-export type NextEvent = { title: string; at: Date; hasTime: boolean };
+/** `type` is the competition level (or "Break"), `logo` the sub komunitas or BOM logo; both are optional extras for display. */
+export type NextEvent = {
+  title: string; at: Date; hasTime: boolean; name?: string; type?: string; logo?: { src: string; alt: string }; place?: string;
+};
 
 /**
  * Upcoming events, soonest first: scheduled events (admin calendar), the next weekly Ranked sessions (when a weekly slot
@@ -25,11 +28,11 @@ export function upcomingEvents(opts: {
   weekly: { weekday: number; time: string } | null;
   tournaments: { name: string; tier: string; held_on: string }[];
   /** Events with an exact time. Past ones are ignored. */
-  scheduled?: { title: string; at: Date }[];
+  scheduled?: { title: string; at: Date; name?: string; type?: string; logo?: { src: string; alt: string }; place?: string }[];
   limit: number;
 }): NextEvent[] {
   const { now, weekly, tournaments, limit, scheduled = [] } = opts;
-  const events: NextEvent[] = scheduled.filter((e) => e.at.getTime() >= now.getTime()).map((e) => ({ title: e.title, at: e.at, hasTime: true }));
+  const events: NextEvent[] = scheduled.filter((e) => e.at.getTime() >= now.getTime()).map((e) => ({ ...e, hasTime: true }));
   if (weekly) {
     let from = now;
     for (let i = 0; i < limit; i++) {
@@ -40,7 +43,7 @@ export function upcomingEvents(opts: {
   }
   for (const t of tournaments) {
     const at = new Date(`${t.held_on}T00:00:00+07:00`);
-    if (!Number.isNaN(at.getTime()) && at.getTime() + DAY_MS > now.getTime()) events.push({ title: `${t.tier}: ${t.name}`, at, hasTime: false });
+    if (!Number.isNaN(at.getTime()) && at.getTime() + DAY_MS > now.getTime()) events.push({ title: `${t.tier}: ${t.name}`, at, hasTime: false, name: t.name, type: t.tier });
   }
   return events.sort((a, b) => a.at.getTime() - b.at.getTime()).slice(0, limit);
 }
