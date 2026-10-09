@@ -4,17 +4,17 @@ import type { Match } from "@/domain/types";
 import { hasSupabase } from "@/lib/supabase/env";
 import { check } from "./db";
 import { createPublicClient } from "./supabase-public";
-import { publicTournaments } from "./tournaments";
+import { publicResults } from "./results";
 
 export type LatestResult = { title: string; champion: string; runnerUp: string | null; note: string };
 
 const dateFmt = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Jakarta" });
 
-/** Podium of the last tournament with a champion, else the last decided finished match. */
-export async function latestResult(today: string): Promise<LatestResult | null> {
-  const podium = await publicTournaments().latestPodium(today);
+/** Podium of the last Cup, Major or Championship with a champion, else the last decided finished match. */
+export async function latestResult(now: Date): Promise<LatestResult | null> {
+  const podium = await publicResults().latestPodium(now.toISOString());
   if (podium) {
-    return { title: podium.name, champion: podium.champion, runnerUp: podium.runnerUp, note: `BOM ${podium.tier} · ${dateFmt.format(new Date(`${podium.held_on}T00:00:00+07:00`))}` };
+    return { title: podium.name, champion: podium.champion, runnerUp: podium.runnerUp, note: `BOM ${podium.tier} · ${dateFmt.format(new Date(podium.startsAt))}` };
   }
   if (!hasSupabase()) return null;
   const { data, error } = await createPublicClient().from("matches").select("*").eq("status", "finished").order("updated_at", { ascending: false }).limit(10);

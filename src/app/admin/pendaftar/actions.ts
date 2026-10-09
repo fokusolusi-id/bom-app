@@ -10,7 +10,7 @@ export async function setPlayerStatus(playerId: string, status: "registered" | "
   return toFormState(async () => {
     if (!isUuid(playerId) || (status !== "registered" && status !== "active")) throw new Error("Invalid input");
     await supabasePlayers(supabase).setStatus(playerId, status);
-    revalidatePath("/admin/pendaftar");
+    revalidatePath("/admin/members");
     revalidatePath("/leaderboard");
     revalidatePath("/about-bom");
     revalidatePath("/member/[bomId]", "page");

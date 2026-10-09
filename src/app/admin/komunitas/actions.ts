@@ -8,7 +8,7 @@ import { createImageUpload, removeMedia } from "@/server/media";
 import { supabaseSubCommunities } from "@/server/sub-communities";
 
 function revalidate() {
-  revalidatePath("/admin/komunitas");
+  revalidatePath("/admin/about");
   revalidatePath("/about-bom");
   revalidatePath("/schedule");
 }

@@ -27,3 +27,32 @@ export function AddCard({ title, children }: { title: string; children: React.Re
 export function ItemGrid({ children }: { children: React.ReactNode }) {
   return <div className="grid items-start gap-4 md:grid-cols-2">{children}</div>;
 }
+
+/** One part of a combined admin page. `id` is the anchor the side menu jumps to. */
+export function AdminSection({ id, title, hint, children }: { id: string; title: string; hint?: string; children: React.ReactNode }) {
+  return (
+    <section id={id} className="scroll-mt-20 space-y-6" aria-labelledby={`${id}-title`}>
+      <div>
+        <h2 id={`${id}-title`} className="text-2xl">{title}</h2>
+        {hint && <p className="text-muted-foreground mt-1 text-sm">{hint}</p>}
+      </div>
+      {children}
+    </section>
+  );
+}
+
+/** A combined admin page: a title, a side menu that jumps to each section, and the sections themselves. */
+export function AdminSectionsPage({ title, hint, sections, children }: { title: string; hint?: string; sections: readonly (readonly [id: string, label: string])[]; children: React.ReactNode }) {
+  return (
+    <AdminPage title={title} hint={hint}>
+      <div className="grid gap-8 md:grid-cols-[11rem_1fr]">
+        <nav aria-label={`${title} sections`} className="md:sticky md:top-20 md:self-start">
+          <ul className="font-display flex flex-wrap gap-4 text-sm font-bold italic uppercase md:flex-col md:gap-1">
+            {sections.map(([id, label]) => <li key={id}><a href={`#${id}`} className="hover:text-primary block py-1">{label}</a></li>)}
+          </ul>
+        </nav>
+        <div className="min-w-0 space-y-14">{children}</div>
+      </div>
+    </AdminPage>
+  );
+}

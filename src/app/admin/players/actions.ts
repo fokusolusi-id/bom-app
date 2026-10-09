@@ -10,7 +10,7 @@ export async function savePlayer(_prev: FormState, formData: FormData): Promise<
   return toFormState(async () => {
     const input = parsePlayerInput((k) => formData.get(k));
     await supabasePlayers(supabase).update(input);
-    revalidatePath("/admin/players");
+    revalidatePath("/admin/members");
     revalidatePath("/leaderboard");
     revalidatePath("/member/[bomId]", "page");
     revalidatePath("/about-bom");
