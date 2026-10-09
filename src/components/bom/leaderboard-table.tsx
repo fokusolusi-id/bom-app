@@ -11,7 +11,7 @@ import { ranks, searchPlayers, sortPlayers, type SortDir, type SortKey } from "@
 import { formatBomId } from "@/domain/profile";
 import type { Player } from "@/domain/types";
 
-type Row = Pick<Player, "bom_id" | "name" | "points" | "wins" | "losses">;
+type Row = Pick<Player, "bom_id" | "name" | "points">;
 
 export const PAGE_SIZE = 25;
 
@@ -56,7 +56,6 @@ export function LeaderboardTable({ players }: { players: Row[] }) {
               <TableHead className="w-16">#</TableHead>
               {header("bom_id", "BOM ID", "w-px whitespace-nowrap pr-1")}
               {header("name", "Blader", "pl-1")}
-              <TableHead className="text-right">W</TableHead><TableHead className="text-right">L</TableHead>
               {header("points", "Points", "text-right")}
             </TableRow>
           </TableHeader>
@@ -70,13 +69,11 @@ export function LeaderboardTable({ players }: { players: Row[] }) {
                   </Link>
                 </TableCell>
                 <TableCell className="pl-1 font-bold">{p.name}</TableCell>
-                <TableCell className="tabular text-success text-right">{p.wins}</TableCell>
-                <TableCell className="tabular text-destructive text-right">{p.losses}</TableCell>
                 <TableCell className="font-num tabular text-right text-xl font-black italic">{p.points}</TableCell>
               </TableRow>
             ))}
             {rows.length === 0 && (
-              <TableRow><TableCell colSpan={6} className="text-muted-foreground py-6 text-center">No blader matches &ldquo;{query}&rdquo;.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={4} className="text-muted-foreground py-6 text-center">No blader matches &ldquo;{query}&rdquo;.</TableCell></TableRow>
             )}
           </TableBody>
         </Table>

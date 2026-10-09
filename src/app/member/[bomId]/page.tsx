@@ -5,11 +5,9 @@ import { notFound, permanentRedirect } from "next/navigation";
 import { MemberCard } from "@/components/bom/member-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PointsChart } from "@/components/bom/points-chart";
 import { RibbonBanner } from "@/components/bom/ribbon-banner";
 import { TierBadge } from "@/components/bom/tier-badge";
-import { formatBomId, matchHistory, normalizeBomId, pointsSeries, winRate, type Result } from "@/domain/profile";
-import { publicMatchHistory } from "@/server/matches";
+import { formatBomId, normalizeBomId } from "@/domain/profile";
 import { SITE_URL } from "@/lib/venue";
 import { qrDataUrl } from "@/server/qr";
 import { publicPlayers } from "@/server/players";
@@ -23,9 +21,6 @@ type Props = { params: Promise<{ bomId: string }> };
 const sinceFmt = new Intl.DateTimeFormat("en-GB", { month: "2-digit", year: "numeric", timeZone: "Asia/Jakarta" });
 const date = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Jakarta" });
 const fmt = (iso: string) => (iso ? date.format(new Date(iso)) : "-");
-
-const resultStyle: Record<Result, string> = { win: "text-success", loss: "text-destructive", draw: "text-muted-foreground" };
-const resultLabel: Record<Result, string> = { win: "Win", loss: "Loss", draw: "Draw" };
 
 async function loadPlayer(raw: string) {
   const id = normalizeBomId(decodeURIComponent(raw));
@@ -51,19 +46,13 @@ export default async function MemberPage({ params }: Props) {
   // Sample players (no Supabase) have no id and no history.
   const qr = await qrDataUrl(`${SITE_URL}/member/${canonical}`);
   const since = player.created_at ? sinceFmt.format(new Date(player.created_at)).replace("/", ".") : "-";
-  const [matches, placements, rank] = await Promise.all([
-    playerId ? publicMatchHistory().listFinishedForPlayer(playerId) : [],
+  const [placements, rank] = await Promise.all([
     playerId ? publicResults().placementsForPlayer(playerId) : [],
     repo.rank(player.points),
   ]);
-  const history = matchHistory(matches, playerId);
-  const series = [{ at: "", points: 0 }, ...pointsSeries(matches, playerId)];
   const stats = [
     ["Points", player.points],
     ["Rank", `#${rank}`],
-    ["Wins", player.wins],
-    ["Losses", player.losses],
-    ["Win rate", `${winRate(player.wins, player.losses)}%`],
   ] as const;
 
   return (
@@ -82,7 +71,7 @@ export default async function MemberPage({ params }: Props) {
         <MemberCard bomId={player.bom_id} bladerName={player.name} since={since} qr={qr} />
       </div>
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
+      <div className="grid grid-cols-2 gap-3 md:max-w-md">
         {stats.map(([label, value]) => (
           <Card key={label}>
             <CardContent className="py-4">
@@ -92,11 +81,6 @@ export default async function MemberPage({ params }: Props) {
           </Card>
         ))}
       </div>
-
-      <Card>
-        <CardHeader><CardTitle>Points chart</CardTitle></CardHeader>
-        <CardContent><PointsChart series={series} /></CardContent>
-      </Card>
 
       <Card>
         <CardHeader><CardTitle>Tournament results</CardTitle></CardHeader>
@@ -111,37 +95,6 @@ export default async function MemberPage({ params }: Props) {
                     <TableCell><TierBadge tier={p.event.tier} className="w-auto" /></TableCell>
                     <TableCell>{fmt(p.event.starts_at)}</TableCell>
                     <TableCell className="font-num tabular text-primary text-right text-xl font-black italic">#{p.place}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader><CardTitle>Match history</CardTitle></CardHeader>
-        <CardContent>
-          {history.length === 0 ? <p className="text-muted-foreground text-sm">No finished matches yet.</p> : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Date</TableHead><TableHead>Tier</TableHead><TableHead>Opponent</TableHead>
-                  <TableHead className="text-right">Score</TableHead><TableHead>Result</TableHead><TableHead>Combo</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {history.map((m) => (
-                  <TableRow key={m.id}>
-                    <TableCell>{fmt(m.at)}</TableCell>
-                    <TableCell><TierBadge tier={m.tier} className="w-auto" /><div className="text-muted-foreground mt-1 text-xs">{m.round}</div></TableCell>
-                    <TableCell className="font-bold">{m.opponent}</TableCell>
-                    <TableCell className="font-num tabular text-right">{m.score}-{m.opponentScore}</TableCell>
-                    <TableCell className={`font-bold ${resultStyle[m.result]}`}>{resultLabel[m.result]}</TableCell>
-                    <TableCell className="text-xs">
-                      <div>{m.combo ?? "-"}</div>
-                      <div className="text-muted-foreground">vs {m.opponentCombo ?? "-"}</div>
-                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
