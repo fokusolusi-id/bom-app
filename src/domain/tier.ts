@@ -2,6 +2,12 @@ export const TIERS = ["Ranked", "Cup", "Major", "Championship"] as const;
 export type Tier = (typeof TIERS)[number];
 /** Competition levels shown to players; "Unrank" (casual and try) has no matches or points. */
 export type TierLabel = Tier | "Unrank";
+export const TIER_LABELS: readonly TierLabel[] = ["Unrank", ...TIERS];
+
+export function parseTierLabel(value: unknown): TierLabel {
+  if (typeof value !== "string" || !(TIER_LABELS as readonly string[]).includes(value)) throw new Error("Jenis kompetisi tidak valid");
+  return value as TierLabel;
+}
 
 export function isTier(value: unknown): value is Tier {
   return typeof value === "string" && (TIERS as readonly string[]).includes(value);

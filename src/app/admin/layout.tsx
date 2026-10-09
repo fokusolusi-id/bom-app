@@ -11,6 +11,7 @@ const sections = [
   ["/admin", "Match"],
   ["/admin/turnamen", "Turnamen"],
   ["/admin/komunitas", "Sub Komunitas"],
+  ["/admin/jadwal", "Jadwal"],
   ["/admin/tim", "Founding Team"],
   ["/admin/media", "Slider & Galeri"],
   ["/admin/sponsor", "Sponsor"],

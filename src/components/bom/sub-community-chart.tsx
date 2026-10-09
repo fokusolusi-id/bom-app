@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import type { SubCommunity } from "@/domain/sub-community";
 import { mediaUrl } from "@/lib/media";
 import { InstagramIcon } from "./brand-icons";
@@ -25,7 +25,6 @@ export function SubCommunityChart({ subs }: { subs: SubCommunity[] }) {
               {s.image_path && <Image src={mediaUrl(s.image_path)} alt={s.name} width={320} height={320} className="aspect-square w-full max-w-40 rounded-md object-contain" />}
               <CardHeader className="items-center">
                 <CardTitle>{s.name}</CardTitle>
-                <CardDescription>{s.schedule}</CardDescription>
                 {s.focus && <p className="text-sm">{s.focus}</p>}
                 {s.instagram && (
                   <a href={`https://www.instagram.com/${s.instagram}`} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-primary mt-1 inline-flex items-center gap-1.5 text-sm">
