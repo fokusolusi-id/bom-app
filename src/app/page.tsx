@@ -12,10 +12,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatWhen, todayWib } from "@/domain/next-event";
 import { communityStats } from "@/lib/content";
+import { mediaUrl } from "@/lib/media";
 import { DIRECTIONS_URL, INSTAGRAM, PARTNER_EMAIL, VENUE, WHATSAPP_INVITE } from "@/lib/venue";
 import { loadUpcomingEvents } from "@/server/events";
 import { latestResult } from "@/server/latest-result";
 import { publicSiteMedia } from "@/server/site-media";
+import { publicSponsors } from "@/server/sponsors";
 import { publicSubCommunities } from "@/server/sub-communities";
 
 export const revalidate = 60;
@@ -26,8 +28,8 @@ const EVENT_LIMIT = 3;
 export default async function Home() {
   const now = new Date();
   const media = publicSiteMedia();
-  const [subs, result, news, gallery] = await Promise.all([
-    publicSubCommunities().listActive(), latestResult(todayWib(now)), media.list("news"), media.list("gallery"),
+  const [subs, result, news, gallery, sponsors] = await Promise.all([
+    publicSubCommunities().listActive(), latestResult(todayWib(now)), media.list("news"), media.list("gallery"), publicSponsors().list(),
   ]);
   const events = await loadUpcomingEvents(subs, EVENT_LIMIT, now);
 
@@ -134,6 +136,21 @@ export default async function Home() {
 
       <section aria-labelledby="sponsors">
         <SectionHeading id="sponsors">Supported by</SectionHeading>
+        {sponsors.length > 0 && (
+          <ul className="mb-6 flex flex-wrap items-center gap-4">
+            {sponsors.map((sp) => {
+              const logo = (
+                // eslint-disable-next-line @next/next/no-img-element -- sponsor logos come in any size and format
+                <img src={mediaUrl(sp.logo_path)} alt={sp.name} loading="lazy" className="h-12 w-auto max-w-40 object-contain sm:h-14" />
+              );
+              return (
+                <li key={sp.id} className="rounded-lg bg-white px-5 py-3">
+                  {sp.website ? <a href={sp.website} target="_blank" rel="noopener noreferrer" aria-label={sp.name}>{logo}</a> : logo}
+                </li>
+              );
+            })}
+          </ul>
+        )}
         <p className="text-muted-foreground max-w-xl text-sm">
           Want to put your brand in front of Medan&apos;s Beyblade X scene?{" "}
           <a href={`mailto:${PARTNER_EMAIL}`} className="hover:text-primary text-white underline">{PARTNER_EMAIL}</a>

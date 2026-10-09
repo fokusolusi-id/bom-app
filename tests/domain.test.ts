@@ -344,3 +344,24 @@ describe("team role photos", () => {
     expect(() => parse([[`photo:${A}`, "gallery/x.jpg"]], [A])).toThrow();
   });
 });
+
+import { parseSponsorInput, parseWebsite } from "@/domain/sponsor";
+
+describe("sponsors", () => {
+  const sp = (o: Record<string, unknown>) => parseSponsorInput((k) => o[k]);
+  const base = { name: " Deli Park ", tier: "silver", logo_path: "sponsors/deli-park.png", sort_order: "1", is_active: "on" };
+  it("parses a sponsor", () => {
+    expect(sp(base)).toEqual({ name: "Deli Park", tier: "silver", logo_path: "sponsors/deli-park.png", website: null, sort_order: 1, is_active: true });
+  });
+  it("normalises the website and rejects junk", () => {
+    expect(parseWebsite("deli.park/id")).toBe("https://deli.park/id");
+    expect(parseWebsite("")).toBeNull();
+    expect(() => parseWebsite("javascript:alert(1)")).toThrow();
+    expect(() => parseWebsite("not a url")).toThrow();
+  });
+  it("requires a logo in the sponsors folder and a known tier", () => {
+    expect(() => sp({ ...base, logo_path: "" })).toThrow();
+    expect(() => sp({ ...base, logo_path: "gallery/x.png" })).toThrow();
+    expect(() => sp({ ...base, tier: "platinum" })).toThrow();
+  });
+});
