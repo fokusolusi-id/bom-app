@@ -289,3 +289,28 @@ describe("parseImagePath founding-team", () => {
   });
   it("keeps sub-community uploads uuid-only", () => expect(() => parseImagePath("sub-communities/dewa.jpg", "sub-communities")).toThrow());
 });
+
+import { parseSiteMediaInput } from "@/domain/site-media";
+import { mediaExtension } from "@/domain/media";
+
+describe("site media", () => {
+  const item = (o: Record<string, unknown>) => parseSiteMediaInput((k) => o[k]);
+  it("parses a hero video", () => {
+    expect(item({ section: "hero", path: `hero/${A}.mp4`, caption: " Teaser ", sort_order: "1", is_active: "on" }))
+      .toEqual({ section: "hero", path: `hero/${A}.mp4`, kind: "video", caption: "Teaser", sort_order: 1, is_active: true });
+  });
+  it("parses a gallery photo and treats a missing checkbox as hidden", () => {
+    expect(item({ section: "gallery", path: "gallery/gallery-01.jpg" })).toMatchObject({ kind: "image", caption: null, is_active: false });
+  });
+  it("rejects video in the gallery, wrong folder and missing file", () => {
+    expect(() => item({ section: "gallery", path: `gallery/${A}.mp4` })).toThrow();
+    expect(() => item({ section: "hero", path: "gallery/gallery-01.jpg" })).toThrow();
+    expect(() => item({ section: "hero", path: "" })).toThrow();
+    expect(() => item({ section: "other", path: "hero/x.jpg" })).toThrow();
+  });
+  it("allows video uploads only for the hero", () => {
+    expect(mediaExtension("video/mp4", "hero")).toBe("mp4");
+    expect(() => mediaExtension("video/mp4", "gallery")).toThrow();
+    expect(mediaExtension("image/png", "gallery")).toBe("png");
+  });
+});
