@@ -11,18 +11,16 @@ import { SubCommunityChart } from "@/components/bom/sub-community-chart";
 import { SectionHeading } from "@/components/bom/section-heading";
 import { communityStats, umbrella } from "@/lib/content";
 import { DIRECTIONS_URL, INSTAGRAM, MAP_EMBED_URL, PARTNER_EMAIL, VENUE, WHATSAPP_INVITE } from "@/lib/venue";
-import { publicPlayers } from "@/server/players";
+import { teamStrip } from "@/domain/team";
+import { publicTeam } from "@/server/team";
 import { publicSubCommunities } from "@/server/sub-communities";
 
 export const metadata = { title: "About | BOM" };
 export const revalidate = 60;
 
-/** "BoM-012" sorts before "BoM-100"; ids without a number go last. */
-const idNumber = (bomId: string) => Number(/\d+/.exec(bomId)?.[0] ?? Infinity);
-
 export default async function AboutUsPage() {
-  const [subs, players] = await Promise.all([publicSubCommunities().listActive(), publicPlayers().repo.list(1000)]);
-  const founders = [...players].sort((a, b) => idNumber(a.bom_id) - idNumber(b.bom_id)).map((p) => ({ name: p.name, bomId: p.bom_id }));
+  const [subs, roles] = await Promise.all([publicSubCommunities().listActive(), publicTeam().list()]);
+  const founders = teamStrip(roles);
   const stats = communityStats(subs.length);
   return (
     <main className="mx-auto max-w-6xl space-y-16 px-4 py-12">
@@ -59,10 +57,12 @@ export default async function AboutUsPage() {
       </ul>
       </section>
 
-      <section aria-labelledby="founders">
-        <SectionHeading id="founders">Founding team</SectionHeading>
-        <MemberCarousel members={founders} />
-      </section>
+      {founders.length > 0 && (
+        <section aria-labelledby="founders">
+          <SectionHeading id="founders">Founding team</SectionHeading>
+          <MemberCarousel members={founders} />
+        </section>
+      )}
 
       <section aria-labelledby="where">
         <SectionHeading id="where">Where and when</SectionHeading>

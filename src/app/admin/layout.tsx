@@ -9,6 +9,7 @@ const sections = [
   ["/admin", "Match"],
   ["/admin/turnamen", "Turnamen"],
   ["/admin/komunitas", "Sub Komunitas"],
+  ["/admin/tim", "Founding Team"],
   ["/admin/pendaftar", "Pendaftar"],
 ] as const;
 

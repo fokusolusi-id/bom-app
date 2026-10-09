@@ -13,6 +13,8 @@ export interface PlayerRepository {
   getByBomId(bomId: string): Promise<Player | null>;
   /** 1-based leaderboard position; ties share the better rank. */
   rank(points: number): Promise<number>;
+  /** Sets or clears the member photo (a media bucket path). Returns the previous path so the caller can delete the file. */
+  setPhoto(playerId: string, path: string | null): Promise<string | null>;
 }
 
 export function supabasePlayers(client: SupabaseClient): PlayerRepository {
@@ -36,6 +38,13 @@ export function supabasePlayers(client: SupabaseClient): PlayerRepository {
       check(error, "Failed to load rank");
       return (count ?? 0) + 1;
     },
+    async setPhoto(playerId, path) {
+      const { data, error: readError } = await client.from("players").select("photo_path").eq("id", playerId).maybeSingle();
+      check(readError, "Failed to load player");
+      const { error } = await client.from("players").update({ photo_path: path }).eq("id", playerId);
+      check(error, "Failed to update player photo");
+      return (data as { photo_path: string | null } | null)?.photo_path ?? null;
+    },
     async setStatus(playerId, status) {
       const { error } = await client.from("players").update({ status }).eq("id", playerId);
       check(error, "Failed to update player status");
@@ -54,6 +63,7 @@ export const samplePlayers: Player[] = [
 export function memoryPlayers(players: Player[] = samplePlayers): PlayerRepository {
   return {
     setStatus: async () => {},
+    setPhoto: async () => null,
     list: async (limit = 100) => [...players].sort((a, b) => b.points - a.points).slice(0, limit),
     getByBomId: async (bomId) => players.find((p) => p.bom_id.toLowerCase() === bomId.toLowerCase()) ?? null,
     rank: async (points) => players.filter((p) => p.points > points).length + 1,
