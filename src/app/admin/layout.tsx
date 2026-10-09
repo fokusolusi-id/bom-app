@@ -13,6 +13,7 @@ const sections = [
   ["/admin/komunitas", "Sub Komunitas"],
   ["/admin/tim", "Founding Team"],
   ["/admin/media", "Slider & Galeri"],
+  ["/admin/sponsor", "Sponsor"],
   ["/admin/pendaftar", "Pendaftar"],
 ] as const;
 
