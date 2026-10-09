@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { NavLink } from "@/components/nav-link";
 
 const nav = [
   ["/about-bom", "About BOM"],
@@ -9,7 +10,7 @@ const nav = [
   ["/leaderboard", "Leaderboard"],
 ] as const;
 
-const linkCls = "font-label text-sm font-bold italic uppercase tracking-[0.08em] hover:text-primary";
+const linkCls = "font-label text-sm font-bold italic uppercase tracking-[0.08em]";
 
 export function SiteHeader() {
   return (
@@ -20,12 +21,12 @@ export function SiteHeader() {
           <span className="font-display text-lg font-extrabold italic uppercase">Beyblade of Medan</span>
         </Link>
         <nav aria-label="Utama" className="hidden gap-6 md:flex">
-          {nav.map(([href, label]) => <Link key={href} href={href} className={linkCls}>{label}</Link>)}
+          {nav.map(([href, label]) => <NavLink key={href} href={href} className={linkCls}>{label}</NavLink>)}
         </nav>
         <details className="relative md:hidden">
-          <summary className={`${linkCls} cursor-pointer list-none`}>Menu</summary>
+          <summary className={`${linkCls} hover:text-primary cursor-pointer list-none`}>Menu</summary>
           <nav aria-label="Menu" className="bg-popover absolute right-0 z-10 mt-2 flex w-44 flex-col gap-3 rounded border p-4">
-            {nav.map(([href, label]) => <Link key={href} href={href} className={linkCls}>{label}</Link>)}
+            {nav.map(([href, label]) => <NavLink key={href} href={href} className={linkCls}>{label}</NavLink>)}
           </nav>
         </details>
       </div>

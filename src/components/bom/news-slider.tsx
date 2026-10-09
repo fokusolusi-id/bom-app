@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, Volume2, VolumeX } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { mediaUrl } from "@/lib/media";
 
@@ -19,18 +19,15 @@ const noop = () => () => {};
 const useOrigin = () => useSyncExternalStore(noop, () => window.location.origin, () => "");
 
 /**
- * Slider of videos. Each slide autoplays and moves to the next one when it ends
+ * Slider of videos. Each slide autoplays muted and moves to the next one when it ends
  * (uploaded files via `ended`, YouTube via its iframe API). A single slide loops.
- * Browsers only autoplay muted video, so it starts muted and the sound button turns sound on for every slide.
  * With reduced motion nothing autoplays; the video controls are shown instead.
  */
 export function NewsSlider({ items }: { items: NewsItem[] }) {
   const [i, setI] = useState(0);
   const reduced = useReducedMotion();
   const origin = useOrigin();
-  const [muted, setMuted] = useState(true);
   const frame = useRef<HTMLIFrameElement>(null);
-  const video = useRef<HTMLVideoElement>(null);
   const count = items.length;
   const item = items[i];
 
@@ -50,16 +47,6 @@ export function NewsSlider({ items }: { items: NewsItem[] }) {
     return () => window.removeEventListener("message", onMessage);
   }, [item.kind, count, go, i]);
 
-  const tellYouTube = useCallback((func: string, args: unknown[] = []) => {
-    frame.current?.contentWindow?.postMessage(JSON.stringify({ event: "command", func, args }), YT_ORIGIN);
-  }, []);
-  const toggleSound = () => {
-    const next = !muted;
-    setMuted(next);
-    if (video.current) video.current.muted = next;
-    tellYouTube(next ? "mute" : "unMute");
-  };
-
   const single = count === 1;
   const autoplay = reduced ? 0 : 1;
   return (
@@ -70,21 +57,14 @@ export function NewsSlider({ items }: { items: NewsItem[] }) {
             key={item.youtubeId} ref={frame} title={item.caption ?? "BOM video"}
             src={`${YT_ORIGIN}/embed/${item.youtubeId}?autoplay=${autoplay}&mute=1&rel=0&enablejsapi=1&origin=${encodeURIComponent(origin)}${single ? `&loop=1&playlist=${item.youtubeId}` : ""}`}
             allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowFullScreen className="size-full"
-            onLoad={() => {
-              frame.current?.contentWindow?.postMessage(JSON.stringify({ event: "listening", id: 1, channel: "widget" }), YT_ORIGIN);
-              if (!muted) tellYouTube("unMute");
-            }}
+            onLoad={() => frame.current?.contentWindow?.postMessage(JSON.stringify({ event: "listening", id: 1, channel: "widget" }), YT_ORIGIN)}
           />
         ) : item.path ? (
           <video
-            key={item.path} ref={video} src={mediaUrl(item.path)} muted={muted} playsInline autoPlay={!reduced} loop={single} controls={reduced}
+            key={item.path} src={mediaUrl(item.path)} muted playsInline autoPlay={!reduced} loop={single} controls={reduced}
             preload="metadata" aria-label={item.caption ?? "BOM video"} className="size-full object-contain" onEnded={() => !single && go(1)}
           />
         ) : null}
-        <button type="button" onClick={toggleSound} aria-label={muted ? "Turn sound on" : "Turn sound off"} aria-pressed={!muted}
-          className="absolute right-2 bottom-2 rounded bg-black/60 p-2 hover:bg-black/90">
-          {muted ? <VolumeX /> : <Volume2 />}
-        </button>
         {count > 1 && (
           <>
             <button type="button" onClick={() => go(-1)} aria-label="Previous video" className="absolute top-1/2 left-2 -translate-y-1/2 rounded bg-black/50 p-2 hover:bg-black/80"><ChevronLeft /></button>

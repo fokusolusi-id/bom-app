@@ -29,7 +29,6 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           </Link>
           <AdminNav sections={sections} />
           <div className="flex shrink-0 items-center gap-2">
-            <Button variant="ghost" size="sm" asChild><Link href="/">Website</Link></Button>
             <form action={signOut}><Button variant="outline" size="sm">Keluar</Button></form>
           </div>
         </div>
