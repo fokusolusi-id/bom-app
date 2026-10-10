@@ -5,9 +5,10 @@ import { ActionForm } from "@/components/form/action-form";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input, NativeSelect } from "@/components/ui/input";
+import { ORGANIZER_EVENT_TYPES, canManageEvent } from "@/domain/access";
 import { EVENT_TYPES, eventPlace, isoToWibLocal, type ScheduleEventView } from "@/domain/event";
 import { VENUE } from "@/lib/venue";
-import { requireAdmin } from "@/server/admin-session";
+import { requireStaff } from "@/server/admin-session";
 import { supabaseScheduleEvents } from "@/server/schedule-events";
 import { supabaseSubCommunities } from "@/server/sub-communities";
 import { EVENT_TYPE_LABEL } from "@/lib/event-style";
@@ -17,17 +18,17 @@ import { deleteScheduleEvent, saveScheduleEvent } from "../jadwal/actions";
 const when = new Intl.DateTimeFormat("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "Asia/Jakarta" });
 const DAY = 86_400_000;
 
-function EventForm({ e, communities, defaultCommunity }: { e?: ScheduleEventView; communities: { id: string; name: string }[]; defaultCommunity?: string }) {
+function EventForm({ e, communities, defaultCommunity, types, allowBom }: { e?: ScheduleEventView; communities: { id: string; name: string }[]; defaultCommunity?: string; types: readonly (typeof EVENT_TYPES)[number][]; allowBom: boolean }) {
   return (
     <ActionForm action={saveScheduleEvent} resetOnSuccess={!e} className="grid gap-3 sm:grid-cols-2">
       {e?.id && <input type="hidden" name="id" value={e.id} />}
       <Input name="name" defaultValue={e?.name} placeholder="Event name (e.g. Weekly Ranked)" aria-label="Event name" maxLength={80} required className="sm:col-span-2" />
       <NativeSelect name="sub_community_id" aria-label="Community" defaultValue={e ? (e.sub_community_id ?? "") : (defaultCommunity ?? "")}>
-        <option value="">All communities (BOM)</option>
+        {allowBom && <option value="">All communities (BOM)</option>}
         {communities.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
       </NativeSelect>
       <NativeSelect name="tier" aria-label="Competition type" defaultValue={e?.tier ?? "Ranked"}>
-        {EVENT_TYPES.map((t) => <option key={t} value={t}>{EVENT_TYPE_LABEL(t)}</option>)}
+        {types.map((t) => <option key={t} value={t}>{EVENT_TYPE_LABEL(t)}</option>)}
       </NativeSelect>
       <label className="text-muted-foreground flex flex-col gap-1 text-xs">Date and time (WIB)
         <Input name="starts_at" type="datetime-local" defaultValue={e ? isoToWibLocal(e.starts_at) : ""} required className="text-base text-white" />
@@ -47,7 +48,8 @@ const BOM = "bom";
 const ALL = "all";
 
 export async function ScheduleView({ community, type }: { community?: string; type?: string }) {
-  const supabase = await requireAdmin();
+  const staff = await requireStaff();
+  const supabase = staff.supabase;
   const now = new Date();
   const from = new Date(now.getTime() - 30 * DAY).toISOString();
   const to = new Date(now.getTime() + 365 * DAY).toISOString();
@@ -55,12 +57,15 @@ export async function ScheduleView({ community, type }: { community?: string; ty
     supabaseScheduleEvents(supabase).between(from, to, { includeInactive: true }),
     supabaseSubCommunities(supabase).listAll(),
   ]);
-  const communities = subs.flatMap((s) => (s.id ? [{ id: s.id, name: s.name }] : []));
+  // Organizers see and manage only their own sub communities; admins see them all.
+  const communities = subs.flatMap((s) => (s.id && (staff.isAdmin || staff.communityIds.includes(s.id)) ? [{ id: s.id, name: s.name }] : []));
+  const types = staff.isAdmin ? EVENT_TYPES : ORGANIZER_EVENT_TYPES;
   // All events by default; ?c=<id> narrows it to one community, ?c=bom to events without a community.
   const requested = community;
   const filter = requested === BOM || communities.some((c) => c.id === requested) ? requested! : ALL;
   const typeFilter = EVENT_TYPES.find((t) => t === type) ?? null;
   const shown = events
+    .filter((e) => staff.isAdmin || (e.sub_community_id !== null && staff.communityIds.includes(e.sub_community_id)))
     .filter((e) => (filter === ALL ? true : filter === BOM ? e.sub_community_id === null : e.sub_community_id === filter))
     .filter((e) => typeFilter === null || e.tier === typeFilter);
   /** Links keep the other filter: picking a community keeps the type, and the other way round. */
@@ -70,7 +75,7 @@ export async function ScheduleView({ community, type }: { community?: string; ty
     if (t) q.set("t", t);
     return q.size ? `/admin/schedule?${q}` : "/admin/schedule";
   };
-  const chips = [{ key: ALL, label: "All events" }, ...communities.map((c) => ({ key: c.id, label: c.name })), { key: BOM, label: "BOM only" }];
+  const chips = [{ key: ALL, label: "All events" }, ...communities.map((c) => ({ key: c.id, label: c.name })), ...(staff.isAdmin ? [{ key: BOM, label: "BOM only" }] : [])];
   return (
     <AdminPage title="Schedule" hint="Events on the Schedule page and the homepage. Shows the last 30 days up to one year ahead.">
       <div className="grid gap-8 md:grid-cols-[11rem_1fr]">
@@ -84,9 +89,9 @@ export async function ScheduleView({ community, type }: { community?: string; ty
           </ul>
         </nav>
         <div className="min-w-0 space-y-6">
-      <AddCard title="New event"><EventForm communities={communities} defaultCommunity={filter === BOM || filter === ALL ? "" : filter} /></AddCard>
+      <AddCard title="New event"><EventForm communities={communities} types={types} allowBom={staff.isAdmin} defaultCommunity={filter === BOM || filter === ALL ? (staff.isAdmin ? "" : communities[0]?.id) : filter} /></AddCard>
       <nav aria-label="Competition type" className="flex flex-wrap gap-2">
-        {[null, ...EVENT_TYPES].map((t) => (
+        {[null, ...types].map((t) => (
           <Link
             key={t ?? "all"} href={href(filter, t)} aria-current={t === typeFilter ? "page" : undefined}
             className={cn("font-label rounded border px-3 py-1.5 text-sm font-bold uppercase italic", t === typeFilter ? "text-primary border-primary" : "hover:text-primary")}
@@ -106,8 +111,12 @@ export async function ScheduleView({ community, type }: { community?: string; ty
               <p className="text-muted-foreground text-sm">{when.format(new Date(e.starts_at))} WIB · {e.community?.name ?? "BOM"} · {eventPlace(e, VENUE)}</p>
             </CardHeader>
             <CardContent className="space-y-3">
-              <EventForm e={e} communities={communities} />
-              <ActionForm action={deleteScheduleEvent.bind(null, e.id!)}><Button variant="destructive" size="sm">Delete</Button></ActionForm>
+              {canManageEvent(staff, e) ? (
+                <>
+                  <EventForm e={e} communities={communities} types={types} allowBom={staff.isAdmin} />
+                  <ActionForm action={deleteScheduleEvent.bind(null, e.id!)}><Button variant="destructive" size="sm">Delete</Button></ActionForm>
+                </>
+              ) : <p className="text-muted-foreground text-sm">Only an admin can change this event.</p>}
             </CardContent>
           </Card>
         ))}
