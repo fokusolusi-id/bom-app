@@ -1,4 +1,4 @@
-import { ArrowRight, CalendarDays, MapPin, Trophy } from "lucide-react";
+import { ArrowRight, CalendarDays, Crown, MapPin, Trophy } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { InstagramIcon, WhatsappIcon } from "@/components/bom/brand-icons";
@@ -19,7 +19,7 @@ import { communityNumbers } from "@/lib/content";
 import { loadCommunityCounts } from "@/server/community-counts";
 import { DIRECTIONS_URL, INSTAGRAM, VENUE, WHATSAPP_INVITE } from "@/lib/venue";
 import { loadUpcomingEvents } from "@/server/events";
-import { latestResult } from "@/server/latest-result";
+import { latestResults } from "@/server/latest-result";
 import { publicSiteMedia } from "@/server/site-media";
 import { publicSubCommunities } from "@/server/sub-communities";
 
@@ -31,8 +31,8 @@ const EVENT_LIMIT = 2;
 export default async function Home() {
   const now = new Date();
   const media = publicSiteMedia();
-  const [subs, result, news, gallery] = await Promise.all([
-    publicSubCommunities().listActive(), latestResult(now), media.list("news"), media.list("gallery"),
+  const [subs, results, news, gallery] = await Promise.all([
+    publicSubCommunities().listActive(), latestResults(now), media.list("news"), media.list("gallery"),
   ]);
   const [events, counts] = await Promise.all([loadUpcomingEvents(EVENT_LIMIT, now), loadCommunityCounts(subs.length, now)]);
 
@@ -104,20 +104,42 @@ export default async function Home() {
 
       <section aria-labelledby="latest">
         <SectionHeading id="latest">Latest result</SectionHeading>
-        <Card>
-          {result ? (
-            <CardContent className="space-y-1">
-              <div className="font-display text-xl font-extrabold italic uppercase">{result.title}</div>
-              <p className="flex flex-wrap items-center gap-x-6 gap-y-1">
-                <span className="flex items-center gap-2"><Trophy className="text-primary size-5" aria-hidden />Champion <strong>{result.champion}</strong></span>
-                {result.runnerUp && <span>Runner-up <strong>{result.runnerUp}</strong></span>}
-              </p>
-              <p className="text-muted-foreground text-sm">{result.note}</p>
-            </CardContent>
-          ) : (
-            <CardContent><p className="text-muted-foreground">Results appear here after the first tournament.</p></CardContent>
-          )}
-        </Card>
+        {results.length > 0 ? (
+          <ul className="grid gap-4 md:grid-cols-2">
+            {results.map((r, i) => (
+              <li key={`${r.title}-${r.date}`}>
+                <Card className={`h-full ${i === 0 ? "border-primary border-2" : ""}`}>
+                  <CardContent className="space-y-4">
+                    <div className="flex items-start gap-4">
+                      <div className="flex shrink-0 items-center gap-2">
+                        <Image src={r.logo.src} alt={r.logo.alt} width={96} height={96} className="size-16 object-contain" />
+                        <TierTile tier={r.tier} className="size-14" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className={`font-label text-lg font-bold tracking-[0.08em] uppercase italic ${TIER_TILE[r.tier].title}`}>{EVENT_TYPE_LABEL(r.tier)}{i === 0 && <span className="text-primary ml-2 text-xs not-italic">Latest</span>}</div>
+                        <div className="font-display text-xl leading-tight font-extrabold italic uppercase">{r.title}</div>
+                        <p className="text-muted-foreground text-sm">{r.date} · points earned that week</p>
+                      </div>
+                    </div>
+                    <ol className="space-y-1.5">
+                      {r.top.map((t) => (
+                        <li key={t.place} className="flex items-center gap-3">
+                          <span className="font-num text-primary w-6 text-center text-lg font-black italic">{t.place}</span>
+                          <span className={t.place === 1 ? "font-bold" : ""}>{t.name}</span>
+                          {t.tigerKing && <Crown className="size-4 text-yellow-400" aria-label="Tiger King" />}
+                          {t.place === 1 && <Trophy className="text-primary size-4" aria-label="Champion" />}
+                          <span className="font-num tabular text-muted-foreground ml-auto text-sm">+{t.points} pts</span>
+                        </li>
+                      ))}
+                    </ol>
+                  </CardContent>
+                </Card>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <Card><CardContent><p className="text-muted-foreground">Results appear here after the first tournament.</p></CardContent></Card>
+        )}
       </section>
 
       <section aria-labelledby="sub-komunitas">

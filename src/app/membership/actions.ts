@@ -23,3 +23,14 @@ export async function registerMember(_prev: FormState<RegisteredMember>, formDat
     return { error: e instanceof Error ? e.message : "Something went wrong" };
   }
 }
+
+/** Live check while typing the blader name: is it still free? Unknown (no database, error) counts as free; registration checks again. */
+export async function checkBladerName(name: string): Promise<{ available: boolean }> {
+  if (!hasSupabase() || name.trim().length < 2 || name.length > 40) return { available: true };
+  try {
+    return { available: await supabaseJoinRequests(createPublicClient()).bladerNameAvailable(name) };
+  } catch (e) {
+    console.error(e);
+    return { available: true };
+  }
+}

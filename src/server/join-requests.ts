@@ -10,10 +10,13 @@ export interface JoinRequestRepository {
   /** Registers the member and returns the BOM ID issued to them. */
   register(input: Registration): Promise<string>;
   listRecent(limit?: number): Promise<JoinRequest[]>;
+  /** True when no player has this blader name yet (ignoring case and extra spaces). */
+  bladerNameAvailable(name: string): Promise<boolean>;
 }
 
 const ERRORS: Record<string, string> = {
   rate_limited: "Too many sign-ups. Try again later.",
+  duplicate_blader: "This blader name is already taken. Choose another one.",
   duplicate_whatsapp: "This WhatsApp number is already registered. Contact the committee through the WhatsApp group.",
   guardian_required: "Guardian name and WhatsApp are required for ages under 12.",
   consent_required: "Accept the payment statement to continue.",
@@ -34,6 +37,13 @@ export function supabaseJoinRequests(client: SupabaseClient): JoinRequestReposit
       if (known) throw new Error(ERRORS[known]);
       check(error, "Failed to register member");
       return data as string;
+    },
+    async bladerNameAvailable(name) {
+      // ilike treats % and _ as wildcards; escape them so the name is compared as typed.
+      const pattern = name.trim().replace(/\s+/g, " ").replace(/[\\%_]/g, "\\$&");
+      const { count, error } = await client.from("players").select("id", { count: "exact", head: true }).ilike("name", pattern);
+      check(error, "Failed to check the blader name");
+      return (count ?? 0) === 0;
     },
     async listRecent(limit = 200) {
       const { data, error } = await client.from("join_requests")

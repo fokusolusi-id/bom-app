@@ -6,6 +6,7 @@ import { RibbonBanner } from "@/components/bom/ribbon-banner";
 import { Button } from "@/components/ui/button";
 import { publicPlayers } from "@/server/players";
 import { publicPointsTable } from "@/server/settings";
+import { publicStandings } from "@/server/standings";
 
 export const metadata = { title: "Leaderboard | BOM" };
 export const revalidate = 30;
@@ -18,7 +19,14 @@ const prizes = [
 
 export default async function LeaderboardPage() {
   const { repo, live } = publicPlayers();
-  const [players, pointsTable] = await Promise.all([repo.list(100), publicPointsTable()]);
+  const [players, pointsTable, standings] = await Promise.all([repo.list(100), publicPointsTable(), publicStandings()]);
+  const hadEarlierWeeks = [...standings.values()].some((o) => o.previousRank !== null);
+  const moveOf = (id?: string): "up" | "down" | "new" | null => {
+    const s = id ? standings.get(id) : undefined;
+    if (!s || s.week === 0) return null;
+    if (s.previousRank === null) return hadEarlierWeeks ? "new" : null;
+    return s.rank < s.previousRank ? "up" : s.rank > s.previousRank ? "down" : null;
+  };
   return (
     <main className="mx-auto max-w-6xl px-4 py-12">
       <RibbonBanner>BOM Leaderboard Season 2026</RibbonBanner>
@@ -37,7 +45,7 @@ export default async function LeaderboardPage() {
         </p>
       </section>
 
-      <LeaderboardTable players={players.map(({ bom_id, name, points }) => ({ bom_id, name, points }))} />
+      <LeaderboardTable players={players.map(({ id, bom_id, name, points }) => ({ bom_id, name, points: Number(points), week: id ? standings.get(id)?.week ?? 0 : 0, previous: id ? standings.get(id)?.previousRank ?? null : null, change: id ? Math.abs((standings.get(id)?.previousRank ?? 0) - (standings.get(id)?.rank ?? 0)) : 0, trophies: id ? standings.get(id)?.tigerKings ?? 0 : 0, move: moveOf(id) }))} />
       <PointsTable table={pointsTable} />
       <SponsorsSection className="mt-12" />
       {!live && <p className="text-muted-foreground mt-3 text-xs">Sample data. Set NEXT_PUBLIC_SUPABASE_URL for real data.</p>}
