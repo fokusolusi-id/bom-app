@@ -9,7 +9,7 @@ import { createPublicClient } from "./supabase-public";
 
 
 /** The top eight of an event, in order, with its sub community. */
-export type Podium = { name: string; tier: string; startsAt: string; communityLogo: string | null; communityName: string | null; participants: number; top: { place: number; name: string; tigerKing: boolean }[] };
+export type Podium = { name: string; tier: string; startsAt: string; communityLogo: string | null; communityName: string | null; participants: number; top: { place: number; name: string; bomId: string; tigerKing: boolean }[] };
 
 export interface ResultsRepository {
   /** The most recent past events (shown on the site) that have a champion recorded, newest first. */
@@ -29,16 +29,16 @@ export function supabaseResults(client: SupabaseClient): ResultsRepository {
     async recentPodiums(nowIso, limit) {
       const { data, error } = await client
         .from("schedule_events")
-        .select("name,tier,starts_at,community:sub_communities(name,image_path),event_placements(place,tiger_king,player:players(name))")
+        .select("name,tier,starts_at,community:sub_communities(name,image_path),event_placements(place,tiger_king,player:players(name,bom_id))")
         .in("tier", TIERS).eq("is_active", true).lte("starts_at", nowIso)
         .order("starts_at", { ascending: false }).limit(30);
       check(error, "Failed to load latest results");
-      type Row = { name: string; tier: string; starts_at: string; community: { name: string; image_path: string | null } | null; event_placements: { place: number | null; tiger_king: boolean; player: { name: string } | null }[] };
+      type Row = { name: string; tier: string; starts_at: string; community: { name: string; image_path: string | null } | null; event_placements: { place: number | null; tiger_king: boolean; player: { name: string; bom_id: string } | null }[] };
       return ((data ?? []) as unknown as Row[])
         .map((e) => ({
           name: e.name, tier: e.tier, startsAt: e.starts_at, communityLogo: e.community?.image_path ?? null, communityName: e.community?.name ?? null, participants: e.event_placements.length,
           top: e.event_placements
-            .flatMap((p) => (p.place !== null && p.place <= 8 && p.player ? [{ place: p.place, name: p.player.name, tigerKing: p.tiger_king }] : []))
+            .flatMap((p) => (p.place !== null && p.place <= 8 && p.player ? [{ place: p.place, name: p.player.name, bomId: p.player.bom_id, tigerKing: p.tiger_king }] : []))
             .sort((a, b) => a.place - b.place),
         }))
         .filter((p) => p.top.some((t) => t.place === 1))

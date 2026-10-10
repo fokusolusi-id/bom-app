@@ -102,6 +102,27 @@ export default async function MemberPage({ params }: Props) {
         <CardHeader><CardTitle>Tournament results</CardTitle></CardHeader>
         <CardContent>
           {history.length === 0 ? <p className="text-muted-foreground text-sm">No tournament results yet.</p> : (
+            <>
+              {/* Small screens: one card per event, so nothing scrolls sideways. */}
+              <ul className="space-y-2 md:hidden">
+                {[...history].reverse().map((h) => (
+                  <li key={h.eventId} className="rounded-lg border p-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="font-bold break-words">{h.name}{h.tigerKing && <Crown className="ml-2 inline size-4 align-text-bottom text-yellow-400" aria-label="Tiger King" />}</div>
+                        <TierMark tier={h.tier as Tier} />
+                      </div>
+                      <div className="font-num tabular text-primary text-2xl font-black italic">{h.place === null ? <span className="text-muted-foreground text-base font-normal not-italic">Played</span> : `#${h.place}`}</div>
+                    </div>
+                    <dl className="mt-3 grid grid-cols-3 gap-2 text-sm">
+                      <div><dt className="text-muted-foreground text-xs uppercase">Date</dt><dd>{fmt(h.startsAt)}</dd></div>
+                      <div><dt className="text-muted-foreground text-xs uppercase">Members</dt><dd className="font-num tabular">{h.participants}</dd></div>
+                      <div><dt className="text-muted-foreground text-xs uppercase">Points</dt><dd className="font-num tabular font-bold">+{h.points}</dd></div>
+                    </dl>
+                  </li>
+                ))}
+              </ul>
+              <div className="hidden md:block">
             <Table>
               <TableHeader><TableRow><TableHead>Event</TableHead><TableHead>Type</TableHead><TableHead>Date</TableHead><TableHead className="text-right">Members</TableHead><TableHead className="text-right">Place</TableHead><TableHead className="text-right">Points</TableHead></TableRow></TableHeader>
               <TableBody>
@@ -117,6 +138,8 @@ export default async function MemberPage({ params }: Props) {
                 ))}
               </TableBody>
             </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

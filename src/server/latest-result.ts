@@ -10,7 +10,7 @@ import { publicPointsTable } from "./settings";
 export type LatestResult = {
   title: string; tier: Tier; date: string;
   logo: { src: string; alt: string };
-  top: { place: number; name: string; tigerKing: boolean; points: number }[];
+  top: { place: number; name: string; bomId: string; tigerKing: boolean; points: number }[];
 };
 
 const dateFmt = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Jakarta" });

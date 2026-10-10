@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { MobileMenu } from "@/components/bom/mobile-menu";
 import { NavLink } from "@/components/nav-link";
 
 const nav = [
@@ -14,7 +15,7 @@ const linkCls = "font-label text-sm font-bold italic uppercase tracking-[0.08em]
 
 export function SiteHeader() {
   return (
-    <header className="border-b">
+    <header className="bg-background sticky top-0 z-40 border-b">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
         <Link href="/" className="flex items-center gap-3">
           <Image src="/brand/logo-768.png" alt="BOM Beyblade of Medan" width={44} height={44} />
@@ -23,12 +24,7 @@ export function SiteHeader() {
         <nav aria-label="Main" className="hidden gap-6 md:flex">
           {nav.map(([href, label]) => <NavLink key={href} href={href} className={linkCls}>{label}</NavLink>)}
         </nav>
-        <details className="relative md:hidden">
-          <summary className={`${linkCls} hover:text-primary cursor-pointer list-none`}>Menu</summary>
-          <nav aria-label="Menu" className="bg-popover absolute right-0 z-10 mt-2 flex w-44 flex-col gap-3 rounded border p-4">
-            {nav.map(([href, label]) => <NavLink key={href} href={href} className={linkCls}>{label}</NavLink>)}
-          </nav>
-        </details>
+        <MobileMenu nav={nav} linkClass={linkCls} />
       </div>
     </header>
   );
