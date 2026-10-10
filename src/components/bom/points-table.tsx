@@ -1,3 +1,4 @@
+import { PointsMultipliers } from "@/components/bom/points-multipliers";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { PointsRow, PointsTable as PointsTableData } from "@/domain/points-table";
 
@@ -33,6 +34,7 @@ export function PointsTable({ table }: { table: PointsTableData }) {
         </Table>
       </div>
       {table.note && <p className="text-muted-foreground text-sm"><strong className="text-white">Note:</strong> {table.note}</p>}
+      <PointsMultipliers className="pt-4" />
     </section>
   );
 }

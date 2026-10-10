@@ -6,9 +6,9 @@ import { competitionPath } from "@/lib/content";
 import { cn } from "@/lib/utils";
 import { TIER_TILE, TierTile } from "./tier-tile";
 
-/** What a match is worth at this level, from the scoring rules so the page cannot drift from the leaderboard. */
+/** What an event is worth at this level, from the scoring rules so the page cannot drift from the leaderboard. */
 function pointsText(tier: TierLabel): string {
-  return tier === "Unrank" ? "No points awarded." : `Winner gets ${tierMultiplier(tier)}x points.`;
+  return tier === "Unrank" ? "No points awarded." : `All points count ${tierMultiplier(tier)}x.`;
 }
 
 /**

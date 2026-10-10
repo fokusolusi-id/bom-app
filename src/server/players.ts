@@ -50,6 +50,7 @@ export function supabasePlayers(client: SupabaseClient): PlayerRepository {
     },
     async update({ id, ...row }) {
       const { error } = await client.from("players").update(row).eq("id", id);
+      if (error?.message.includes("players_name_lower_idx")) throw new Error("This blader name is already taken");
       check(error, "Failed to update player");
     },
     async setStatus(playerId, status) {

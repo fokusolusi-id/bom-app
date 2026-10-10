@@ -12,7 +12,7 @@ import { AGE_GROUPS, HEAR_FROM } from "@/domain/join-request";
 import { MEMBERSHIP_FEE } from "@/lib/content";
 import { ADMIN_WHATSAPP, ADMIN_WHATSAPP_URL, PAYMENT_ACCOUNT } from "@/lib/venue";
 import { ProofUpload } from "@/components/form/proof-upload";
-import { registerMember } from "./actions";
+import { checkBladerName, registerMember } from "./actions";
 import { BomIdBadge } from "@/components/bom/bom-id-badge";
 
 type Props = { since: string; nextEvent: string | null; venue: string; whatsappInvite?: string };
@@ -23,6 +23,7 @@ const Req = () => <span className="text-destructive" aria-hidden> *</span>;
 export function MembershipForm({ since, nextEvent, venue, whatsappInvite }: Props) {
   const [state, run, pending] = useActionState(registerMember, {});
   const [ageGroup, setAgeGroup] = useState("");
+  const [nameTaken, setNameTaken] = useState(false);
   const [proofMissing, setProofMissing] = useState(false);
 
   if (state.ok && state.data) {
@@ -62,6 +63,7 @@ export function MembershipForm({ since, nextEvent, venue, whatsappInvite }: Prop
           onSubmit={(e) => {
             e.preventDefault();
             const data = new FormData(e.currentTarget);
+            if (nameTaken) return;
             if (!data.get("payment_proof")) return setProofMissing(true);
             setProofMissing(false);
             startTransition(() => run(data));
@@ -69,7 +71,10 @@ export function MembershipForm({ since, nextEvent, venue, whatsappInvite }: Prop
         >
           <fieldset disabled={pending} className="contents">
             <div><label className={label} htmlFor="full_name">Full name<Req /></label><Input id="full_name" name="full_name" autoComplete="name" minLength={2} maxLength={60} required /></div>
-            <div><label className={label} htmlFor="blader_name">Blader name (shown publicly)<Req /></label><Input id="blader_name" name="blader_name" minLength={2} maxLength={40} required /></div>
+            <div><label className={label} htmlFor="blader_name">Blader name (shown publicly)<Req /></label><Input id="blader_name" name="blader_name" minLength={2} maxLength={40} required aria-invalid={nameTaken} aria-describedby="blader_name_hint"
+                onChange={() => setNameTaken(false)} onBlur={async (e) => setNameTaken(!(await checkBladerName(e.target.value)).available)} />
+              {nameTaken && <p id="blader_name_hint" role="alert" className="text-destructive mt-1 text-sm">This blader name is already taken. Choose another one.</p>}
+            </div>
             <div><label className={label} htmlFor="whatsapp">WhatsApp number<Req /></label><Input id="whatsapp" name="whatsapp" type="tel" placeholder="08xx" autoComplete="tel" maxLength={20} required /></div>
             <div>
               <label className={label} htmlFor="age_group">Age group<Req /></label>

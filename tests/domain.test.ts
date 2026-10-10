@@ -127,7 +127,10 @@ describe("member profile", () => {
 describe("placement input", () => {
   const U = "11111111-1111-1111-1111-111111111111";
   it("parses placements", () => {
-    expect(parsePlacementInput((k) => ({ event_id: U, player_id: U, place: "2" })[k as "place"])).toEqual({ eventId: U, playerId: U, place: 2 });
+    expect(parsePlacementInput((k) => ({ event_id: U, player_id: U, place: "2" })[k as "place"])).toEqual({ eventId: U, playerId: U, place: 2, tigerKing: false });
+  });
+  it("allows no place, and reads the Tiger King box", () => {
+    expect(parsePlacementInput((k) => ({ event_id: U, player_id: U, place: "", tiger_king: "on" })[k as "place"])).toEqual({ eventId: U, playerId: U, place: null, tigerKing: true });
   });
   it.each([{ event_id: U, player_id: U, place: "0" }, { event_id: U, player_id: U, place: "1000" }, { event_id: "x", player_id: U, place: "1" }, { event_id: U, player_id: "x", place: "1" }])("rejects %j", (o) => {
     expect(() => parsePlacementInput((k) => (o as Record<string, string>)[k])).toThrow();

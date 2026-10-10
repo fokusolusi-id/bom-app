@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowDown, ArrowUp, ArrowUpDown, ChevronLeft, ChevronRight, Search } from "lucide-react";
+import { ArrowDown, ArrowUp, Crown, Sparkles, ArrowUpDown, ChevronLeft, ChevronRight, Search } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { BomIdBadge } from "@/components/bom/bom-id-badge";
@@ -11,7 +11,7 @@ import { ranks, searchPlayers, sortPlayers, type SortDir, type SortKey } from "@
 import { formatBomId } from "@/domain/profile";
 import type { Player } from "@/domain/types";
 
-type Row = Pick<Player, "bom_id" | "name" | "points">;
+type Row = Pick<Player, "bom_id" | "name" | "points"> & { week: number; previous: number | null; change: number; trophies: number; move: "up" | "down" | "new" | null };
 
 export const PAGE_SIZE = 25;
 
@@ -53,10 +53,14 @@ export function LeaderboardTable({ players }: { players: Row[] }) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-16">#</TableHead>
+              <TableHead className="w-16">No</TableHead>
               {header("bom_id", "BOM ID", "w-px whitespace-nowrap pr-1")}
               {header("name", "Blader", "pl-1")}
-              {header("points", "Points", "text-right")}
+              <TableHead className="whitespace-nowrap">Trophy</TableHead>
+              {header("points", "Total Points", "text-right whitespace-nowrap")}
+              <TableHead className="text-right whitespace-nowrap">Points This Week</TableHead>
+              <TableHead className="text-right whitespace-nowrap">Rank Last Week</TableHead>
+              <TableHead className="whitespace-nowrap">Changes</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -69,11 +73,24 @@ export function LeaderboardTable({ players }: { players: Row[] }) {
                   </Link>
                 </TableCell>
                 <TableCell className="pl-1 font-bold">{p.name}</TableCell>
+                <TableCell>
+                  {p.trophies > 0
+                    ? <span className="inline-flex gap-0.5 text-yellow-400" role="img" aria-label={`${p.trophies} Tiger King`}>{Array.from({ length: p.trophies }, (_, i) => <Crown key={i} className="size-5" aria-hidden />)}</span>
+                    : <span className="text-muted-foreground">–</span>}
+                </TableCell>
                 <TableCell className="font-num tabular text-right text-xl font-black italic">{p.points}</TableCell>
+                <TableCell className="font-num tabular text-right">{p.week > 0 ? `+${p.week}` : "–"}</TableCell>
+                <TableCell className="font-num tabular text-muted-foreground text-right">{p.previous ?? "–"}</TableCell>
+                <TableCell>
+                  {p.move === "up" && <span className="inline-flex items-center gap-1 text-green-500"><ArrowUp className="size-4" aria-hidden />Up {p.change}</span>}
+                  {p.move === "down" && <span className="inline-flex items-center gap-1 text-red-500"><ArrowDown className="size-4" aria-hidden />Down {p.change}</span>}
+                  {p.move === "new" && <span className="inline-flex items-center gap-1 text-yellow-400"><Sparkles className="size-4" aria-hidden />New</span>}
+                  {p.move === null && <span className="text-muted-foreground">–</span>}
+                </TableCell>
               </TableRow>
             ))}
             {rows.length === 0 && (
-              <TableRow><TableCell colSpan={4} className="text-muted-foreground py-6 text-center">No blader matches &ldquo;{query}&rdquo;.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={8} className="text-muted-foreground py-6 text-center">No blader matches &ldquo;{query}&rdquo;.</TableCell></TableRow>
             )}
           </TableBody>
         </Table>

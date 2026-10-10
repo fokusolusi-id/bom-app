@@ -1,3 +1,4 @@
+import { PointsMultipliers } from "@/components/bom/points-multipliers";
 import { AdminSection } from "@/components/admin/admin-page";
 import { ActionForm } from "@/components/form/action-form";
 import { Button } from "@/components/ui/button";
@@ -49,6 +50,7 @@ export async function PointsSection() {
         <Textarea name="note" defaultValue={table.note} maxLength={200} rows={2} className="text-base text-white" placeholder="Note under the table" aria-label="Note under the table" />
         <Button type="submit">Save points table</Button>
       </ActionForm>
+      <PointsMultipliers className="mt-8" />
     </AdminSection>
   );
 }
