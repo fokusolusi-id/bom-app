@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { CompetitionLadder } from "@/components/bom/competition-ladder";
 import { TierTile } from "@/components/bom/tier-tile";
+import { JoinUs } from "@/components/bom/join-us";
 import { RibbonBanner } from "@/components/bom/ribbon-banner";
 import { SectionHeading } from "@/components/bom/section-heading";
 import { eventPlace, eventUsesBomLogo, pickOnePerDay, wibDay, wibTime, type ScheduleEventView } from "@/domain/event";
@@ -120,6 +121,8 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
           From championship battles to casual side events, every BOM event is designed to make Beyblade X more competitive, engaging and fun. Let&apos;s level up the game together and make every tournament count.
         </p>
       </section>
+
+      <JoinUs className="mt-16" />
     </main>
   );
 }

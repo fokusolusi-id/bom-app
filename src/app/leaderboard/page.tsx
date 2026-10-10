@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { LeaderboardTable } from "@/components/bom/leaderboard-table";
 import { PointsTable } from "@/components/bom/points-table";
+import { SponsorsSection } from "@/components/bom/sponsors-section";
 import { RibbonBanner } from "@/components/bom/ribbon-banner";
 import { Button } from "@/components/ui/button";
 import { publicPlayers } from "@/server/players";
@@ -38,6 +39,7 @@ export default async function LeaderboardPage() {
 
       <LeaderboardTable players={players.map(({ bom_id, name, points }) => ({ bom_id, name, points }))} />
       <PointsTable table={pointsTable} />
+      <SponsorsSection className="mt-12" />
       {!live && <p className="text-muted-foreground mt-3 text-xs">Sample data. Set NEXT_PUBLIC_SUPABASE_URL for real data.</p>}
     </main>
   );

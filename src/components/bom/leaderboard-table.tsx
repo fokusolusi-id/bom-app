@@ -78,7 +78,7 @@ export function LeaderboardTable({ players }: { players: Row[] }) {
           </TableBody>
         </Table>
       </div>
-      {pages > 1 && (
+      {(
         <nav aria-label="Leaderboard pages" className="flex items-center justify-between gap-3">
           <Button type="button" variant="outline" size="sm" disabled={current === 0} onClick={() => setPage(current - 1)}><ChevronLeft aria-hidden />Previous</Button>
           <span className="text-muted-foreground text-sm">Page {current + 1} of {pages}</span>
