@@ -31,7 +31,7 @@ export async function TeamSection() {
   return (
     <AdminSection id="team" title="Founding Team" hint="Pick members from existing players; each member's photo is set right under their name. The order matches the About page.">
       <AddCard title="New role"><RoleForm players={players} /></AddCard>
-      <ItemGrid single>
+      <ItemGrid>
       {roles.map((r) => (
         <Card key={r.id}>
           <CardHeader><CardTitle>{r.title}</CardTitle></CardHeader>

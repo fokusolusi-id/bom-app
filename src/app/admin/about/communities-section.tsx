@@ -30,7 +30,7 @@ export async function CommunitiesSection() {
   return (
     <AdminSection id="sub-communities" title="Sub Communities" hint="Shown on the homepage and the About page.">
       <AddCard title="New sub community"><SubCommunityForm /></AddCard>
-      <ItemGrid single>
+      <ItemGrid>
       {rows.map((s) => (
         <Card key={s.id}>
           <CardHeader><CardTitle>{s.name}{!s.is_active && <span className="text-muted-foreground ml-2 text-sm">(hidden)</span>}</CardTitle></CardHeader>

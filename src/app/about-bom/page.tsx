@@ -1,8 +1,6 @@
 import Image from "next/image";
-import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { InstagramIcon, WhatsappIcon } from "@/components/bom/brand-icons";
+import { JoinUs } from "@/components/bom/join-us";
 import { MemberCarousel } from "@/components/bom/member-carousel";
 import { CompetitionLadder } from "@/components/bom/competition-ladder";
 import { RibbonBanner } from "@/components/bom/ribbon-banner";
@@ -10,7 +8,7 @@ import { SubCommunityChart } from "@/components/bom/sub-community-chart";
 import { SectionHeading } from "@/components/bom/section-heading";
 import { communityStats, umbrella } from "@/lib/content";
 import { loadCommunityCounts } from "@/server/community-counts";
-import { INSTAGRAM, PARTNER_EMAIL, WHATSAPP_INVITE } from "@/lib/venue";
+import { PARTNER_EMAIL } from "@/lib/venue";
 import { teamStrip } from "@/domain/team";
 import { publicTeam } from "@/server/team";
 import { publicSubCommunities } from "@/server/sub-communities";
@@ -51,7 +49,7 @@ export default async function AboutUsPage() {
       </section>
 
       <section aria-labelledby="sub-komunitas">
-        <SectionHeading id="sub-komunitas" className="mb-0">{subs.length} Sub Communities</SectionHeading>
+        <SectionHeading id="sub-komunitas" className="mb-0">Sub Communities</SectionHeading>
         <p className="text-muted-foreground mt-2 max-w-xl text-sm">One rulebook for every sub community. Points from every gathering go into one leaderboard.</p>
       <div className="mt-10"><SubCommunityChart subs={subs} /></div>
       <ul className="mt-6 grid gap-2 md:grid-cols-3">
@@ -59,6 +57,11 @@ export default async function AboutUsPage() {
           <li key={u} className="border-primary border-l-2 pl-3 text-sm">{u}</li>
         ))}
       </ul>
+      <p className="mt-8 max-w-xl">
+        Are you interested in joining BOM? We would love to hear from you.<br />
+        Email us at{" "}
+        <a href={`mailto:${PARTNER_EMAIL}?subject=${encodeURIComponent("Community joining BOM")}`} className="text-primary font-bold underline">{PARTNER_EMAIL}</a>.
+      </p>
       </section>
 
       {founders.length > 0 && (
@@ -68,22 +71,7 @@ export default async function AboutUsPage() {
         </section>
       )}
 
-      <section aria-labelledby="join">
-        <SectionHeading id="join">Join us</SectionHeading>
-        <p className="max-w-xl">New to this? Just come to a weekly Ranked session. Bring your bey and we&apos;ll help with the rest.</p>
-        <div className="mt-4 flex flex-wrap gap-3">
-          <Button size="lg" asChild><Link href="/membership">Join Membership</Link></Button>
-          {WHATSAPP_INVITE && (
-            <Button size="lg" className="bg-[#25D366] text-black hover:bg-[#1EBE5A]" asChild>
-              <a href={WHATSAPP_INVITE} target="_blank" rel="noopener noreferrer"><WhatsappIcon />Join the WhatsApp group</a>
-            </Button>
-          )}
-          <Button size="lg" variant="outline" asChild>
-            <a href={`https://www.instagram.com/${INSTAGRAM}`} target="_blank" rel="noopener noreferrer"><InstagramIcon />@{INSTAGRAM}</a>
-          </Button>
-        </div>
-        <p className="text-muted-foreground mt-4 text-sm">Sponsors and partnerships: <a href={`mailto:${PARTNER_EMAIL}`} className="hover:text-primary text-white">{PARTNER_EMAIL}</a></p>
-      </section>
+      <JoinUs />
     </main>
   );
 }
