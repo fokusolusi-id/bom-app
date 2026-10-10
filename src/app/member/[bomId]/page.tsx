@@ -10,6 +10,7 @@ import { PointsChart } from "@/components/bom/points-chart";
 import { RibbonBanner } from "@/components/bom/ribbon-banner";
 import { TierMark } from "@/components/bom/tier-mark";
 import { formatBomId, normalizeBomId } from "@/domain/profile";
+import { tierMultiplier } from "@/domain/scoring";
 import type { Tier } from "@/domain/tier";
 import { SITE_URL } from "@/lib/venue";
 import { qrDataUrl } from "@/server/qr";
@@ -110,7 +111,7 @@ export default async function MemberPage({ params }: Props) {
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
                         <div className="font-bold break-words">{h.name}{h.tigerKing && <Crown className="ml-2 inline size-4 align-text-bottom text-yellow-400" aria-label="Tiger King" />}</div>
-                        <TierMark tier={h.tier as Tier} />
+                        <span className="flex flex-wrap items-center gap-x-3 gap-y-1"><TierMark tier={h.tier as Tier} /><span className="text-muted-foreground text-xs whitespace-nowrap">{tierMultiplier(h.tier as Tier)}x points</span></span>
                       </div>
                       <div className="font-num tabular text-primary text-2xl font-black italic">{h.place === null ? <span className="text-muted-foreground text-base font-normal not-italic">Played</span> : `#${h.place}`}</div>
                     </div>
@@ -129,7 +130,7 @@ export default async function MemberPage({ params }: Props) {
                 {[...history].reverse().map((h) => (
                   <TableRow key={h.eventId}>
                     <TableCell className="font-bold">{h.name}{h.tigerKing && <Crown className="ml-2 inline size-4 align-text-bottom text-yellow-400" aria-label="Tiger King" />}</TableCell>
-                    <TableCell><TierMark tier={h.tier as Tier} /></TableCell>
+                    <TableCell><span className="flex flex-wrap items-center gap-x-3 gap-y-1"><TierMark tier={h.tier as Tier} /><span className="text-muted-foreground text-xs whitespace-nowrap">{tierMultiplier(h.tier as Tier)}x points</span></span></TableCell>
                     <TableCell>{fmt(h.startsAt)}</TableCell>
                     <TableCell className="font-num tabular text-muted-foreground text-right">{h.participants}</TableCell>
                     <TableCell className="font-num tabular text-primary text-right text-xl font-black italic">{h.place === null ? <span className="text-muted-foreground text-base font-normal not-italic">Played</span> : `#${h.place}`}</TableCell>
