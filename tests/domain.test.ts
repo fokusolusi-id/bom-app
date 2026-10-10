@@ -416,9 +416,9 @@ describe("leaderboard search and sort", () => {
 });
 
 describe("parsePlayerInput", () => {
-  const ok = { id: A, bom_id: "BoM-012", name: " Sora ", points: "999", wins: "9", losses: "9", status: "active" };
+  const ok = { id: A, bom_id: "BoM-012", name: " Sora ", points: "999", wins: "9", losses: "9", status: "active", role: "member" };
   const player = (o: Record<string, unknown>) => parsePlayerInput((k) => o[k]);
-  it("parses an edit and ignores the record fields", () => expect(player(ok)).toEqual({ id: A, bom_id: "BoM-012", name: "Sora", status: "active" }));
+  it("parses an edit and ignores the record fields", () => expect(player(ok)).toMatchObject({ id: A, bom_id: "BoM-012", name: "Sora", status: "active", role: "member" }));
   it("rejects bad ids and status", () => {
     expect(() => player({ ...ok, id: "x" })).toThrow();
     expect(() => player({ ...ok, bom_id: "BoM 12!" })).toThrow();

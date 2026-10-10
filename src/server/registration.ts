@@ -1,15 +1,13 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { JoinRequest, Registration } from "@/domain/join-request";
-import { PROOF_BUCKET } from "@/domain/media";
+import type { Registration } from "@/domain/join-request";
 import { formatBomId } from "@/domain/profile";
 import { check } from "./db";
 import { committeeEmail, sendEmail } from "./email";
 
-export interface JoinRequestRepository {
+export interface RegistrationRepository {
   /** Registers the member and returns the BOM ID issued to them. */
   register(input: Registration): Promise<string>;
-  listRecent(limit?: number): Promise<JoinRequest[]>;
   /** True when no player has this blader name yet (ignoring case and extra spaces). */
   bladerNameAvailable(name: string): Promise<boolean>;
 }
@@ -24,7 +22,7 @@ const ERRORS: Record<string, string> = {
   ids_exhausted: "No BOM IDs left. Contact the committee.",
 };
 
-export function supabaseJoinRequests(client: SupabaseClient): JoinRequestRepository {
+export function supabaseRegistration(client: SupabaseClient): RegistrationRepository {
   return {
     async register(input) {
       const { data, error } = await client.rpc("register_member", {
@@ -45,19 +43,6 @@ export function supabaseJoinRequests(client: SupabaseClient): JoinRequestReposit
       check(error, "Failed to check the blader name");
       return (count ?? 0) === 0;
     },
-    async listRecent(limit = 200) {
-      const { data, error } = await client.from("join_requests")
-        .select("id,name,blader_name,whatsapp,address,age_group,guardian_name,guardian_whatsapp,hear_from,photo_consent,created_at,payment_proof_path,player:players(id,bom_id,status)")
-        .order("created_at", { ascending: false }).limit(limit);
-      check(error, "Failed to load join requests");
-      const rows = (data ?? []) as unknown as (JoinRequest & { payment_proof_path: string | null })[];
-      // Proofs live in a private bucket: hand the admin short-lived signed links.
-      const paths = rows.map((r) => r.payment_proof_path).filter((p): p is string => !!p);
-      const signed = paths.length ? await client.storage.from(PROOF_BUCKET).createSignedUrls(paths, 3600) : { data: [], error: null };
-      check(signed.error, "Failed to sign payment proofs");
-      const urls = new Map((signed.data ?? []).map((u) => [u.path, u.signedUrl]));
-      return rows.map(({ payment_proof_path, ...r }) => ({ ...r, payment_proof_url: payment_proof_path ? urls.get(payment_proof_path) ?? null : null }));
-    },
   };
 }
 
@@ -74,7 +59,7 @@ export async function sendRegistrationEmail(input: Registration, bomId: string) 
     `Address: ${input.address}`,
     `Heard about BOM from: ${input.hearFrom ?? "-"}`,
     `Photo/video consent: ${input.photoConsent ? "yes" : "no"}`,
-    "Bukti pembayaran: lihat di /admin/pendaftar",
+    "Payment screenshot: see /admin/members",
   ];
   try {
     await sendEmail({ to: committee, subject: `New BOM sign-up: ${input.bladerName} ${formatBomId(bomId)}`, text: lines.join("\n") });

@@ -10,7 +10,7 @@ const sections = [
   ["/admin/home", "Home"],
   ["/admin/about", "About BOM"],
   ["/admin/rules", "Rules"],
-  ["/admin/members", "Players"],
+  ["/admin/members", "Members"],
   ["/admin/schedule", "Schedule"],
   ["/admin/leaderboard", "Leaderboard"],
 ] as const;

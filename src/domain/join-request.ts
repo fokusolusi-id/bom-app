@@ -20,12 +20,6 @@ export type Registration = {
   paymentProofPath: string;
 };
 
-export type JoinRequest = {
-  id: string; name: string; blader_name: string | null; whatsapp: string; address: string | null; age_group: AgeGroup | null;
-  guardian_name: string | null; guardian_whatsapp: string | null; hear_from: string | null; photo_consent: boolean; created_at: string; payment_proof_url?: string | null;
-  player: { id: string; bom_id: string; status: "registered" | "active" } | null;
-};
-
 /** Normalises 08xx / 62xx / +62xx numbers to +62xx. */
 export function normalizeWhatsapp(raw: unknown): string {
   const digits = typeof raw === "string" ? raw.replace(/[\s\-().]/g, "") : "";
@@ -35,14 +29,14 @@ export function normalizeWhatsapp(raw: unknown): string {
   return number;
 }
 
-const checked = (v: unknown) => v === "on" || v === "true";
+export const checked = (v: unknown) => v === "on" || v === "true";
 
-function oneOf<T extends string>(raw: unknown, allowed: readonly T[], label: string): T {
+export function oneOf<T extends string>(raw: unknown, allowed: readonly T[], label: string): T {
   if (typeof raw !== "string" || !(allowed as readonly string[]).includes(raw)) throw new Error(`${label} is required`);
   return raw as T;
 }
 
-function parseAddress(raw: unknown): string {
+export function parseAddress(raw: unknown): string {
   const v = parseText(raw, "Address", 300).replace(/\s+/g, " ");
   if (v.length < 5) throw new Error("Address must be at least 5 characters");
   return v;

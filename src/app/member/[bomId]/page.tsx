@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
 import { MemberCard } from "@/components/bom/member-card";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PointsChart } from "@/components/bom/points-chart";
@@ -70,7 +71,10 @@ export default async function MemberPage({ params }: Props) {
           </div>
           <div>
             <h1 className="text-4xl leading-none">{player.name}</h1>
-            <BomIdBadge id={player.bom_id} className="mt-2" />
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <BomIdBadge id={player.bom_id} />
+              {player.role && player.role !== "member" && <Badge variant="outline" className="uppercase">{player.role}</Badge>}
+            </div>
           </div>
         </div>
         <MemberCard bomId={player.bom_id} bladerName={player.name} since={since} qr={qr} />
@@ -99,7 +103,7 @@ export default async function MemberPage({ params }: Props) {
         <CardContent>
           {history.length === 0 ? <p className="text-muted-foreground text-sm">No tournament results yet.</p> : (
             <Table>
-              <TableHeader><TableRow><TableHead>Event</TableHead><TableHead>Type</TableHead><TableHead>Date</TableHead><TableHead className="text-right">Players</TableHead><TableHead className="text-right">Place</TableHead><TableHead className="text-right">Points</TableHead></TableRow></TableHeader>
+              <TableHeader><TableRow><TableHead>Event</TableHead><TableHead>Type</TableHead><TableHead>Date</TableHead><TableHead className="text-right">Members</TableHead><TableHead className="text-right">Place</TableHead><TableHead className="text-right">Points</TableHead></TableRow></TableHeader>
               <TableBody>
                 {[...history].reverse().map((h) => (
                   <TableRow key={h.eventId}>

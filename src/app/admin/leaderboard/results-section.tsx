@@ -79,7 +79,7 @@ export async function ResultsSection() {
                       <div className="flex items-center gap-2">
                         <label className="text-sm font-bold" htmlFor={`results-${e.id}`}>Enter all results at once</label>
                         <HelpTip label="How to enter results">
-                          <p>One player per line, by blader name or BOM ID (BoM-003, bom 3 or just 3).</p>
+                          <p>One member per line, by blader name or BOM ID (BoM-003, bom 3 or just 3).</p>
                           <p>The first line is 1st place, the second 2nd, up to 8th. Every line after that took part without a place.</p>
                           <p>Add (TK) after the Tiger King, once. Saving replaces the results of this event.</p>
                           <pre className="bg-muted/60 rounded p-2 whitespace-pre">{TEMPLATE}</pre>
@@ -89,15 +89,15 @@ export async function ResultsSection() {
                       <Button type="submit">Save results</Button>
                     </ActionForm>
                     <ActionForm action={setPlacement} resetOnSuccess className="grid gap-3 border-t pt-4 sm:grid-cols-[1fr_7rem]">
-                      <p className="text-sm font-bold sm:col-span-2">Add or update one player</p>
+                      <p className="text-sm font-bold sm:col-span-2">Add or update one member</p>
                       <input type="hidden" name="event_id" value={e.id} />
-                      <NativeSelect name="player_id" aria-label="Player" required defaultValue="">
-                        <option value="" disabled>Player</option>
+                      <NativeSelect name="player_id" aria-label="Member" required defaultValue="">
+                        <option value="" disabled>Member</option>
                         {players.map((p) => <option key={p.id} value={p.id}>{p.name} {formatBomId(p.bom_id)}</option>)}
                       </NativeSelect>
                       <Input name="place" type="number" min={1} max={999} placeholder="Place (top 8)" aria-label="Place" />
                       <label className="flex items-center gap-2 text-sm sm:col-span-2"><input type="checkbox" name="tiger_king" /><Crown className="size-4 text-yellow-400" aria-hidden /> Tiger King (one per event)</label>
-                      <Button type="submit" variant="outline" className="sm:col-span-2">Add or update player</Button>
+                      <Button type="submit" variant="outline" className="sm:col-span-2">Add or update member</Button>
                     </ActionForm>
                   </>
                 );

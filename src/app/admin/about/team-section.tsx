@@ -29,7 +29,7 @@ export async function TeamSection() {
   const [roles, all] = await Promise.all([supabaseTeam(supabase).list(), supabasePlayers(supabase).list(1000, { includeRegistered: true })]);
   const players: PickerPlayer[] = all.filter((p) => p.id).map((p) => ({ id: p.id!, name: p.name, bomId: p.bom_id, photo: p.photo_path ?? null }));
   return (
-    <AdminSection id="team" title="Founding Team" hint="Pick members from existing players; each member's photo is set right under their name. The order matches the About page.">
+    <AdminSection id="team" title="Founding Team" hint="Pick members from existing members; each member's photo is set right under their name. The order matches the About page.">
       <AddCard title="New role"><RoleForm players={players} /></AddCard>
       <ItemGrid>
       {roles.map((r) => (

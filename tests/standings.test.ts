@@ -68,3 +68,25 @@ describe("player history", () => {
     expect(rows.map((r) => [r.eventId, r.points, r.total, r.participants])).toEqual([["1", 4.25, 4.25, 1], ["2", 3.25, 7.5, 2]]);
   });
 });
+
+import { parsePlayerInput } from "@/domain/player-input";
+
+describe("player edit", () => {
+  const U = "11111111-1111-1111-1111-111111111111";
+  const form = (o: Record<string, string>) => (k: string) => o[k] ?? "";
+  const base = { id: U, name: "Dewa", bom_id: "BoM-001", status: "active", role: "organizer" };
+
+  it("allows every membership detail to be empty", () => {
+    expect(parsePlayerInput(form(base))).toMatchObject({ id: U, name: "Dewa", role: "organizer", full_name: null, whatsapp: null, address: null, age_group: null, photo_consent: false });
+  });
+
+  it("reads and normalises the membership details", () => {
+    expect(parsePlayerInput(form({ ...base, full_name: "Dewa  Wahyu", whatsapp: "0812 3456 7890", age_group: "all", photo_consent: "on" })))
+      .toMatchObject({ full_name: "Dewa Wahyu", whatsapp: "+6281234567890", guardian_name: null, photo_consent: true });
+  });
+
+  it("needs a guardian under 12, and rejects an unknown role", () => {
+    expect(() => parsePlayerInput(form({ ...base, age_group: "under12" }))).toThrow();
+    expect(() => parsePlayerInput(form({ ...base, role: "boss" }))).toThrow(/role/i);
+  });
+});
