@@ -14,7 +14,7 @@ export function parseEventType(value: unknown): EventType {
 export const eventUsesBomLogo = (type: EventType) => type === "Break" || usesBomLogo(type);
 
 export type ScheduleEvent = {
-  id?: string; sub_community_id: string | null; name: string; starts_at: string; place: string | null; tier: EventType; is_active: boolean;
+  id?: string; sub_community_id: string | null; name: string; starts_at: string; place: string | null; tier: EventType; is_active: boolean; challonge_url?: string | null;
 };
 export type ScheduleEventInput = Omit<ScheduleEvent, "id"> & { id?: string };
 

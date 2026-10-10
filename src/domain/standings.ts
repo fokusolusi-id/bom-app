@@ -3,8 +3,8 @@ import { tierMultiplier } from "./scoring";
 import { isTier } from "./tier";
 
 /** One player at one event: `place` is empty outside the top places. */
-export type Participation = { playerId: string; place: number | null; tigerKing: boolean };
-export type ScoredEvent = { id: string; name: string; tier: string; startsAt: string; participants: Participation[] };
+export type Participation = { playerId: string | null; place: number | null; tigerKing: boolean };
+export type ScoredEvent = { id: string; name: string; challongeUrl?: string | null; tier: string; startsAt: string; participants: Participation[] };
 export type Standing = { total: number; week: number; rank: number; previousRank: number | null; tigerKings: number };
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
@@ -50,7 +50,8 @@ export function weekStart(iso: string): string {
 function totalsOf(events: ScoredEvent[], table: PointsTable): Map<string, number> {
   const totals = new Map<string, number>();
   for (const e of events) {
-    for (const p of e.participants) totals.set(p.playerId, round2((totals.get(p.playerId) ?? 0) + eventPoints(table, e.tier, p, e.participants.length)));
+    // Guests (no player) count as participants but earn nothing here: they are not on the leaderboard.
+    for (const p of e.participants) if (p.playerId) totals.set(p.playerId, round2((totals.get(p.playerId) ?? 0) + eventPoints(table, e.tier, p, e.participants.length)));
   }
   return totals;
 }
@@ -73,12 +74,12 @@ export function buildStandings(events: ScoredEvent[], table: PointsTable): Map<s
   const ranks = rankOf(totals);
   const previous = rankOf(new Map([...before].filter(([, t]) => t > 0)));
   const crowns = new Map<string, number>();
-  for (const e of events) for (const p of e.participants) if (p.tigerKing && isTier(e.tier)) crowns.set(p.playerId, (crowns.get(p.playerId) ?? 0) + 1);
+  for (const e of events) for (const p of e.participants) if (p.playerId && p.tigerKing && isTier(e.tier)) crowns.set(p.playerId, (crowns.get(p.playerId) ?? 0) + 1);
   return new Map([...totals].map(([id, total]) => [id, { total, week: week.get(id) ?? 0, rank: ranks.get(id)!, previousRank: previous.get(id) ?? null, tigerKings: crowns.get(id) ?? 0 }]));
 }
 
 /** One event of a player's history, with the points it gave and their running total after it. */
-export type HistoryRow = { eventId: string; name: string; tier: string; startsAt: string; place: number | null; tigerKing: boolean; points: number; participants: number; total: number };
+export type HistoryRow = { eventId: string; name: string; challongeUrl: string | null; tier: string; startsAt: string; place: number | null; tigerKing: boolean; points: number; participants: number; total: number };
 
 /** Every scored event the player took part in, oldest first. */
 export function playerHistory(events: ScoredEvent[], table: PointsTable, playerId: string): HistoryRow[] {
@@ -90,6 +91,6 @@ export function playerHistory(events: ScoredEvent[], table: PointsTable, playerI
       if (!me) return [];
       const points = eventPoints(table, e.tier, me, e.participants.length);
       total = round2(total + points);
-      return [{ eventId: e.id, name: e.name, tier: e.tier, startsAt: e.startsAt, place: me.place, tigerKing: me.tigerKing, points, participants: e.participants.length, total }];
+      return [{ eventId: e.id, name: e.name, challongeUrl: e.challongeUrl ?? null, tier: e.tier, startsAt: e.startsAt, place: me.place, tigerKing: me.tigerKing, points, participants: e.participants.length, total }];
     });
 }

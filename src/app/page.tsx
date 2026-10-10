@@ -1,4 +1,4 @@
-import { ArrowRight, CalendarDays, Crown, MapPin, Trophy } from "lucide-react";
+import { ArrowRight, CalendarDays, Crown, ExternalLink, MapPin, Trophy } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { InstagramIcon, WhatsappIcon } from "@/components/bom/brand-icons";
@@ -134,6 +134,7 @@ export default async function Home() {
                         </li>
                       ))}
                     </ol>
+                    {r.challongeUrl && <a href={r.challongeUrl} target="_blank" rel="noopener noreferrer" className="text-primary inline-flex items-center gap-1 text-sm underline">View the bracket on Challonge<ExternalLink className="size-3.5" aria-hidden /></a>}
                   </CardContent>
                 </Card>
               </li>

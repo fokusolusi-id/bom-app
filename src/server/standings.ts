@@ -7,17 +7,17 @@ import { check } from "./db";
 import { supabaseSettings } from "./settings";
 import { createPublicClient } from "./supabase-public";
 
-type Row = { id: string; name: string; tier: string; starts_at: string; event_placements: { player_id: string; place: number | null; tiger_king: boolean }[] };
+type Row = { id: string; name: string; tier: string; challonge_url: string | null; starts_at: string; event_placements: { player_id: string | null; place: number | null; tiger_king: boolean }[] };
 
 /** Past, shown events that award points, each with the players who took part. */
 async function scoredEvents(client: SupabaseClient, nowIso: string): Promise<ScoredEvent[]> {
   const { data, error } = await client
     .from("schedule_events")
-    .select("id,name,tier,starts_at,event_placements(player_id,place,tiger_king)")
+    .select("id,name,tier,starts_at,challonge_url,event_placements(player_id,place,tiger_king)")
     .in("tier", TIERS).eq("is_active", true).lte("starts_at", nowIso);
   check(error, "Failed to load results");
   return ((data ?? []) as unknown as Row[]).map((e) => ({
-    id: e.id, name: e.name, tier: e.tier, startsAt: e.starts_at,
+    id: e.id, name: e.name, challongeUrl: e.challonge_url, tier: e.tier, startsAt: e.starts_at,
     participants: e.event_placements.map((p) => ({ playerId: p.player_id, place: p.place, tigerKing: p.tiger_king })),
   }));
 }
