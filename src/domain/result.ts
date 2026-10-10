@@ -24,7 +24,7 @@ type Candidate = { id: string; name: string; bom_id: string };
 export function parseResultsText(text: string, players: Candidate[]): ResultRow[] {
   const squash = (v: string) => v.toLowerCase().replace(/[\s-]/g, "");
   const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
-  if (lines.length === 0) throw new Error("Add at least one player");
+  if (lines.length === 0) throw new Error("Add at least one member");
   const missing: string[] = [];
   const rows: ResultRow[] = [];
   lines.forEach((line, i) => {
@@ -39,8 +39,8 @@ export function parseResultsText(text: string, players: Candidate[]): ResultRow[
     if (!found) return void missing.push(query);
     rows.push({ playerId: found.id, place: i < TOP_PLACES ? i + 1 : null, tigerKing });
   });
-  if (missing.length) throw new Error(`Player not found: ${missing.join(", ")}`);
-  if (new Set(rows.map((r) => r.playerId)).size !== rows.length) throw new Error("A player is listed twice");
+  if (missing.length) throw new Error(`Member not found: ${missing.join(", ")}`);
+  if (new Set(rows.map((r) => r.playerId)).size !== rows.length) throw new Error("A member is listed twice");
   if (rows.filter((r) => r.tigerKing).length > 1) throw new Error("Only one Tiger King per event");
   return rows;
 }

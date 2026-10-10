@@ -20,7 +20,7 @@ export function PointsMultipliers({ className }: { className?: string }) {
           </li>
         ))}
       </ul>
-      <p className="text-muted-foreground mt-2 text-xs">Everything a player earns at an event (participation, place, Top Cut and Tiger King) is multiplied by its competition type. For example, 4.25 points at a BOM Ranked event is 8.5 at a BOM Cup.</p>
+      <p className="text-muted-foreground mt-2 text-xs">Everything a member earns at an event (participation, place, Top Cut and Tiger King) is multiplied by its competition type. For example, 4.25 points at a BOM Ranked event is 8.5 at a BOM Cup.</p>
     </div>
   );
 }

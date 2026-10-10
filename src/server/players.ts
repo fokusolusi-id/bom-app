@@ -1,16 +1,25 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { PROOF_BUCKET } from "@/domain/media";
 import type { PlayerInput } from "@/domain/player-input";
-import type { Player, PlayerStatus } from "@/domain/types";
+import type { Player, PlayerContact, PlayerStatus } from "@/domain/types";
 import { hasSupabase } from "@/lib/supabase/env";
 import { check } from "./db";
 import { createPublicClient } from "./supabase-public";
+
+/** The columns the public may read. The rest (WhatsApp, address...) is for admins only, enforced in the database. */
+const PUBLIC_COLUMNS = "id,bom_id,name,points,status,role,photo_path,created_at";
+const CONTACT_COLUMNS = "full_name,whatsapp,address,age_group,guardian_name,guardian_whatsapp,hear_from,photo_consent,payment_proof_path";
 
 export interface PlayerRepository {
   /** Active players by points. Admin screens pass `includeRegistered` to also pick not-yet-active members. */
   list(limit?: number, opts?: { includeRegistered?: boolean }): Promise<Player[]>;
   setStatus(playerId: string, status: PlayerStatus): Promise<void>;
-  /** Admin edit of a player's name, BOM ID and status. Their record is never touched here. */
+  /** Every player with what the membership form collected, for the admin. Payment screenshots come as short-lived links. */
+  listForAdmin(): Promise<Player[]>;
+  /** Deletes the player with their payment screenshot. Their results go with them. */
+  remove(playerId: string): Promise<void>;
+  /** Admin edit of a player's name, BOM ID, status and role. Their record is never touched here. */
   update(input: PlayerInput): Promise<void>;
   /** Case-insensitive: "bom-001" finds "BoM-001". */
   getByBomId(bomId: string): Promise<Player | null>;
@@ -23,7 +32,7 @@ export interface PlayerRepository {
 export function supabasePlayers(client: SupabaseClient): PlayerRepository {
   return {
     async list(limit = 100, opts) {
-      let q = client.from("players").select("*").order("points", { ascending: false }).limit(limit);
+      let q = client.from("players").select(PUBLIC_COLUMNS).order("points", { ascending: false }).limit(limit);
       if (!opts?.includeRegistered) q = q.eq("status", "active");
       const { data, error } = await q;
       check(error, "Failed to load players");
@@ -32,7 +41,7 @@ export function supabasePlayers(client: SupabaseClient): PlayerRepository {
     async getByBomId(bomId) {
       // ilike treats % and _ as wildcards; ids are validated, but escape anyway.
       const pattern = bomId.replace(/[\\%_]/g, "\\$&");
-      const { data, error } = await client.from("players").select("*").ilike("bom_id", pattern).maybeSingle();
+      const { data, error } = await client.from("players").select(PUBLIC_COLUMNS).ilike("bom_id", pattern).maybeSingle();
       check(error, "Failed to load player");
       return (data as Player | null) ?? null;
     },
@@ -51,7 +60,35 @@ export function supabasePlayers(client: SupabaseClient): PlayerRepository {
     async update({ id, ...row }) {
       const { error } = await client.from("players").update(row).eq("id", id);
       if (error?.message.includes("players_name_lower_idx")) throw new Error("This blader name is already taken");
+      if (error?.message.includes("players_whatsapp_idx")) throw new Error("This WhatsApp number is already registered to another member");
       check(error, "Failed to update player");
+    },
+    async listForAdmin() {
+      const { data, error } = await client.from("players").select(`${PUBLIC_COLUMNS},${CONTACT_COLUMNS}`).order("bom_id");
+      check(error, "Failed to load players");
+      const rows = (data ?? []) as unknown as (Player & PlayerContact)[];
+      // Proofs live in a private bucket: hand the admin short-lived signed links.
+      const paths = rows.flatMap((r) => (r.payment_proof_path ? [r.payment_proof_path] : []));
+      const signed = paths.length ? await client.storage.from(PROOF_BUCKET).createSignedUrls(paths, 3600) : { data: [], error: null };
+      check(signed.error, "Failed to sign payment proofs");
+      const urls = new Map((signed.data ?? []).map((u) => [u.path, u.signedUrl]));
+      return rows.map((r) => {
+        const { full_name, whatsapp, address, age_group, guardian_name, guardian_whatsapp, hear_from, photo_consent, payment_proof_path, ...player } = r;
+        const contact: PlayerContact = { full_name, whatsapp, address, age_group, guardian_name, guardian_whatsapp, hear_from, photo_consent, payment_proof_path, payment_proof_url: payment_proof_path ? urls.get(payment_proof_path) ?? null : null };
+        return { ...player, contact };
+      });
+    },
+    async remove(playerId) {
+      const { data, error: readError } = await client.from("players").select("payment_proof_path").eq("id", playerId).maybeSingle();
+      check(readError, "Failed to load player");
+      const { error } = await client.from("players").delete().eq("id", playerId);
+      check(error, "Failed to delete player");
+      // Best effort: a leftover screenshot is harmless, so a failed cleanup is logged instead of failing the delete.
+      const proof = (data as { payment_proof_path: string | null } | null)?.payment_proof_path;
+      if (proof) {
+        const { error: storageError } = await client.storage.from(PROOF_BUCKET).remove([proof]);
+        if (storageError) console.error(`Failed to remove payment proof: ${storageError.message}`);
+      }
     },
     async setStatus(playerId, status) {
       const { error } = await client.from("players").update({ status }).eq("id", playerId);
@@ -71,6 +108,8 @@ export const samplePlayers: Player[] = [
 export function memoryPlayers(players: Player[] = samplePlayers): PlayerRepository {
   return {
     setStatus: async () => {},
+    remove: async () => {},
+    listForAdmin: async () => [],
     update: async () => {},
     setPhoto: async () => null,
     list: async (limit = 100) => [...players].sort((a, b) => b.points - a.points).slice(0, limit),

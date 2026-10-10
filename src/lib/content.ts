@@ -19,7 +19,7 @@ export const competitionPath = [
   ["Unrank", "Random, TBA", ["Fun special-format events: gimmick battles, team play and mini tourneys.", "Themed battles and experimental game modes.", "No ranking points: enjoy the game, test new strategies and have fun with the community."]],
   ["Ranked", "Weekly", ["A regular gathering with consistent prizes and ranking points.", "Ideal for climbing the rankings and winning the season prize.", "Can also serve as a qualifier for larger tournaments."]],
   ["Cup", "Monthly", ["Official BOM brackets with bigger ranking points.", "Winners earn a place on the Wall of Fame."]],
-  ["Major", "Quarterly", ["High-stakes competition with big prizes and sponsor support.", "Attracts the best players and shapes the leaderboard standings.", "Played in the official Beyblade X 3-on-3 format."]],
+  ["Major", "Quarterly", ["High-stakes competition with big prizes and sponsor support.", "Attracts the best members and shapes the leaderboard standings.", "Played in the official Beyblade X 3-on-3 format."]],
   ["Championship", "Yearly", ["The highest and most prestigious tier of BOM tournaments.", "Bladers from across Sumatera, with exclusive prizes.", "The champion represents BOM at G1."]],
 ] as const;
 
