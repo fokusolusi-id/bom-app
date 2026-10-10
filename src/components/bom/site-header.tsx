@@ -5,8 +5,8 @@ import { NavLink } from "@/components/nav-link";
 const nav = [
   ["/about-bom", "About BOM"],
   ["/rules", "Rules"],
-  ["/schedule", "Schedule"],
   ["/membership", "Membership"],
+  ["/schedule", "Schedule"],
   ["/leaderboard", "Leaderboard"],
 ] as const;
 

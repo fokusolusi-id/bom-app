@@ -35,7 +35,10 @@ export default async function AboutUsPage() {
               <p>It started in 2026 when friends began gathering to battle. What began as a small meetup is now {counts.members} active members, {subs.length} sub communities, a regular schedule, and a leaderboard open to everyone. We believe Medan deserves its own stage on the Indonesian Beyblade X map.</p>
             </div>
             <ul aria-label="At a glance" className="mt-6 flex flex-wrap gap-2">
-              {stats.map((t) => <li key={t}><Badge variant="outline" className="px-3 py-1 text-sm">{t}</Badge></li>)}
+              {stats.map((t) => {
+                const [value, ...label] = t.split(" ");
+                return <li key={t}><Badge variant="outline" className="px-3 py-1 text-sm"><span className="font-num font-bold text-white">{value}</span>{" "}{label.join(" ")}</Badge></li>;
+              })}
             </ul>
           </div>
         </div>

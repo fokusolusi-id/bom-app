@@ -11,7 +11,7 @@ const csp = [
   "font-src 'self' data:",
   "media-src 'self' https://*.supabase.co", // slider videos from the media bucket
   "connect-src 'self' https://*.supabase.co wss://*.supabase.co" + (isDev ? " ws:" : ""),
-  "frame-src https://www.google.com https://www.youtube-nocookie.com", // Google Maps embed on /about-us, YouTube in What's new
+  "frame-src https://www.google.com https://www.youtube-nocookie.com https://img1.wsimg.com https://*.supabase.co", // Google Maps, YouTube, and the rulebook PDFs on /rules
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",

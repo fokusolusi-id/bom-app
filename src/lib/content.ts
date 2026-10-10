@@ -1,4 +1,5 @@
 import type { PointsTable } from "@/domain/points-table";
+import type { RulesPage } from "@/domain/rules-page";
 export const subs = [
   ["Turcil", "Saturday night"],
   ["DXM", "Saturday night"],
@@ -79,4 +80,17 @@ export const DEFAULT_POINTS_TABLE: PointsTable = {
     { label: "Tiger King", values: [1, 1.1, 1.2, 1.3, 1.4, 1.5, 1.5] },
   ],
   note: "Positions 1-4 do not get points for Top Cut.",
+};
+
+/** The Rules page until an admin edits it (and if it cannot be loaded). */
+export const DEFAULT_RULES_PAGE: RulesPage = {
+  intro: "One rulebook and one voice for every judge across all BOM sub communities.",
+  rulebooks: [
+    {
+      title: "Takara Tomy Regulations",
+      note: "12th Edition, March 2026",
+      href: "https://img1.wsimg.com/blobby/go/b90a29fa-631a-4c1e-b027-1e57d0b85847/BeyBladeXRegulation12thMarch2026.pdf",
+    },
+  ],
+  summary: "A summary of the BOM rules (3-on-3 format, finish points, decks and penalties) is coming soon.",
 };

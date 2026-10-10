@@ -4,13 +4,14 @@ export const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const IMAGE_TYPES: Record<string, string> = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
 export const IMAGE_ACCEPT = Object.keys(IMAGE_TYPES).join(",");
 
-export type MediaFolder = "sub-communities" | "founding-team" | "news" | "gallery" | "sponsors";
+export type MediaFolder = "sub-communities" | "founding-team" | "news" | "gallery" | "sponsors" | "rules";
 
 // Sub community uploads are uuid-named; founding team photos may also be hand-named (e.g. dewa.jpg).
 const FILE_NAME: Record<MediaFolder, string> = {
-  "sub-communities": "[0-9a-f-]{36}", "founding-team": "[A-Za-z0-9_-]{1,80}", news: "[A-Za-z0-9_-]{1,80}", gallery: "[A-Za-z0-9_-]{1,80}", sponsors: "[A-Za-z0-9_-]{1,80}",
+  "sub-communities": "[0-9a-f-]{36}", "founding-team": "[A-Za-z0-9_-]{1,80}", news: "[A-Za-z0-9_-]{1,80}", gallery: "[A-Za-z0-9_-]{1,80}", sponsors: "[A-Za-z0-9_-]{1,80}", rules: "[0-9a-f-]{36}",
 };
 
+export const MAX_PDF_BYTES = 10 * 1024 * 1024;
 export const MAX_VIDEO_BYTES = 20 * 1024 * 1024;
 const VIDEO_TYPES: Record<string, string> = { "video/mp4": "mp4", "video/webm": "webm" };
 export const MEDIA_ACCEPT = [...Object.keys(IMAGE_TYPES), ...Object.keys(VIDEO_TYPES)].join(",");
@@ -18,6 +19,10 @@ const VIDEO_FOLDERS: MediaFolder[] = ["news"];
 
 /** Extension for an upload into `folder`: video folders take only video, every other folder only photos. */
 export function mediaExtension(contentType: unknown, folder: MediaFolder): string {
+  if (folder === "rules") {
+    if (contentType !== "application/pdf") throw new Error("Rulebook must be a PDF");
+    return "pdf";
+  }
   const video = typeof contentType === "string" ? VIDEO_TYPES[contentType] : undefined;
   if (VIDEO_FOLDERS.includes(folder)) {
     if (!video) throw new Error("Video must be MP4 or WebM");

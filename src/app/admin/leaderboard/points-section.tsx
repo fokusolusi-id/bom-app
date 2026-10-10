@@ -46,9 +46,7 @@ export async function PointsSection() {
             </tbody>
           </table>
         </div>
-        <label className="text-muted-foreground flex flex-col gap-1 text-xs">Note under the table
-          <Textarea name="note" defaultValue={table.note} maxLength={200} rows={2} className="text-base text-white" />
-        </label>
+        <Textarea name="note" defaultValue={table.note} maxLength={200} rows={2} className="text-base text-white" placeholder="Note under the table" aria-label="Note under the table" />
         <Button type="submit">Save points table</Button>
       </ActionForm>
     </AdminSection>

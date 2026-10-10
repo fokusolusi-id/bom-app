@@ -7,11 +7,12 @@ import { CompetitionLadder } from "@/components/bom/competition-ladder";
 import { TierTile } from "@/components/bom/tier-tile";
 import { RibbonBanner } from "@/components/bom/ribbon-banner";
 import { SectionHeading } from "@/components/bom/section-heading";
-import { eventUsesBomLogo, pickOnePerDay, wibDay, wibTime, type ScheduleEventView } from "@/domain/event";
+import { eventPlace, eventUsesBomLogo, pickOnePerDay, wibDay, wibTime, type ScheduleEventView } from "@/domain/event";
 import { monthKey, monthWeeks, parseMonth, shiftMonth, weekdayOf, type Month } from "@/domain/schedule";
 import { mediaUrl } from "@/lib/media";
 import { EVENT_STYLE, EVENT_TYPE_LABEL } from "@/lib/event-style";
 import { BOM_LOGO } from "@/lib/tier-icon";
+import { VENUE } from "@/lib/venue";
 import { publicScheduleEvents } from "@/server/schedule-events";
 
 export const metadata: Metadata = { title: "Schedule | BOM" };
@@ -43,7 +44,7 @@ function EventChip({ e }: { e: ScheduleEventView }) {
       <div className={`font-label text-[11px] font-bold tracking-[0.08em] uppercase italic ${c.soft}`}>{EVENT_TYPE_LABEL(e.tier)}</div>
       <div className={`text-sm leading-tight font-bold ${c.ink}`}>{e.name}</div>
       {e.tier !== "Break" && <div className={`text-xs font-bold ${c.ink}`}>{wibTime(e.starts_at)} WIB</div>}
-      <div className={`text-xs leading-tight ${c.soft}`}>{e.place}</div>
+      <div className={`text-xs leading-tight ${c.soft}`}>{eventPlace(e, VENUE)}</div>
     </div>
   );
 }
@@ -61,6 +62,7 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
     byDay.set(day, [...(byDay.get(day) ?? []), e]);
   }
   const weeks = monthWeeks(view);
+  const today = view.year === now.year && view.month === now.month ? Number(new Intl.DateTimeFormat("en-CA", { day: "2-digit", timeZone: "Asia/Jakarta" }).format(new Date())) : null;
   const eventsOn = (day: number) => byDay.get(day) ?? [];
   const prev = monthKey(shiftMonth(view, -1));
   const next = monthKey(nextMonth);
@@ -81,12 +83,12 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
         <div className="text-muted-foreground grid grid-cols-7 gap-px text-center text-xs uppercase">
           {DAY_NAMES.map((d) => <div key={d} className="py-2">{d}</div>)}
         </div>
-        <div className="bg-border grid auto-rows-[16rem] grid-cols-7 gap-px border">
+        <div className="bg-border grid auto-rows-[14rem] grid-cols-7 gap-px border">
           {weeks.flat().map((day, i) => {
             const list = day ? eventsOn(day) : [];
             const style = list[0] ? EVENT_STYLE[list[0].tier] : null;
             return (
-              <div key={i} className={`h-full overflow-hidden p-2 ${style ? style.bg : "bg-card"} ${day ? "" : "opacity-40"}`}>
+              <div key={i} className={`h-full overflow-hidden px-2 pt-2 pb-1 ${style ? style.bg : "bg-card"} ${day ? "" : "opacity-40"} ${day && day === today ? "ring-primary ring-1 ring-inset" : ""}`}>
                 {day && <div className={`font-num mb-1 text-sm font-bold ${style ? style.ink : "text-muted-foreground"}`}>{day}</div>}
                 {list.map((e) => <EventChip key={e.id} e={e} />)}
               </div>

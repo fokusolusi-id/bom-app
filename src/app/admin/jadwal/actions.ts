@@ -7,7 +7,7 @@ import { requireAdmin } from "@/server/admin-session";
 import { supabaseScheduleEvents } from "@/server/schedule-events";
 
 function revalidate() {
-  revalidatePath("/admin/competition");
+  revalidatePath("/admin/schedule");
   revalidatePath("/schedule");
   revalidatePath("/");
 }
@@ -15,7 +15,14 @@ function revalidate() {
 export async function saveScheduleEvent(_prev: FormState, formData: FormData): Promise<FormState> {
   const supabase = await requireAdmin();
   return toFormState(async () => {
-    await supabaseScheduleEvents(supabase).save(parseEventInput((k) => formData.get(k)));
+    const repo = supabaseScheduleEvents(supabase);
+    const input = parseEventInput((k) => formData.get(k));
+    const day = new Date(input.starts_at).toLocaleDateString("en-CA", { timeZone: "Asia/Jakarta" });
+    const from = new Date(`${day}T00:00:00+07:00`);
+    const sameDay = await repo.between(from.toISOString(), new Date(from.getTime() + 86_400_000).toISOString(), { includeInactive: true });
+    const clash = sameDay.find((e) => e.id !== input.id);
+    if (clash) throw new Error(`${day} already has "${clash.name}". Edit or delete it first.`);
+    await repo.save(input);
     revalidate();
   }, "Saved");
 }

@@ -19,7 +19,7 @@ export default async function LeaderboardPage() {
   const { repo, live } = publicPlayers();
   const [players, pointsTable] = await Promise.all([repo.list(100), publicPointsTable()]);
   return (
-    <main className="mx-auto max-w-4xl px-4 py-10">
+    <main className="mx-auto max-w-6xl px-4 py-12">
       <RibbonBanner>BOM Leaderboard Season 2026</RibbonBanner>
 
       <section aria-labelledby="prizes" className="border-primary mt-8 space-y-3 border-t-[3px] pt-4">
@@ -30,7 +30,7 @@ export default async function LeaderboardPage() {
             <li key={who}><strong className="font-display text-primary italic uppercase">{who}</strong>: {what}</li>
           ))}
         </ul>
-        <p className="flex flex-wrap items-center gap-3 pt-1">
+        <p className="flex flex-col items-start gap-3 pt-1">
           <span>Join our membership to be listed on the leaderboard.</span>
           <Button size="sm" asChild><Link href="/membership">Join membership</Link></Button>
         </p>

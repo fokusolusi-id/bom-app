@@ -1,10 +1,15 @@
 import { AdminSection, ItemGrid } from "@/components/admin/admin-page";
-import { TierBadge } from "@/components/bom/tier-badge";
+import Image from "next/image";
+import { TIER_TILE, TierTile } from "@/components/bom/tier-tile";
 import { ActionForm } from "@/components/form/action-form";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input, NativeSelect } from "@/components/ui/input";
+import { eventUsesBomLogo } from "@/domain/event";
 import { formatBomId } from "@/domain/profile";
+import { EVENT_TYPE_LABEL } from "@/lib/event-style";
+import { mediaUrl } from "@/lib/media";
+import { BOM_LOGO } from "@/lib/tier-icon";
 import { requireAdmin } from "@/server/admin-session";
 import { supabasePlayers } from "@/server/players";
 import { supabaseResults } from "@/server/results";
@@ -32,9 +37,20 @@ export async function ResultsSection() {
       <ItemGrid>
         {events.map((e) => (
           <Card key={e.id}>
-            <CardHeader>
-              <CardTitle className="flex flex-wrap items-center gap-2 text-base"><TierBadge tier={e.tier === "Break" ? "Cup" : e.tier} className="w-auto" />{e.name}</CardTitle>
-              <p className="text-muted-foreground text-sm">{when.format(new Date(e.starts_at))}</p>
+            <CardHeader className="space-y-3">
+              <div className="flex items-center gap-3">
+                {/* Cup and above belong to BOM as a whole, so they show the BOM logo, as on the calendar. */}
+                {(() => {
+                  const bom = eventUsesBomLogo(e.tier) || !e.community?.image_path;
+                  return <Image src={bom ? BOM_LOGO : mediaUrl(e.community!.image_path!)} alt={bom ? "BOM" : e.community!.name} width={96} height={96} className="size-16 shrink-0 object-contain" />;
+                })()}
+                <TierTile tier={e.tier} className="size-16" />
+              </div>
+              <div>
+                <div className={`font-label text-lg font-bold tracking-[0.08em] uppercase italic ${TIER_TILE[e.tier].title}`}>{EVENT_TYPE_LABEL(e.tier)}</div>
+                <CardTitle className="font-display text-2xl leading-tight font-extrabold italic uppercase">{e.name}</CardTitle>
+                <p className="text-muted-foreground mt-1 text-sm">{when.format(new Date(e.starts_at))}</p>
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <ul className="space-y-2 text-sm">

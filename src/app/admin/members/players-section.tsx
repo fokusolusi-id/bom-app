@@ -43,8 +43,8 @@ function PlayerForm({ p }: { p: Player }) {
   return (
     <ActionForm action={savePlayer} className="grid grid-cols-3 gap-3">
       <input type="hidden" name="id" value={p.id} />
-      <label className={`${field} col-span-2`}>Blader name<Input name="name" defaultValue={p.name} maxLength={40} required className="text-base text-white" /></label>
-      <label className={field}>BOM ID<Input name="bom_id" defaultValue={p.bom_id} maxLength={20} required className="text-base text-white" /></label>
+      <div className="col-span-2"><Input name="name" defaultValue={p.name} maxLength={40} required placeholder="Blader name" aria-label="Blader name" className="text-base text-white" /></div>
+      <Input name="bom_id" defaultValue={p.bom_id} maxLength={20} required className="text-base text-white" placeholder="BOM ID" aria-label="BOM ID" />
       <label className={`${field} col-span-2`}>Status
         <NativeSelect name="status" defaultValue={p.status ?? "active"} className="text-base text-white">
           <option value="active">Active (on the leaderboard)</option>

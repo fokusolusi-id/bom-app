@@ -6,7 +6,7 @@ import { MemberCard } from "@/components/bom/member-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { RibbonBanner } from "@/components/bom/ribbon-banner";
-import { TierBadge } from "@/components/bom/tier-badge";
+import { TierMark } from "@/components/bom/tier-mark";
 import { formatBomId, normalizeBomId } from "@/domain/profile";
 import { SITE_URL } from "@/lib/venue";
 import { qrDataUrl } from "@/server/qr";
@@ -92,7 +92,7 @@ export default async function MemberPage({ params }: Props) {
                 {placements.map((p) => (
                   <TableRow key={p.event.id}>
                     <TableCell className="font-bold">{p.event.name}</TableCell>
-                    <TableCell><TierBadge tier={p.event.tier} className="w-auto" /></TableCell>
+                    <TableCell><TierMark tier={p.event.tier} /></TableCell>
                     <TableCell>{fmt(p.event.starts_at)}</TableCell>
                     <TableCell className="font-num tabular text-primary text-right text-xl font-black italic">#{p.place}</TableCell>
                   </TableRow>
