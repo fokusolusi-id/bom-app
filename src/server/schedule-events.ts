@@ -12,10 +12,12 @@ export interface ScheduleEventRepository {
   upcoming(fromIso: string, limit: number): Promise<ScheduleEventView[]>;
   get(id: string): Promise<ScheduleEventView | null>;
   save(input: ScheduleEventInput): Promise<void>;
+  /** The Challonge bracket the results came from, or null to clear it. */
+  setChallongeUrl(id: string, url: string | null): Promise<void>;
   remove(id: string): Promise<void>;
 }
 
-const COLS = "id,sub_community_id,name,starts_at,place,tier,is_active,community:sub_communities(name,image_path,address)";
+const COLS = "id,sub_community_id,name,starts_at,place,tier,is_active,challonge_url,community:sub_communities(name,image_path,address)";
 
 export function supabaseScheduleEvents(client: SupabaseClient): ScheduleEventRepository {
   const rows = (data: unknown) => (data ?? []) as unknown as ScheduleEventView[];
@@ -41,6 +43,10 @@ export function supabaseScheduleEvents(client: SupabaseClient): ScheduleEventRep
       const { id, ...row } = input;
       const { error } = id ? await client.from("schedule_events").update(row).eq("id", id) : await client.from("schedule_events").insert(row);
       check(error, "Failed to save event");
+    },
+    async setChallongeUrl(id, url) {
+      const { error } = await client.from("schedule_events").update({ challonge_url: url }).eq("id", id);
+      check(error, "Failed to save the Challonge link");
     },
     async remove(id) {
       const { error } = await client.from("schedule_events").delete().eq("id", id);

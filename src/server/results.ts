@@ -9,17 +9,18 @@ import { createPublicClient } from "./supabase-public";
 
 
 /** The top eight of an event, in order, with its sub community. */
-export type Podium = { name: string; tier: string; startsAt: string; communityLogo: string | null; communityName: string | null; participants: number; top: { place: number; name: string; bomId: string; tigerKing: boolean }[] };
+export type Podium = { name: string; tier: string; startsAt: string; challongeUrl: string | null; communityLogo: string | null; communityName: string | null; participants: number; top: { place: number; name: string; bomId: string; tigerKing: boolean }[] };
 
 export interface ResultsRepository {
-  /** The most recent past events (shown on the site) that have a champion recorded, newest first. */
+  /** The most recent past events (shown on the site) with a member in the top eight, newest first. Guests without a BOM ID are left out. */
   recentPodiums(nowIso: string, limit: number): Promise<Podium[]>;
   /** A player's places at events, newest first. Only events shown on the site. */
   placementsForPlayer(playerId: string): Promise<PlacementRow[]>;
   /** Places recorded for these events, for the admin. */
-  placementsForEvents(eventIds: string[]): Promise<{ event_id: string; player_id: string; place: number | null; tiger_king: boolean }[]>;
+  placementsForEvents(eventIds: string[]): Promise<{ id: string; event_id: string; player_id: string | null; guest_name: string | null; place: number | null; tiger_king: boolean }[]>;
+  /** Removes one row of an event's results, a guest or a member. */
+  removeRow(eventId: string, rowId: string): Promise<void>;
   setPlacement(input: PlacementInput): Promise<void>;
-  removePlacement(eventId: string, playerId: string): Promise<void>;
   /** Makes these rows the whole result of the event: new ones are added, changed ones updated, the rest removed. */
   replaceForEvent(eventId: string, rows: ResultRow[]): Promise<void>;
 }
@@ -29,19 +30,19 @@ export function supabaseResults(client: SupabaseClient): ResultsRepository {
     async recentPodiums(nowIso, limit) {
       const { data, error } = await client
         .from("schedule_events")
-        .select("name,tier,starts_at,community:sub_communities(name,image_path),event_placements(place,tiger_king,player:players(name,bom_id))")
+        .select("name,tier,starts_at,challonge_url,community:sub_communities(name,image_path),event_placements(place,tiger_king,player:players(name,bom_id))")
         .in("tier", TIERS).eq("is_active", true).lte("starts_at", nowIso)
         .order("starts_at", { ascending: false }).limit(30);
       check(error, "Failed to load latest results");
-      type Row = { name: string; tier: string; starts_at: string; community: { name: string; image_path: string | null } | null; event_placements: { place: number | null; tiger_king: boolean; player: { name: string; bom_id: string } | null }[] };
+      type Row = { name: string; tier: string; starts_at: string; challonge_url: string | null; community: { name: string; image_path: string | null } | null; event_placements: { place: number | null; tiger_king: boolean; player: { name: string; bom_id: string } | null }[] };
       return ((data ?? []) as unknown as Row[])
         .map((e) => ({
-          name: e.name, tier: e.tier, startsAt: e.starts_at, communityLogo: e.community?.image_path ?? null, communityName: e.community?.name ?? null, participants: e.event_placements.length,
+          name: e.name, tier: e.tier, startsAt: e.starts_at, challongeUrl: e.challonge_url, communityLogo: e.community?.image_path ?? null, communityName: e.community?.name ?? null, participants: e.event_placements.length,
           top: e.event_placements
             .flatMap((p) => (p.place !== null && p.place <= 8 && p.player ? [{ place: p.place, name: p.player.name, bomId: p.player.bom_id, tigerKing: p.tiger_king }] : []))
             .sort((a, b) => a.place - b.place),
         }))
-        .filter((p) => p.top.some((t) => t.place === 1))
+        .filter((p) => p.top.length > 0)
         .slice(0, limit);
     },
     async placementsForPlayer(playerId) {
@@ -55,9 +56,9 @@ export function supabaseResults(client: SupabaseClient): ResultsRepository {
     },
     async placementsForEvents(eventIds) {
       if (eventIds.length === 0) return [];
-      const { data, error } = await client.from("event_placements").select("event_id,player_id,place,tiger_king").in("event_id", eventIds);
+      const { data, error } = await client.from("event_placements").select("id,event_id,player_id,guest_name,place,tiger_king").in("event_id", eventIds);
       check(error, "Failed to load placements");
-      return (data ?? []) as { event_id: string; player_id: string; place: number | null; tiger_king: boolean }[];
+      return (data ?? []) as { id: string; event_id: string; player_id: string | null; guest_name: string | null; place: number | null; tiger_king: boolean }[];
     },
     async setPlacement({ eventId, playerId, place, tigerKing }) {
       // One Tiger King per event: giving it to this player takes it from whoever had it.
@@ -69,15 +70,25 @@ export function supabaseResults(client: SupabaseClient): ResultsRepository {
       check(error, "Failed to save placement");
     },
     async replaceForEvent(eventId, rows) {
-      const { error } = await client.from("event_placements").upsert(rows.map((r) => ({ event_id: eventId, player_id: r.playerId, place: r.place, tiger_king: r.tigerKing })));
-      check(error, "Failed to save results");
-      const keep = rows.map((r) => r.playerId).join(",");
-      const { error: removeError } = await client.from("event_placements").delete().eq("event_id", eventId).not("player_id", "in", `(${keep})`);
+      const members = rows.flatMap((r) => (r.playerId ? [{ event_id: eventId, player_id: r.playerId, place: r.place, tiger_king: r.tigerKing }] : []));
+      const guests = rows.flatMap((r) => (r.guestName ? [{ event_id: eventId, guest_name: r.guestName, place: r.place, tiger_king: false }] : []));
+      if (members.length) {
+        const { error } = await client.from("event_placements").upsert(members, { onConflict: "event_id,player_id" });
+        check(error, "Failed to save results");
+      }
+      // Members that are no longer in the list, and last time's guests (the list holds every guest again), go.
+      let removeOthers = client.from("event_placements").delete().eq("event_id", eventId);
+      removeOthers = members.length ? removeOthers.or(`guest_name.not.is.null,player_id.not.in.(${members.map((m) => m.player_id).join(",")})`) : removeOthers;
+      const { error: removeError } = await removeOthers;
       check(removeError, "Failed to save results");
+      if (guests.length) {
+        const { error } = await client.from("event_placements").insert(guests);
+        check(error, "Failed to save results");
+      }
     },
-    async removePlacement(eventId, playerId) {
-      const { error } = await client.from("event_placements").delete().eq("event_id", eventId).eq("player_id", playerId);
-      check(error, "Failed to remove placement");
+    async removeRow(eventId, rowId) {
+      const { error } = await client.from("event_placements").delete().eq("event_id", eventId).eq("id", rowId);
+      check(error, "Failed to remove result");
     },
   };
 }

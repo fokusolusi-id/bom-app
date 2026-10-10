@@ -1,16 +1,10 @@
 import { AdminSection, ItemGrid } from "@/components/admin/admin-page";
-import { Crown } from "lucide-react";
 import Image from "next/image";
 import { TIER_TILE, TierTile } from "@/components/bom/tier-tile";
-import { ActionForm } from "@/components/form/action-form";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { HelpTip } from "@/components/ui/help-tip";
-import { Input, NativeSelect, Textarea } from "@/components/ui/input";
 import { eventUsesBomLogo } from "@/domain/event";
 import { eventPoints } from "@/domain/standings";
 import { isTier } from "@/domain/tier";
-import { formatBomId } from "@/domain/profile";
 import { EVENT_TYPE_LABEL } from "@/lib/event-style";
 import { mediaUrl } from "@/lib/media";
 import { BOM_LOGO } from "@/lib/tier-icon";
@@ -20,13 +14,12 @@ import { supabasePlayers } from "@/server/players";
 import { supabaseResults } from "@/server/results";
 import { supabaseScheduleEvents } from "@/server/schedule-events";
 import { supabaseSettings } from "@/server/settings";
-import { saveEventResults, setPlacement } from "./actions";
 import { PlacementRow } from "./placement-row";
+import { ResultsEntry } from "./results-entry";
 
 const when = new Intl.DateTimeFormat("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Jakarta" });
 const DAY = 86_400_000;
 const RECENT = 20;
-const TEMPLATE = "Mr. DiBo\nPrett (TK)\nBoM-010\nHirono\nZenn X";
 
 /** Who took part in each past event that awards points (Ranked, Cup, Major, Championship), with their places. The events themselves are added under Schedule. */
 export async function ResultsSection() {
@@ -64,43 +57,22 @@ export async function ResultsSection() {
             </CardHeader>
             <CardContent className="space-y-6">
               {(() => {
-                const rows = placements.filter((p) => p.event_id === e.id).sort((a, b) => (a.place ?? 999) - (b.place ?? 999) || (byId.get(a.player_id)?.name ?? "").localeCompare(byId.get(b.player_id)?.name ?? ""));
-                const text = rows.map((r) => `${byId.get(r.player_id)?.name ?? ""}${r.tiger_king ? " (TK)" : ""}`).join("\n");
+                const nameOf = (r: { player_id: string | null; guest_name: string | null }) => (r.player_id ? byId.get(r.player_id)?.name : r.guest_name) ?? "";
+                const rows = placements.filter((p) => p.event_id === e.id).sort((a, b) => (a.place ?? 999) - (b.place ?? 999) || nameOf(a).localeCompare(nameOf(b)));
+                const text = rows.map((r) => `${r.place === null ? "" : `${r.place}. `}${nameOf(r)}${r.tiger_king ? " (TK)" : ""}`).join("\n");
                 return (
                   <>
                     <div className="space-y-2">
                       <p className="text-muted-foreground text-sm">{rows.length} participants</p>
                       <ul className="space-y-2 text-sm">
                         {rows.map((pl) => (
-                          <PlacementRow key={pl.player_id} eventId={e.id!} playerId={pl.player_id} name={byId.get(pl.player_id)?.name ?? pl.player_id} bomId={byId.get(pl.player_id)?.bom_id ?? ""} place={pl.place} tigerKing={pl.tiger_king}
+                          <PlacementRow key={pl.id} eventId={e.id!} rowId={pl.id} playerId={pl.player_id} name={nameOf(pl)} bomId={pl.player_id ? byId.get(pl.player_id)?.bom_id ?? "" : null} place={pl.place} tigerKing={pl.tiger_king}
                             points={eventPoints(table, e.tier, { place: pl.place, tigerKing: pl.tiger_king }, rows.length)} />
                         ))}
                       </ul>
                     </div>
-                    <ActionForm action={saveEventResults.bind(null, e.id!)} className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <label className="text-sm font-bold" htmlFor={`results-${e.id}`}>Enter all results at once</label>
-                        <HelpTip label="How to enter results">
-                          <p>One member per line, by blader name or BOM ID (BoM-003, bom 3 or just 3).</p>
-                          <p>The first line is 1st place, the second 2nd, up to 8th. Every line after that took part without a place.</p>
-                          <p>Add (TK) after the Tiger King, once. Saving replaces the results of this event.</p>
-                          <pre className="bg-muted/60 rounded p-2 whitespace-pre">{TEMPLATE}</pre>
-                        </HelpTip>
-                      </div>
-                      <Textarea id={`results-${e.id}`} name="results" defaultValue={text} rows={Math.min(12, Math.max(6, rows.length + 1))} placeholder={TEMPLATE} className="font-mono text-base text-white" />
-                      <Button type="submit">Save results</Button>
-                    </ActionForm>
-                    <ActionForm action={setPlacement} resetOnSuccess className="grid gap-3 border-t pt-4 sm:grid-cols-[1fr_7rem]">
-                      <p className="text-sm font-bold sm:col-span-2">Add or update one member</p>
-                      <input type="hidden" name="event_id" value={e.id} />
-                      <NativeSelect name="player_id" aria-label="Member" required defaultValue="">
-                        <option value="" disabled>Member</option>
-                        {players.map((p) => <option key={p.id} value={p.id}>{p.name} {formatBomId(p.bom_id)}</option>)}
-                      </NativeSelect>
-                      <Input name="place" type="number" min={1} max={999} placeholder="Place (top 8)" aria-label="Place" />
-                      <label className="flex items-center gap-2 text-sm sm:col-span-2"><input type="checkbox" name="tiger_king" /><Crown className="size-4 text-yellow-400" aria-hidden /> Tiger King (one per event)</label>
-                      <Button type="submit" variant="outline" className="sm:col-span-2">Add or update member</Button>
-                    </ActionForm>
+                    <ResultsEntry eventId={e.id!} text={text} challongeUrl={e.challonge_url ?? null} hasChallongeKey={!!process.env.CHALLONGE_API_KEY}
+                      members={players.flatMap((p) => (p.id ? [{ id: p.id, name: p.name, bom_id: p.bom_id }] : []))} />
                   </>
                 );
               })()}

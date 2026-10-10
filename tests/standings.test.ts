@@ -46,13 +46,14 @@ describe("results typed as a list", () => {
   const players = ["Mr. DiBo", "Prett", "3R Zero", ...Array.from({ length: 8 }, (_, i) => `P${i}`)].map((name, i) => ({ id: `id-${i}`, name, bom_id: `BoM-${String(i + 1).padStart(3, "0")}` }));
 
   it("gives places in line order, then participants without a place", () => {
-    const rows = parseResultsText("Mr. DiBo\nprett (TK)\nbom 3\n1. P0\nP1\nP2\nP3\nP4\nP5\n\nP6", players);
+    const rows = parseResultsText("Mr. DiBo\nprett (TK)\nbom 3\n4. P0\nP1\nP2\nP3\nP4\nP5\n\nP6", players);
     expect(rows.map((r) => r.place)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, null, null]);
+    expect(rows.every((r) => r.guestName === null)).toBe(true);
     expect(rows[1]).toMatchObject({ playerId: "id-1", tigerKing: true });
     expect(rows[2].playerId).toBe("id-2");
   });
 
-  it.each([["", "at least one"], ["Nobody", "not found"], ["Prett\nprett", "twice"], ["Prett (TK)\nMr. DiBo *", "Only one Tiger King"]])("rejects %j", (text, message) => {
+  it.each([["", "at least one"], ["Prett\nprett", "twice"], ["Prett (TK)\nMr. DiBo *", "Only one Tiger King"], ["Nobody (TK)", "no BOM ID"]])("rejects %j", (text, message) => {
     expect(() => parseResultsText(text, players)).toThrow(new RegExp(message, "i"));
   });
 });
@@ -88,5 +89,56 @@ describe("player edit", () => {
   it("needs a guardian under 12, and rejects an unknown role", () => {
     expect(() => parsePlayerInput(form({ ...base, age_group: "under12" }))).toThrow();
     expect(() => parsePlayerInput(form({ ...base, role: "boss" }))).toThrow(/role/i);
+  });
+});
+
+import { challongeResultsText, entriesFromChallonge, parseChallongeUrl } from "@/domain/challonge";
+
+describe("Challonge", () => {
+  it("reads bracket links", () => {
+    expect(parseChallongeUrl("https://challonge.com/dxm_nouxbeytle_topcut")).toEqual({ url: "https://challonge.com/dxm_nouxbeytle_topcut", apiId: "dxm_nouxbeytle_topcut" });
+    expect(parseChallongeUrl("challonge.com/abc/standings")).toMatchObject({ apiId: "abc" });
+    expect(parseChallongeUrl("https://dxm.challonge.com/cup1")).toEqual({ url: "https://dxm.challonge.com/cup1", apiId: "dxm-cup1" });
+    expect(parseChallongeUrl("  ")).toBeNull();
+    expect(() => parseChallongeUrl("https://example.com/abc")).toThrow(/challonge/i);
+  });
+
+  const json = (ranks: (number | null)[]) => ({ tournament: { participants: ranks.map((r, i) => ({ participant: { name: `P${i}`, final_rank: r } })) } });
+
+  it("orders the participants by final rank and needs a finished bracket", () => {
+    expect(entriesFromChallonge(json([3, 1, 2, 3])).map((e) => e.name)).toEqual(["P1", "P2", "P0", "P3"]);
+    expect(() => entriesFromChallonge(json([null, null]))).toThrow(/final ranking/i);
+    expect(() => entriesFromChallonge({})).toThrow();
+  });
+
+  it("writes the results list with real places, and reports names it cannot match", () => {
+    const members = [{ name: "Mr. DiBo", bom_id: "BoM-002" }, { name: "Dewa", bom_id: "BoM-001" }];
+    const entries = [{ name: "mr. dibo", rank: 1 }, { name: "Someone [BOM-001]", rank: 2 }, { name: "Stranger", rank: 3 }, { name: "Late", rank: 9 }];
+    expect(challongeResultsText(entries, members)).toEqual({ text: "1. Mr. DiBo\n2. Dewa\n3. Stranger\nLate", unmatched: ["Stranger", "Late"] });
+  });
+
+  it("lets two members share a place", () => {
+    const players = [{ id: "a", name: "A", bom_id: "BoM-001" }, { id: "b", name: "B", bom_id: "BoM-002" }, { id: "c", name: "C", bom_id: "BoM-003" }];
+    expect(parseResultsText("1. A\n3. B\n3. C", players).map((r) => r.place)).toEqual([1, 3, 3]);
+  });
+});
+
+describe("guests without a BOM ID", () => {
+  const players = [{ id: "a", name: "A", bom_id: "BoM-001" }, { id: "b", name: "B", bom_id: "BoM-002" }];
+
+  it("saves a name that matches nobody as a guest, keeping its place", () => {
+    expect(parseResultsText("1. Stranger\n2. A\n3. B", players)).toEqual([
+      { playerId: null, guestName: "Stranger", place: 1, tigerKing: false },
+      { playerId: "a", guestName: null, place: 2, tigerKing: false },
+      { playerId: "b", guestName: null, place: 3, tigerKing: false },
+    ]);
+  });
+
+  it("counts guests as participants but gives them no standing", () => {
+    const events = [ev("1", "Ranked", "2026-10-03T11:00:00Z", [["a", 2]])];
+    events[0].participants.push({ playerId: null, place: 1, tigerKing: false });
+    const s = buildStandings(events, T);
+    expect([...s.keys()]).toEqual(["a"]);
+    expect(s.get("a")?.total).toBe(3.25);
   });
 });

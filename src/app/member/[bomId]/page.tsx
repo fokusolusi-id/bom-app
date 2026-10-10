@@ -1,4 +1,4 @@
-import { ArrowLeft, Crown } from "lucide-react";
+import { ArrowLeft, Crown, ExternalLink } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
@@ -110,7 +110,7 @@ export default async function MemberPage({ params }: Props) {
                   <li key={h.eventId} className="rounded-lg border p-3">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <div className="font-bold break-words">{h.name}{h.tigerKing && <Crown className="ml-2 inline size-4 align-text-bottom text-yellow-400" aria-label="Tiger King" />}</div>
+                        <div className="font-bold break-words">{h.name}{h.tigerKing && <Crown className="ml-2 inline size-4 align-text-bottom text-yellow-400" aria-label="Tiger King" />}{h.challongeUrl && <a href={h.challongeUrl} target="_blank" rel="noopener noreferrer" className="text-primary ml-2 inline-flex items-center gap-0.5 text-xs font-normal underline">Bracket<ExternalLink className="size-3" aria-hidden /></a>}</div>
                         <span className="flex flex-wrap items-center gap-x-3 gap-y-1"><TierMark tier={h.tier as Tier} /><span className="text-muted-foreground text-xs whitespace-nowrap">{tierMultiplier(h.tier as Tier)}x points</span></span>
                       </div>
                       <div className="font-num tabular text-primary text-2xl font-black italic">{h.place === null ? <span className="text-muted-foreground text-base font-normal not-italic">Played</span> : `#${h.place}`}</div>
@@ -129,7 +129,7 @@ export default async function MemberPage({ params }: Props) {
               <TableBody>
                 {[...history].reverse().map((h) => (
                   <TableRow key={h.eventId}>
-                    <TableCell className="font-bold">{h.name}{h.tigerKing && <Crown className="ml-2 inline size-4 align-text-bottom text-yellow-400" aria-label="Tiger King" />}</TableCell>
+                    <TableCell className="font-bold">{h.name}{h.tigerKing && <Crown className="ml-2 inline size-4 align-text-bottom text-yellow-400" aria-label="Tiger King" />}{h.challongeUrl && <a href={h.challongeUrl} target="_blank" rel="noopener noreferrer" className="text-primary ml-2 inline-flex items-center gap-0.5 text-xs font-normal underline">Bracket<ExternalLink className="size-3" aria-hidden /></a>}</TableCell>
                     <TableCell><span className="flex flex-wrap items-center gap-x-3 gap-y-1"><TierMark tier={h.tier as Tier} /><span className="text-muted-foreground text-xs whitespace-nowrap">{tierMultiplier(h.tier as Tier)}x points</span></span></TableCell>
                     <TableCell>{fmt(h.startsAt)}</TableCell>
                     <TableCell className="font-num tabular text-muted-foreground text-right">{h.participants}</TableCell>
