@@ -24,8 +24,8 @@ export function AddCard({ title, children }: { title: string; children: React.Re
 }
 
 /** Existing items, two columns from the md breakpoint. */
-export function ItemGrid({ children }: { children: React.ReactNode }) {
-  return <div className="grid items-start gap-4 md:grid-cols-2">{children}</div>;
+export function ItemGrid({ children, single }: { children: React.ReactNode; single?: boolean }) {
+  return <div className={`grid items-start gap-4 ${single ? "" : "md:grid-cols-2"}`}>{children}</div>;
 }
 
 /** One part of a combined admin page. `id` is the anchor the side menu jumps to. */

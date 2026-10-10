@@ -5,7 +5,7 @@ import { nextWeekly, upcomingEvents } from "@/domain/next-event";
 import { monthKey, monthWeeks, parseMonth, parseWeekday, shiftMonth, weekdayOf } from "@/domain/schedule";
 import { tierMultiplier } from "@/domain/scoring";
 import { parseTier, parseTierLabel, usesBomLogo } from "@/domain/tier";
-import { eventUsesBomLogo, isoToWibLocal, parseEventInput, pickOnePerDay, wibDay, wibLocalToIso, wibTime } from "@/domain/event";
+import { eventPlace, eventUsesBomLogo, isoToWibLocal, parseEventInput, pickOnePerDay, wibDay, wibLocalToIso, wibTime } from "@/domain/event";
 
 const A = "11111111-1111-1111-1111-111111111111";
 const B = "22222222-2222-2222-2222-222222222222";
@@ -27,7 +27,7 @@ describe("parseSubCommunityInput", () => {
   const sub = (o: Record<string, unknown>) => parseSubCommunityInput((k) => o[k]);
   it("parses a valid row", () => {
     expect(sub({ name: " DXM ", focus: "", sort_order: "2", is_active: "on" }))
-      .toEqual({ name: "DXM", focus: null, sort_order: 2, is_active: true, image_path: null, instagram: null });
+      .toEqual({ name: "DXM", focus: null, sort_order: 2, is_active: true, image_path: null, instagram: null, address: null });
   });
   it("requires a name", () => {
     expect(() => sub({ focus: "x" })).toThrow();
@@ -37,6 +37,10 @@ describe("parseSubCommunityInput", () => {
     expect(() => sub({ name: "a", sort_order: 1000 })).toThrow();
   });
   it("treats missing checkbox as inactive", () => expect(sub({ name: "a" }).is_active).toBe(false));
+  it("keeps an optional address", () => {
+    expect(sub({ name: "a", address: " Luahap Eatery " }).address).toBe("Luahap Eatery");
+    expect(sub({ name: "a" }).address).toBeNull();
+  });
 });
 
 import { normalizeWhatsapp, parseRegistration } from "@/domain/join-request";
@@ -321,13 +325,24 @@ describe("schedule events", () => {
     expect(() => ev({ ...base, sub_community_id: "x" })).toThrow();
     expect(() => ev({ ...base, tier: "Casual" })).toThrow();
     expect(() => ev({ ...base, name: "" })).toThrow();
-    expect(() => ev({ ...base, place: "" })).toThrow();
   });
 });
 
 describe("event logo", () => {
   it("shows the BOM logo for Cup and above, the sub komunitas logo for Unrank and Ranked", () => {
     expect((["Unrank", "Ranked", "Cup", "Major", "Championship"] as const).map(usesBomLogo)).toEqual([false, false, true, true, true]);
+  });
+});
+
+describe("event place", () => {
+  it("is optional: an empty place becomes null", () => {
+    expect(parseEventInput((k) => ({ name: "X", starts_at: "2026-10-10T18:00", tier: "Ranked", place: "  " })[k as "name"]).place).toBeNull();
+  });
+  it("falls back from its own place, to the community address, to the main venue", () => {
+    expect(eventPlace({ place: "Here", community: { address: "There" } }, "Venue")).toBe("Here");
+    expect(eventPlace({ place: null, community: { address: "There" } }, "Venue")).toBe("There");
+    expect(eventPlace({ place: null, community: { address: null } }, "Venue")).toBe("Venue");
+    expect(eventPlace({ place: null, community: null }, "Venue")).toBe("Venue");
   });
 });
 
@@ -439,5 +454,28 @@ describe("points table", () => {
     expect(() => parsePointsTable((k) => ({ ...base, rank_0_0: "-1" })[k])).toThrow();
     expect(() => parsePointsTable((k) => ({ ...base, sizes: "99" })[k])).toThrow();
     expect(() => parsePointsTable((k) => ({ ...base, size_0: "" })[k])).toThrow();
+  });
+});
+
+import { asRulesPage, parseRulesPage } from "@/domain/rules-page";
+import { DEFAULT_RULES_PAGE } from "@/lib/content";
+
+describe("rules page", () => {
+  const rules = (o: Record<string, string>) => parseRulesPage((k) => o[k]);
+  it("parses the editor's fields and skips empty rulebook slots", () => {
+    expect(rules({ intro: " Hello ", summary: "S", rb_title_0: "Book", rb_note_0: "Ed 1", rb_href_0: "example.com/a.pdf", rb_title_1: "", rb_href_1: "" })).toEqual({
+      intro: "Hello", summary: "S", rulebooks: [{ title: "Book", note: "Ed 1", href: "https://example.com/a.pdf" }],
+    });
+    expect(rules({})).toEqual({ intro: "", summary: "", rulebooks: [] });
+  });
+  it("rejects a half-filled rulebook and a bad link", () => {
+    expect(() => rules({ rb_title_0: "Book" })).toThrow();
+    expect(() => rules({ rb_href_0: "https://example.com/a.pdf" })).toThrow();
+    expect(() => rules({ rb_title_0: "Book", rb_href_0: "javascript:alert(1)" })).toThrow();
+  });
+  it("accepts the default page and rejects a broken one read from the database", () => {
+    expect(asRulesPage(JSON.parse(JSON.stringify(DEFAULT_RULES_PAGE)))).toEqual(DEFAULT_RULES_PAGE);
+    expect(asRulesPage({ intro: "x" })).toBeNull();
+    expect(asRulesPage(null)).toBeNull();
   });
 });

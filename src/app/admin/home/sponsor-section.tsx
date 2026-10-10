@@ -18,7 +18,7 @@ function SponsorForm({ s }: { s?: Sponsor }) {
         {SPONSOR_TIERS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
       </NativeSelect>
       <Input name="website" defaultValue={s?.website ?? ""} placeholder="Website (optional)" aria-label="Website" maxLength={200} />
-      <Input name="sort_order" type="number" min={0} max={999} defaultValue={s?.sort_order ?? 0} aria-label="Order" />
+      <Input name="sort_order" type="number" min={0} max={999} defaultValue={s?.sort_order ?? 0} placeholder="Order" aria-label="Order" />
       <ImageUpload name="logo_path" label="Logo" defaultPath={s?.logo_path} prepare={prepareSponsorLogoUpload} />
       <label className="flex items-center gap-2 text-sm sm:col-span-2"><input type="checkbox" name="is_active" defaultChecked={s?.is_active ?? true} /> Show on website</label>
       <Button type="submit" className="sm:col-span-2">{s ? "Save" : "Add"}</Button>

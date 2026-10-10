@@ -24,7 +24,7 @@ function MediaForm({ section, item }: { section: MediaSection; item?: SiteMedia 
         <MediaUpload name="path" label="Photo" defaultPath={item?.path} prepare={prepare} kind="image" />
       )}
       <Input name="caption" defaultValue={item?.caption ?? ""} placeholder="Caption (optional)" aria-label="Caption" maxLength={120} />
-      <Input name="sort_order" type="number" min={0} max={999} defaultValue={item?.sort_order ?? 0} aria-label="Order" />
+      <Input name="sort_order" type="number" min={0} max={999} defaultValue={item?.sort_order ?? 0} placeholder="Order" aria-label="Order" />
       <label className="flex items-center gap-2 text-sm sm:col-span-2"><input type="checkbox" name="is_active" defaultChecked={item?.is_active ?? true} /> Show on website</label>
       <Button type="submit" className="sm:col-span-2">{item ? "Save" : "Add"}</Button>
     </ActionForm>

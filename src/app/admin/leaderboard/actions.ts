@@ -9,7 +9,7 @@ import { supabaseResults } from "@/server/results";
 import { supabaseSettings } from "@/server/settings";
 
 function revalidate() {
-  revalidatePath("/admin/competition");
+  revalidatePath("/admin/leaderboard");
   revalidatePath("/");
   revalidatePath("/member/[bomId]", "page");
 }
@@ -35,7 +35,7 @@ export async function savePointsTable(_prev: FormState, formData: FormData): Pro
   const supabase = await requireAdmin();
   return toFormState(async () => {
     await supabaseSettings(supabase).savePointsTable(parsePointsTable((k) => formData.get(k)));
-    revalidatePath("/admin/competition");
+    revalidatePath("/admin/leaderboard");
     revalidatePath("/leaderboard");
   }, "Saved");
 }

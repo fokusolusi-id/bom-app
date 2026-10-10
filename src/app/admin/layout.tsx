@@ -1,7 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import { AdminNav } from "@/components/admin/admin-nav";
-import { Button } from "@/components/ui/button";
 import { requireAdmin } from "@/server/admin-session";
 import { signOut } from "./actions";
 
@@ -9,9 +8,11 @@ export const dynamic = "force-dynamic";
 
 const sections = [
   ["/admin/home", "Home"],
-  ["/admin/competition", "Competition"],
-  ["/admin/members", "Members"],
-  ["/admin/about", "About"],
+  ["/admin/about", "About BOM"],
+  ["/admin/rules", "Rules"],
+  ["/admin/members", "Players"],
+  ["/admin/schedule", "Schedule"],
+  ["/admin/leaderboard", "Leaderboard"],
 ] as const;
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -25,10 +26,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             <Image src="/brand/logo-768.png" alt="" width={32} height={32} />
             <span className="font-display hidden text-sm font-extrabold italic uppercase sm:inline">Admin</span>
           </Link>
-          <AdminNav sections={sections} />
-          <div className="flex shrink-0 items-center gap-2">
-            <form action={signOut}><Button variant="outline" size="sm">Sign out</Button></form>
-          </div>
+          <AdminNav sections={sections}>
+            <form action={signOut} className="shrink-0"><button type="submit" className="hover:text-primary px-3 py-2 whitespace-nowrap uppercase">Sign out</button></form>
+          </AdminNav>
         </div>
       </header>
       <div className="mx-auto max-w-6xl px-4 py-8">{children}</div>

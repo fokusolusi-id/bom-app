@@ -12,14 +12,14 @@ import { AddCard, AdminSection, ItemGrid } from "@/components/admin/admin-page";
 
 function RoleForm({ role, players }: { role?: TeamRole; players: PickerPlayer[] }) {
   return (
-    <ActionForm action={saveTeamRole} resetOnSuccess={!role} className="grid gap-3 sm:grid-cols-[1fr_8rem]">
+    <ActionForm action={saveTeamRole} resetOnSuccess={!role} className="grid gap-4">
       {role?.id && <input type="hidden" name="id" value={role.id} />}
-      <Input name="title" defaultValue={role?.title} placeholder="Role title (English)" aria-label="Role title" maxLength={60} required />
-      <Input name="sort_order" type="number" min={0} max={999} defaultValue={role?.sort_order ?? 0} aria-label="Order" />
-      <div className="sm:col-span-2">
+      <Input name="title" defaultValue={role?.title} maxLength={60} required placeholder="Role title (English)" aria-label="Role title (English)" />
+      <Input name="sort_order" type="number" min={0} max={999} defaultValue={role?.sort_order ?? 0} placeholder="Order" aria-label="Order" />
+      <div>
         <PlayerPicker name="player_id" players={players} defaultIds={role?.members.map((m) => m.playerId)} max={MAX_ROLE_MEMBERS} preparePhoto={prepareMemberPhotoUpload} />
       </div>
-      <Button type="submit" className="sm:col-span-2">{role ? "Save" : "Add role"}</Button>
+      <Button type="submit" >{role ? "Save" : "Add role"}</Button>
     </ActionForm>
   );
 }
@@ -31,7 +31,7 @@ export async function TeamSection() {
   return (
     <AdminSection id="team" title="Founding Team" hint="Pick members from existing players; each member's photo is set right under their name. The order matches the About page.">
       <AddCard title="New role"><RoleForm players={players} /></AddCard>
-      <ItemGrid>
+      <ItemGrid single>
       {roles.map((r) => (
         <Card key={r.id}>
           <CardHeader><CardTitle>{r.title}</CardTitle></CardHeader>

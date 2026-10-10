@@ -57,12 +57,11 @@ export default async function Home() {
         {events.length > 0 ? (
           <>
             <ul className="grid gap-4 md:grid-cols-2">
-              {events.map((e) => {
+              {events.map((e, i) => {
                 const type = e.type && e.type in EVENT_STYLE ? (e.type as EventType) : null;
-                const style = type ? EVENT_STYLE[type] : null;
                                 return (
                   <li key={`${e.title}-${e.at.toISOString()}`}>
-                    <Card className={`h-full border-[3px] ${style ? style.edge : ""}`}>
+                    <Card className={`h-full border-2 ${i === 0 ? "border-[var(--bom-orange)]" : "border-neutral-500"}`}>
                       <CardContent className="flex h-full gap-4">
                         {e.logo && <Image src={e.logo.src} alt={e.logo.alt} width={112} height={112} className="size-24 shrink-0 object-contain" />}
                         <div className="flex min-w-0 flex-1 flex-col gap-2">

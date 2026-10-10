@@ -14,12 +14,16 @@ export function parseEventType(value: unknown): EventType {
 export const eventUsesBomLogo = (type: EventType) => type === "Break" || usesBomLogo(type);
 
 export type ScheduleEvent = {
-  id?: string; sub_community_id: string | null; name: string; starts_at: string; place: string; tier: EventType; is_active: boolean;
+  id?: string; sub_community_id: string | null; name: string; starts_at: string; place: string | null; tier: EventType; is_active: boolean;
 };
 export type ScheduleEventInput = Omit<ScheduleEvent, "id"> & { id?: string };
 
-/** An event joined with its sub community's name and logo, for display. */
-export type ScheduleEventView = ScheduleEvent & { community: { name: string; image_path: string | null } | null };
+/** An event joined with its sub community's name, logo and address, for display. */
+export type ScheduleEventView = ScheduleEvent & { community: { name: string; image_path: string | null; address: string | null } | null };
+
+/** Where an event takes place: its own place, else its community's address, else `fallback` (the main venue). */
+export const eventPlace = (e: { place: string | null; community?: { address: string | null } | null }, fallback: string) =>
+  e.place ?? e.community?.address ?? fallback;
 
 const WIB = "+07:00";
 
@@ -52,7 +56,7 @@ export function parseEventInput(get: (key: string) => unknown): ScheduleEventInp
     sub_community_id: community ? (community as string) : null,
     name: parseText(get("name"), "Event name", 80),
     starts_at: wibLocalToIso(get("starts_at")),
-    place: parseText(get("place"), "Place", 120),
+    place: parseText(get("place"), "Place", 120, "") || null,
     tier: parseEventType(get("tier")),
     is_active: get("is_active") === "on" || get("is_active") === "true",
   };

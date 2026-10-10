@@ -1,8 +1,9 @@
 import "server-only";
-import { eventUsesBomLogo, pickOnePerDay } from "@/domain/event";
+import { eventPlace, eventUsesBomLogo, pickOnePerDay } from "@/domain/event";
 import { type NextEvent, upcomingEvents } from "@/domain/next-event";
 import { mediaUrl } from "@/lib/media";
 import { BOM_LOGO } from "@/lib/tier-icon";
+import { VENUE } from "@/lib/venue";
 import { publicScheduleEvents } from "./schedule-events";
 
 /** The next scheduled events (admin calendar, one per day), soonest first. */
@@ -14,7 +15,7 @@ export async function loadUpcomingEvents(limit: number, now = new Date()): Promi
       const bom = eventUsesBomLogo(e.tier) || !e.community?.image_path;
       return {
         title: `${e.tier === "Unrank" ? "" : e.tier === "Break" ? "Break: " : `BOM ${e.tier}: `}${e.name}`,
-        at: new Date(e.starts_at), name: e.name, type: e.tier, place: e.place,
+        at: new Date(e.starts_at), name: e.name, type: e.tier, place: eventPlace(e, VENUE),
         logo: bom ? { src: BOM_LOGO, alt: "BOM" } : { src: mediaUrl(e.community!.image_path!), alt: e.community!.name },
       };
     }),

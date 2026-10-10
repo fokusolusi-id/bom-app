@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-// Moved: this is now part of /admin/competition.
+// Moved: this is now /admin/leaderboard#results.
 export default function AdminTournamentsRedirect() {
-  redirect("/admin/competition#results");
+  redirect("/admin/leaderboard#results");
 }

@@ -15,7 +15,7 @@ export interface ScheduleEventRepository {
   remove(id: string): Promise<void>;
 }
 
-const COLS = "id,sub_community_id,name,starts_at,place,tier,is_active,community:sub_communities(name,image_path)";
+const COLS = "id,sub_community_id,name,starts_at,place,tier,is_active,community:sub_communities(name,image_path,address)";
 
 export function supabaseScheduleEvents(client: SupabaseClient): ScheduleEventRepository {
   const rows = (data: unknown) => (data ?? []) as unknown as ScheduleEventView[];
