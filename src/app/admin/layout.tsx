@@ -1,22 +1,27 @@
 import Image from "next/image";
 import Link from "next/link";
 import { AdminNav } from "@/components/admin/admin-nav";
-import { requireAdmin } from "@/server/admin-session";
+import { ProfileMenu } from "@/components/admin/profile-menu";
+import { requireStaff } from "@/server/admin-session";
 import { signOut } from "./actions";
 
 export const dynamic = "force-dynamic";
 
-const sections = [
+const adminSections = [
   ["/admin/home", "Home"],
   ["/admin/about", "About BOM"],
   ["/admin/rules", "Rules"],
   ["/admin/members", "Members"],
   ["/admin/schedule", "Schedule"],
   ["/admin/leaderboard", "Leaderboard"],
+  ["/admin/access", "Access"],
 ] as const;
+/** Organizers manage the schedule and the results of their own sub community, nothing else. */
+const organizerSections = [["/admin/schedule", "Schedule"], ["/admin/leaderboard", "Results"]] as const;
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  await requireAdmin();
+  const staff = await requireStaff();
+  const roleLabel = staff.isAdmin ? "Admin" : `Organizer · ${staff.roles.flatMap((r) => (r.community_name ? [r.community_name] : [])).join(", ")}`;
 
   return (
     <>
@@ -26,9 +31,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             <Image src="/brand/logo-768.png" alt="" width={32} height={32} />
             <span className="font-display hidden text-sm font-extrabold italic uppercase sm:inline">Admin</span>
           </Link>
-          <AdminNav sections={sections}>
-            <form action={signOut} className="shrink-0"><button type="submit" className="hover:text-primary px-3 py-2 whitespace-nowrap uppercase">Sign out</button></form>
-          </AdminNav>
+          <AdminNav sections={staff.isAdmin ? adminSections : organizerSections} />
+          <ProfileMenu email={staff.email} role={roleLabel} signOut={signOut} />
         </div>
       </header>
       <div className="mx-auto max-w-6xl px-4 py-8">{children}</div>

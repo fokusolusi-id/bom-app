@@ -14,7 +14,8 @@ import { formatBomId } from "@/domain/profile";
 import { EVENT_TYPE_LABEL } from "@/lib/event-style";
 import { mediaUrl } from "@/lib/media";
 import { BOM_LOGO } from "@/lib/tier-icon";
-import { requireAdmin } from "@/server/admin-session";
+import { canManageResults } from "@/domain/access";
+import { requireStaff } from "@/server/admin-session";
 import { supabasePlayers } from "@/server/players";
 import { supabaseResults } from "@/server/results";
 import { supabaseScheduleEvents } from "@/server/schedule-events";
@@ -29,14 +30,15 @@ const TEMPLATE = "Mr. DiBo\nPrett (TK)\nBoM-010\nHirono\nZenn X";
 
 /** Who took part in each past event that awards points (Ranked, Cup, Major, Championship), with their places. The events themselves are added under Schedule. */
 export async function ResultsSection() {
-  const supabase = await requireAdmin();
+  const staff = await requireStaff();
+  const supabase = staff.supabase;
   const now = new Date();
   const [all, players, table] = await Promise.all([
     supabaseScheduleEvents(supabase).between(new Date(now.getTime() - 365 * DAY).toISOString(), now.toISOString(), { includeInactive: true }),
     supabasePlayers(supabase).list(1000, { includeRegistered: true }),
     supabaseSettings(supabase).pointsTable(),
   ]);
-  const events = all.filter((e) => isTier(e.tier)).sort((a, b) => b.starts_at.localeCompare(a.starts_at)).slice(0, RECENT);
+  const events = all.filter((e) => isTier(e.tier) && canManageResults(staff, e)).sort((a, b) => b.starts_at.localeCompare(a.starts_at)).slice(0, RECENT);
   const placements = await supabaseResults(supabase).placementsForEvents(events.flatMap((e) => (e.id ? [e.id] : [])));
   const byId = new Map(players.map((p) => [p.id, p]));
   return (

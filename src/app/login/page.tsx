@@ -12,7 +12,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
         <CardHeader><CardTitle>Admin login</CardTitle></CardHeader>
         <CardContent>
           {hasSupabase()
-            ? <LoginForm notice={error === "forbidden" ? "This account is not registered as an admin. Add it to the admins table, or sign in with another account." : undefined} />
+            ? <LoginForm notice={error === "forbidden" ? "This account has no access to the admin area. Ask an admin to give it access, or sign in with another account." : undefined} />
             : <p className="text-muted-foreground">Set env Supabase dulu (lihat README).</p>}
         </CardContent>
       </Card>
