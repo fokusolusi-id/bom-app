@@ -17,7 +17,7 @@ export type ResultEvent = {
   id: string; name: string; tier: Tier; startsAt: string; challongeUrl: string | null;
   communityId: string | null; communityName: string; logo: { src: string; alt: string };
   text: string;
-  rows: { id: string; playerId: string | null; name: string; bomId: string | null; place: number | null; tigerKing: boolean; points: number }[];
+  rows: { id: string; playerId: string | null; name: string; bomId: string | null; place: number | null; tigerKing: boolean; combos: string[]; points: number }[];
 };
 
 const PAGE_SIZE = 25;
@@ -125,7 +125,7 @@ export function ResultsBrowser({ events, members, hasChallongeKey }: {
               <p className="text-muted-foreground text-sm">{open.rows.length} participants</p>
               <ul className="space-y-2 text-sm">
                 {open.rows.map((pl) => (
-                  <PlacementRow key={pl.id} eventId={open.id} rowId={pl.id} playerId={pl.playerId} name={pl.name} bomId={pl.bomId} place={pl.place} tigerKing={pl.tigerKing} points={pl.points} />
+                  <PlacementRow key={pl.id} eventId={open.id} rowId={pl.id} playerId={pl.playerId} name={pl.name} bomId={pl.bomId} place={pl.place} tigerKing={pl.tigerKing} combos={pl.combos} points={pl.points} />
                 ))}
               </ul>
             </div>

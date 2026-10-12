@@ -128,9 +128,9 @@ describe("guests without a BOM ID", () => {
 
   it("saves a name that matches nobody as a guest, keeping its place", () => {
     expect(parseResultsText("1. Stranger\n2. A\n3. B", players)).toEqual([
-      { playerId: null, guestName: "Stranger", place: 1, tigerKing: false },
-      { playerId: "a", guestName: null, place: 2, tigerKing: false },
-      { playerId: "b", guestName: null, place: 3, tigerKing: false },
+      { playerId: null, guestName: "Stranger", place: 1, tigerKing: false, combos: [] },
+      { playerId: "a", guestName: null, place: 2, tigerKing: false, combos: [] },
+      { playerId: "b", guestName: null, place: 3, tigerKing: false, combos: [] },
     ]);
   });
 
@@ -140,5 +140,73 @@ describe("guests without a BOM ID", () => {
     const s = buildStandings(events, T);
     expect([...s.keys()]).toEqual(["a"]);
     expect(s.get("a")?.total).toBe(3.25);
+  });
+});
+
+describe("results with winning combos", () => {
+  const players = [
+    { id: "decade", name: "Decade", bom_id: "BoM-123" },
+    { id: "dibo", name: "Mr. DiBo", bom_id: "BoM-002" },
+    ...Array.from({ length: 8 }, (_, i) => ({ id: `p${i}`, name: `P${i}`, bom_id: `BoM-${500 + i}` })),
+  ];
+  const sample = [
+    "1 [BOM-123] Decade (TK)", "AP 1-80 LR", "HR 9-60 LO", "PW 3-60 R", "",
+    "2 [BOM-XXX]   Mr. DiBo", "DSt 6-70 J", "CDg 3-60 E", "TB 1-60 R", "",
+    "3 [Non BOM ID] Vampire", "AP 1-50 R", "PW 3-60 LR",
+    "4 [BOM-XXX] Corona Vaires", "SSC 4-50 J",
+  ].join("\n");
+
+  it("reads a numbered list: place, BOM ID, name, then up to three combos", () => {
+    const rows = parseResultsText(sample, players);
+    expect(rows[0]).toEqual({ playerId: "decade", guestName: null, place: 1, tigerKing: true, combos: ["AP 1-80 LR", "HR 9-60 LO", "PW 3-60 R"] });
+    expect(rows[1]).toMatchObject({ playerId: "dibo", place: 2, combos: ["DSt 6-70 J", "CDg 3-60 E", "TB 1-60 R"] });
+    expect(rows[2]).toEqual({ playerId: null, guestName: "Vampire", place: 3, tigerKing: false, combos: ["AP 1-50 R", "PW 3-60 LR"] });
+    expect(rows[3]).toMatchObject({ playerId: null, guestName: "Corona Vaires", place: 4 });
+  });
+
+  it("makes a guest of a member's name when marked Non BOM ID", () => {
+    expect(parseResultsText("1 [Non BOM ID] Decade", players)[0]).toMatchObject({ playerId: null, guestName: "Decade" });
+  });
+
+  it("allows combos only for the top 8 and the Tiger King, and at most three", () => {
+    const lines = Array.from({ length: 9 }, (_, i) => `${i + 1} [BOM-${500 + (i % 8)}] ${i < 8 ? `P${i}` : "Late"}`);
+    expect(() => parseResultsText(`${lines.slice(0, 8).join("\n")}\n9 Late\nAP 1-80 LR`, players)).toThrow(/top 8/i);
+    expect(parseResultsText(`${lines.slice(0, 8).join("\n")}\n9 Late (TK)\nAP 1-80 LR`.replace("Late (TK)", "[BOM-002] Mr. DiBo (TK)"), players).at(-1)?.combos).toEqual(["AP 1-80 LR"]);
+    expect(() => parseResultsText("1 Decade\na\nb\nc\nd", players)).toThrow(/at most 3/i);
+  });
+
+  it("still reads a plain list of names", () => {
+    expect(parseResultsText("Decade\nMr. DiBo", players).map((r) => [r.playerId, r.place, r.combos])).toEqual([["decade", 1, []], ["dibo", 2, []]]);
+  });
+});
+
+import { formatResultsText } from "@/domain/result";
+
+describe("writing detected results back as text", () => {
+  it("fills in the real BOM IDs and marks guests", () => {
+    const players = [{ id: "a", name: "Decade", bom_id: "BoM-123" }];
+    const rows = parseResultsText("1 [BOM-XXX] decade (TK)\nAP 1-80 LR\n\n2 Vampire", players);
+    expect(formatResultsText(rows, players)).toBe("1 [BOM-123] Decade (TK)\nAP 1-80 LR\n\n2 [Non BOM ID] Vampire");
+  });
+});
+
+describe("name and BOM ID together", () => {
+  const players = [{ id: "dibo", name: "Mr. DiBo", bom_id: "BoM-002" }, { id: "prett", name: "Prett", bom_id: "BoM-013" }, { id: "x", name: "XtaegunS", bom_id: "BoM-010" }];
+
+  it("finds a member by name ignoring case, spaces, punctuation and a BoM prefix", () => {
+    expect(parseResultsText("1 [BOM-XXX] MR.Dibo", players)[0].playerId).toBe("dibo");
+    expect(parseResultsText("1 BoM Mr.Dibo\n2 BoM XtaegunS", players).map((r) => r.playerId)).toEqual(["dibo", "x"]);
+  });
+
+  it("checks the BOM ID first, and flags a name that does not fit it", () => {
+    const [row] = parseResultsText("1 [BOM-002] Prett", players);
+    expect(row.playerId).toBe("dibo");
+    expect(row.warning).toMatch(/Mr\. DiBo/);
+    expect(parseResultsText("1 [BOM-002] MR.Dibo", players)[0].warning).toBeUndefined();
+    expect(parseResultsText("1 [BOM-002]", players)[0]).toMatchObject({ playerId: "dibo" });
+  });
+
+  it("falls back to the name when the BOM ID is a placeholder or unknown", () => {
+    expect(parseResultsText("1 [BOM-999] Prett", players)[0].playerId).toBe("prett");
   });
 });
