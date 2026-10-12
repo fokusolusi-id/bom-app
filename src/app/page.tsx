@@ -126,11 +126,20 @@ export default async function Home() {
                       {r.top.map((t) => (
                         <li key={t.place} className="flex flex-wrap items-center gap-x-3 gap-y-0.5">
                           <span className="font-num text-primary w-6 text-center text-lg font-black italic">{t.place}</span>
-                          <Link href={`/member/${t.bomId.toLowerCase()}`} aria-label={`Profile ${t.name}`}><BomIdBadge id={t.bomId} className="transition-colors hover:bg-white" /></Link>
-                          <Link href={`/member/${t.bomId.toLowerCase()}`} className={`hover:text-primary ${t.place === 1 ? "font-bold" : ""}`}>{t.name}</Link>
+                          {t.bomId ? (
+                            <>
+                              <Link href={`/member/${t.bomId.toLowerCase()}`} aria-label={`Profile ${t.name}`}><BomIdBadge id={t.bomId} className="transition-colors hover:bg-white" /></Link>
+                              <Link href={`/member/${t.bomId.toLowerCase()}`} className={`hover:text-primary ${t.place === 1 ? "font-bold" : ""}`}>{t.name}</Link>
+                            </>
+                          ) : (
+                            <>
+                              <span className="text-muted-foreground rounded border px-1.5 py-0.5 text-xs uppercase">Non BOM ID</span>
+                              <span className={t.place === 1 ? "font-bold" : ""}>{t.name}</span>
+                            </>
+                          )}
                           {t.tigerKing && <Crown className="size-4 text-yellow-400" aria-label="Tiger King" />}
                           {t.place === 1 && <Trophy className="text-primary size-4" aria-label="Champion" />}
-                          <span className="font-num tabular text-muted-foreground ml-auto text-sm">+{t.points} pts</span>
+                          {t.bomId && <span className="font-num tabular text-muted-foreground ml-auto text-sm">+{t.points} pts</span>}
                           {t.combos.length > 0 && <span className="text-muted-foreground basis-full pl-9 font-mono text-xs">{t.combos.join(" · ")}</span>}
                         </li>
                       ))}

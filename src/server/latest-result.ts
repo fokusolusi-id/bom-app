@@ -10,7 +10,7 @@ import { publicPointsTable } from "./settings";
 export type LatestResult = {
   title: string; tier: Tier; date: string; challongeUrl: string | null;
   logo: { src: string; alt: string };
-  top: { place: number; name: string; bomId: string; tigerKing: boolean; combos: string[]; points: number }[];
+  top: { place: number; name: string; bomId: string | null; tigerKing: boolean; combos: string[]; points: number }[];
 };
 
 const dateFmt = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Jakarta" });
@@ -23,7 +23,8 @@ export async function latestResults(now: Date, limit = 2): Promise<LatestResult[
     const bom = eventUsesBomLogo(tier) || !p.communityLogo;
     return {
       title: p.name, tier, date: dateFmt.format(new Date(p.startsAt)), challongeUrl: p.challongeUrl,
-      top: p.top.map((t) => ({ ...t, points: eventPoints(table, p.tier, { place: t.place, tigerKing: t.tigerKing }, p.participants) })),
+      // A guest earns no points.
+      top: p.top.map((t) => ({ ...t, points: t.bomId ? eventPoints(table, p.tier, { place: t.place, tigerKing: t.tigerKing }, p.participants) : 0 })),
       logo: bom ? { src: BOM_LOGO, alt: "BOM" } : { src: mediaUrl(p.communityLogo!), alt: p.communityName ?? "" },
     };
   });

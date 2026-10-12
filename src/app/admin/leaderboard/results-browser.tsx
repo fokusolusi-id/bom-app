@@ -1,5 +1,5 @@
 "use client";
-import { ChevronLeft, ChevronRight, ExternalLink, Pencil } from "lucide-react";
+import { ExternalLink, Pencil, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { useMemo, useState } from "react";
 import { TierMark } from "@/components/bom/tier-mark";
@@ -7,9 +7,11 @@ import { TIER_TILE, TierTile } from "@/components/bom/tier-tile";
 import { Button } from "@/components/ui/button";
 import { NativeSelect } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
+import { Pagination } from "@/components/ui/pagination";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { TIERS, type Tier } from "@/domain/tier";
 import { EVENT_TYPE_LABEL } from "@/lib/event-style";
+import { deleteEventResults } from "./actions";
 import { PlacementRow } from "./placement-row";
 import { ResultsEntry } from "./results-entry";
 
@@ -21,8 +23,29 @@ export type ResultEvent = {
 };
 
 const PAGE_SIZE = 25;
+const PARTICIPANTS_PER_PAGE = 8;
 const when = new Intl.DateTimeFormat("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Jakarta" });
 const BOM = "bom";
+
+/** The participants of one event, 8 per page. Starts on page 1 for each event (the caller keys it by event). */
+function Participants({ eventId, rows }: { eventId: string; rows: ResultEvent["rows"] }) {
+  const [page, setPage] = useState(0);
+  const pages = Math.max(1, Math.ceil(rows.length / PARTICIPANTS_PER_PAGE));
+  // Deleting the last member on a page moves back to the page before.
+  const current = Math.min(page, pages - 1);
+  const shownRows = rows.slice(current * PARTICIPANTS_PER_PAGE, (current + 1) * PARTICIPANTS_PER_PAGE);
+  return (
+    <div className="space-y-2">
+      <p className="text-muted-foreground text-sm">{rows.length} participants</p>
+      <ul className="space-y-2 text-sm">
+        {shownRows.map((pl) => (
+          <PlacementRow key={pl.id} eventId={eventId} rowId={pl.id} playerId={pl.playerId} name={pl.name} bomId={pl.bomId} place={pl.place} tigerKing={pl.tigerKing} combos={pl.combos} points={pl.points} />
+        ))}
+      </ul>
+      <Pagination label="Participants pages" page={current} pages={pages} onChange={setPage} />
+    </div>
+  );
+}
 
 /** All past events in a filterable list (by competition type and sub community). Edit opens the event's results in a dialog. */
 export function ResultsBrowser({ events, members, hasChallongeKey }: {
@@ -32,6 +55,9 @@ export function ResultsBrowser({ events, members, hasChallongeKey }: {
   const [community, setCommunity] = useState("all");
   const [page, setPage] = useState(0);
   const [openId, setOpenId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<ResultEvent | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
 
   const communities = useMemo(() => {
     const seen = new Map<string, string>();
@@ -92,8 +118,9 @@ export function ResultsBrowser({ events, members, hasChallongeKey }: {
                 <TableCell className="text-muted-foreground">{e.communityName}</TableCell>
                 <TableCell className={`font-num tabular text-right ${e.rows.length === 0 ? "text-muted-foreground" : ""}`}>{e.rows.length === 0 ? "No results" : e.rows.length}</TableCell>
                 <TableCell>
-                  <span className="flex justify-end">
+                  <span className="flex justify-end gap-1">
                     <Button type="button" variant="outline" size="sm" className="w-8 px-0" onClick={() => setOpenId(e.id)} aria-label={`Edit results of ${e.name}`}><Pencil aria-hidden /></Button>
+                    <Button type="button" variant="outline" size="sm" className="text-destructive w-8 px-0" disabled={e.rows.length === 0} onClick={() => { setDeleteError(null); setDeleting(e); }} aria-label={`Delete all results of ${e.name}`}><Trash2 aria-hidden /></Button>
                   </span>
                 </TableCell>
               </TableRow>
@@ -102,13 +129,31 @@ export function ResultsBrowser({ events, members, hasChallongeKey }: {
           </TableBody>
         </Table>
       </div>
-      <nav aria-label="Results pages" className="flex items-center justify-between gap-3">
-        <Button type="button" variant="outline" size="sm" disabled={current === 0} onClick={() => setPage(current - 1)}><ChevronLeft aria-hidden />Previous</Button>
-        <span className="text-muted-foreground text-sm">Page {current + 1} of {pages} · {shown.length} of {events.length} events</span>
-        <Button type="button" variant="outline" size="sm" disabled={current === pages - 1} onClick={() => setPage(current + 1)}>Next<ChevronRight aria-hidden /></Button>
-      </nav>
+      <Pagination label="Results pages" page={current} pages={pages} onChange={setPage} summary={`${shown.length} of ${events.length} events`} />
 
-      <Modal open={open !== null} onClose={() => setOpenId(null)} title={open ? `Results: ${open.name}` : "Results"} wide>
+      <Modal open={deleting !== null} onClose={() => setDeleting(null)} title="Delete all results">
+        {deleting && (
+          <div className="space-y-4">
+            <p>Delete the complete results of <strong>{deleting.name}</strong> ({when.format(new Date(deleting.startsAt))})?</p>
+            <p className="text-muted-foreground text-sm">
+              This removes all {deleting.rows.length} participants, their places, Tiger King, combos and the Challonge link. The points they earned are taken off the leaderboard. The event stays in the schedule, and you can enter the results again. It cannot be undone.
+            </p>
+            {deleteError && <p role="alert" className="text-destructive text-sm">{deleteError}</p>}
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={() => setDeleting(null)}>Cancel</Button>
+              <Button type="button" variant="destructive" disabled={busy} onClick={async () => {
+                setBusy(true);
+                const result = await deleteEventResults(deleting.id);
+                setBusy(false);
+                if (result.ok) setDeleting(null);
+                else setDeleteError(result.error ?? "Could not delete the results");
+              }}>{busy ? "Deleting…" : "Delete all results"}</Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      <Modal open={open !== null} onClose={() => setOpenId(null)} title={open ? `Results: ${open.name}` : "Results"} extraWide>
         {open && (
           <div className="space-y-6">
             <div className="flex flex-wrap items-center gap-4">
@@ -121,15 +166,12 @@ export function ResultsBrowser({ events, members, hasChallongeKey }: {
                 <p className="text-muted-foreground text-sm">{when.format(new Date(open.startsAt))} · {open.communityName}</p>
               </div>
             </div>
-            <div className="space-y-2">
-              <p className="text-muted-foreground text-sm">{open.rows.length} participants</p>
-              <ul className="space-y-2 text-sm">
-                {open.rows.map((pl) => (
-                  <PlacementRow key={pl.id} eventId={open.id} rowId={pl.id} playerId={pl.playerId} name={pl.name} bomId={pl.bomId} place={pl.place} tigerKing={pl.tigerKing} combos={pl.combos} points={pl.points} />
-                ))}
-              </ul>
+            <div className="space-y-8">
+            <Participants key={open.id} eventId={open.id} rows={open.rows} />
+              <div>
+              <ResultsEntry key={open.id} eventId={open.id} text={open.text} challongeUrl={open.challongeUrl} members={members} hasChallongeKey={hasChallongeKey} />
+              </div>
             </div>
-            <ResultsEntry key={open.id} eventId={open.id} text={open.text} challongeUrl={open.challongeUrl} members={members} hasChallongeKey={hasChallongeKey} />
           </div>
         )}
       </Modal>

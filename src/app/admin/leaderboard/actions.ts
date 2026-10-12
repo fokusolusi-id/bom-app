@@ -62,6 +62,18 @@ export async function saveEventResults(eventId: string, _prev: FormState, formDa
     : state;
 }
 
+/** Deletes the complete results of an event (everyone who took part, the combos and the bracket link). The event stays in the schedule, and points are recalculated. */
+export async function deleteEventResults(eventId: string): Promise<FormState> {
+  const staff = await requireStaff();
+  return toFormState(async () => {
+    if (!isUuid(eventId)) throw new Error("Invalid input");
+    const supabase = await requireResultsAccess(staff, eventId);
+    await supabaseResults(supabase).clearEvent(eventId);
+    await supabaseScheduleEvents(supabase).setChallongeUrl(eventId, null);
+    await revalidate(supabase);
+  }, "Results deleted");
+}
+
 export async function removeResultRow(eventId: string, rowId: string): Promise<FormState> {
   const staff = await requireStaff();
   return toFormState(async () => {
