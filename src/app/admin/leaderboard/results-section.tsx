@@ -1,6 +1,7 @@
 import { AdminSection } from "@/components/admin/admin-page";
 import { canManageResults } from "@/domain/access";
 import { eventUsesBomLogo } from "@/domain/event";
+import { formatBomId } from "@/domain/profile";
 import { eventPoints } from "@/domain/standings";
 import { isTier, type Tier } from "@/domain/tier";
 import { mediaUrl } from "@/lib/media";
@@ -36,10 +37,11 @@ export async function ResultsSection() {
       id: e.id, name: e.name, tier: e.tier as Tier, startsAt: e.starts_at, challongeUrl: e.challonge_url ?? null,
       communityId: e.sub_community_id, communityName: e.community?.name ?? "BOM",
       logo: { src: bom ? BOM_LOGO : mediaUrl(e.community!.image_path!), alt: bom ? "BOM" : e.community!.name },
-      text: rows.map((r) => `${r.place === null ? "" : `${r.place}. `}${nameOf(r)}${r.tiger_king ? " (TK)" : ""}`).join("\n"),
+      // The same shape the list is typed in: "1 [BOM-001] Name (TK)", then the combos, with a blank line between members.
+      text: rows.map((r) => [`${r.place === null ? "" : `${r.place} `}${r.player_id ? formatBomId(byId.get(r.player_id)?.bom_id ?? "") : "[Non BOM ID]"} ${nameOf(r)}${r.tiger_king ? " (TK)" : ""}`, ...r.combos].join("\n")).join("\n\n"),
       rows: rows.map((r) => ({
         id: r.id, playerId: r.player_id, name: nameOf(r), bomId: r.player_id ? byId.get(r.player_id)?.bom_id ?? "" : null,
-        place: r.place, tigerKing: r.tiger_king, points: eventPoints(table, e.tier, { place: r.place, tigerKing: r.tiger_king }, rows.length),
+        place: r.place, tigerKing: r.tiger_king, combos: r.combos, points: eventPoints(table, e.tier, { place: r.place, tigerKing: r.tiger_king }, rows.length),
       })),
     }];
   });

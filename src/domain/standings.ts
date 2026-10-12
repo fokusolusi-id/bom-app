@@ -3,7 +3,7 @@ import { tierMultiplier } from "./scoring";
 import { isTier } from "./tier";
 
 /** One player at one event: `place` is empty outside the top places. */
-export type Participation = { playerId: string | null; place: number | null; tigerKing: boolean };
+export type Participation = { playerId: string | null; place: number | null; tigerKing: boolean; combos?: string[] };
 export type ScoredEvent = { id: string; name: string; challongeUrl?: string | null; tier: string; startsAt: string; participants: Participation[] };
 export type Standing = { total: number; week: number; rank: number; previousRank: number | null; tigerKings: number };
 
@@ -79,7 +79,7 @@ export function buildStandings(events: ScoredEvent[], table: PointsTable): Map<s
 }
 
 /** One event of a player's history, with the points it gave and their running total after it. */
-export type HistoryRow = { eventId: string; name: string; challongeUrl: string | null; tier: string; startsAt: string; place: number | null; tigerKing: boolean; points: number; participants: number; total: number };
+export type HistoryRow = { eventId: string; name: string; challongeUrl: string | null; combos: string[]; tier: string; startsAt: string; place: number | null; tigerKing: boolean; points: number; participants: number; total: number };
 
 /** Every scored event the player took part in, oldest first. */
 export function playerHistory(events: ScoredEvent[], table: PointsTable, playerId: string): HistoryRow[] {
@@ -91,6 +91,6 @@ export function playerHistory(events: ScoredEvent[], table: PointsTable, playerI
       if (!me) return [];
       const points = eventPoints(table, e.tier, me, e.participants.length);
       total = round2(total + points);
-      return [{ eventId: e.id, name: e.name, challongeUrl: e.challongeUrl ?? null, tier: e.tier, startsAt: e.startsAt, place: me.place, tigerKing: me.tigerKing, points, participants: e.participants.length, total }];
+      return [{ eventId: e.id, name: e.name, challongeUrl: e.challongeUrl ?? null, combos: me.combos ?? [], tier: e.tier, startsAt: e.startsAt, place: me.place, tigerKing: me.tigerKing, points, participants: e.participants.length, total }];
     });
 }
