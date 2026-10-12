@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { PointsChart } from "@/components/bom/points-chart";
 import { RibbonBanner } from "@/components/bom/ribbon-banner";
 import { TierMark } from "@/components/bom/tier-mark";
+import { comboStats } from "@/domain/combos";
 import { formatBomId, normalizeBomId } from "@/domain/profile";
 import { tierMultiplier } from "@/domain/scoring";
 import type { Tier } from "@/domain/tier";
@@ -53,6 +54,9 @@ export default async function MemberPage({ params }: Props) {
   const [history, rank] = await Promise.all([publicPlayerHistory(playerId), repo.rank(Number(player.points))]);
   const places = history.flatMap((h) => (h.place === null ? [] : [h.place]));
   const trophies = history.filter((h) => h.tigerKing).length;
+  // Newest first, so a tie in "most used" goes to the combo they won with most recently.
+  const combos = comboStats([...history].reverse().flatMap((h) => h.combos));
+  const comboTiles = [["Winning combo", combos.combo], ["Blade", combos.blade], ["Ratchet", combos.ratchet], ["Bit", combos.bit]] as const;
   const stats = [
     ["Total points", Number(player.points)],
     ["Rank", `#${rank}`],
@@ -91,6 +95,23 @@ export default async function MemberPage({ params }: Props) {
           </Card>
         ))}
       </div>
+
+      {combos.combo && (
+        <Card>
+          <CardHeader><CardTitle>Most used winning parts</CardTitle></CardHeader>
+          <CardContent>
+            <dl className="grid grid-cols-2 gap-4 md:grid-cols-4">
+              {comboTiles.map(([label, tally]) => (
+                <div key={label}>
+                  <dt className="text-muted-foreground text-xs uppercase">{label === "Winning combo" ? "Most winning combo" : `Most used ${label.toLowerCase()}`}</dt>
+                  <dd className="font-num text-primary text-2xl font-black italic">{tally?.name ?? "–"}</dd>
+                  {tally && <dd className="text-muted-foreground text-xs">{tally.count} {tally.count === 1 ? "time" : "times"}</dd>}
+                </div>
+              ))}
+            </dl>
+          </CardContent>
+        </Card>
+      )}
 
       {history.length > 0 && (
         <Card>

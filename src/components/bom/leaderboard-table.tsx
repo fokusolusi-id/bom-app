@@ -1,11 +1,11 @@
 "use client";
 
-import { ArrowDown, ArrowUp, Crown, Sparkles, ArrowUpDown, ChevronLeft, ChevronRight, Search } from "lucide-react";
+import { ArrowDown, ArrowUp, Crown, Sparkles, ArrowUpDown, Search } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { BomIdBadge } from "@/components/bom/bom-id-badge";
-import { Button } from "@/components/ui/button";
 import { Input, NativeSelect } from "@/components/ui/input";
+import { Pagination } from "@/components/ui/pagination";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ranks, searchPlayers, sortPlayers, type SortDir, type SortKey } from "@/domain/leaderboard";
 import { formatBomId } from "@/domain/profile";
@@ -130,13 +130,7 @@ export function LeaderboardTable({ players }: { players: Row[] }) {
           {rows.length === 0 && <li className="text-muted-foreground py-6 text-center">No blader matches &ldquo;{query}&rdquo;.</li>}
         </ul>
       </div>
-      {(
-        <nav aria-label="Leaderboard pages" className="flex items-center justify-between gap-3">
-          <Button type="button" variant="outline" size="sm" disabled={current === 0} onClick={() => setPage(current - 1)}><ChevronLeft aria-hidden />Previous</Button>
-          <span className="text-muted-foreground text-sm">Page {current + 1} of {pages}</span>
-          <Button type="button" variant="outline" size="sm" disabled={current === pages - 1} onClick={() => setPage(current + 1)}>Next<ChevronRight aria-hidden /></Button>
-        </nav>
-      )}
+      <Pagination label="Leaderboard pages" page={current} pages={pages} onChange={setPage} summary={`${matches.length} bladers`} />
     </div>
   );
 }

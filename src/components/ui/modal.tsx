@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 
 /** A dialog on the native <dialog> element: it traps focus, closes on Escape and dims the page behind it. */
-export function Modal({ open, onClose, title, children, wide }: { open: boolean; onClose: () => void; title: string; children: React.ReactNode; wide?: boolean }) {
+export function Modal({ open, onClose, title, children, wide, extraWide }: { open: boolean; onClose: () => void; title: string; children: React.ReactNode; wide?: boolean; extraWide?: boolean }) {
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => {
     const dialog = ref.current;
@@ -19,7 +19,7 @@ export function Modal({ open, onClose, title, children, wide }: { open: boolean;
       aria-label={title}
       onClose={onClose}
       onClick={(e) => { if (e.target === ref.current) onClose(); }}
-      className={`bg-card text-card-foreground m-auto max-h-[90vh] w-[calc(100%-2rem)] overflow-y-auto rounded-lg border p-0 shadow-xl backdrop:bg-black/70 ${wide ? "max-w-3xl" : "max-w-md"}`}
+      className={`bg-card text-card-foreground m-auto max-h-[90vh] w-[calc(100%-2rem)] overflow-y-auto rounded-lg border p-0 shadow-xl backdrop:bg-black/70 ${extraWide ? "max-w-6xl" : wide ? "max-w-3xl" : "max-w-md"}`}
     >
       {open && (
         <div className="p-5">

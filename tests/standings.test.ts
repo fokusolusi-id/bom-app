@@ -210,3 +210,38 @@ describe("name and BOM ID together", () => {
     expect(parseResultsText("1 [BOM-999] Prett", players)[0].playerId).toBe("prett");
   });
 });
+
+import { comboStats, parseCombo } from "@/domain/combos";
+
+describe("winning combo statistics", () => {
+  it("splits a combo into blade, ratchet and bit", () => {
+    expect(parseCombo("AP 1-80 LR")).toEqual({ blade: "AP", ratchet: "1-80", bit: "LR" });
+    expect(parseCombo("EW GH 1-60 LR")).toEqual({ blade: "EW GH", ratchet: "1-60", bit: "LR" });
+    expect(parseCombo("S.Cal 1-70 T")).toEqual({ blade: "S.Cal", ratchet: "1-70", bit: "T" });
+    expect(parseCombo("VB K")).toEqual({ blade: "VB K", ratchet: null, bit: null });
+  });
+
+  it("finds what a member wins with most, ignoring case, and prefers the latest on a tie", () => {
+    const stats = comboStats(["PW 3-60 R", "AP 1-80 LR", "pw 3-60 LR", "HR 9-60 LO", "AP 1-80 LR"]);
+    expect(stats.combo).toEqual({ name: "AP 1-80 LR", count: 2 });
+    expect(stats.blade).toEqual({ name: "PW", count: 2 });
+    expect(stats.ratchet).toMatchObject({ count: 2 });
+    expect(stats.bit).toEqual({ name: "LR", count: 3 });
+    expect(comboStats([])).toEqual({ combo: null, blade: null, ratchet: null, bit: null });
+  });
+});
+
+import { pageNumbers } from "@/components/ui/pagination";
+
+describe("page numbers", () => {
+  it("shows every page when there are few", () => {
+    expect(pageNumbers(1, 0)).toEqual([0]);
+    expect(pageNumbers(9, 4)).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8]);
+  });
+
+  it("keeps the ends and the pages around the current one when there are many", () => {
+    expect(pageNumbers(20, 0)).toEqual([0, 1, null, 18, 19]);
+    expect(pageNumbers(20, 10)).toEqual([0, 1, null, 9, 10, 11, null, 18, 19]);
+    expect(pageNumbers(20, 19)).toEqual([0, 1, null, 18, 19]);
+  });
+});

@@ -117,7 +117,9 @@ export function ResultsEntry({ eventId, text, challongeUrl, members, hasChallong
             </div>
           )}
           <input type="hidden" name="challonge_url" value={mode === "challonge" ? link : (challongeUrl ?? "")} />
-          <div className="flex items-center gap-2">
+          <div className="grid items-start gap-4 lg:grid-cols-2">
+            <div className="space-y-2">
+          <div className="flex h-8 items-center gap-2">
             <label className="text-sm font-bold" htmlFor={`results-${eventId}`}>{mode === "challonge" ? "Results from the bracket" : "Enter all results at once"}</label>
             {list.trim() === "" && <Button type="button" variant="outline" size="sm" onClick={() => setList(TEMPLATE)}>Insert the template</Button>}
             <HelpTip label="How to enter results">
@@ -129,11 +131,15 @@ export function ResultsEntry({ eventId, text, challongeUrl, members, hasChallong
             </HelpTip>
           </div>
           <Textarea id={`results-${eventId}`} name="results" value={list} onChange={(e) => setList(e.target.value)} rows={Math.min(24, Math.max(10, list.split("\n").length + 1))} placeholder={TEMPLATE} className="font-mono text-base text-white" />
+            </div>
+            <div className="space-y-2">
+          <div className="flex h-8 items-center"><h3 className="text-sm font-bold">Detected</h3></div>
+          {!preview && <p className="text-muted-foreground text-sm">Type or paste a list, and it shows here who is a member and who is Non BOM ID.</p>}
           {preview?.error && <p role="alert" className="text-destructive text-sm">{preview.error}</p>}
           {preview?.rows && (
             <div className="space-y-2 rounded-md border p-3 text-sm">
               <p className="text-muted-foreground text-xs uppercase">
-                Detected: {preview.rows.filter((r) => r.playerId).length} members
+                {preview.rows.filter((r) => r.playerId).length} members
                 {preview.rows.some((r) => !r.playerId) && <>, <span className="text-yellow-400">{preview.rows.filter((r) => !r.playerId).length} Non BOM ID</span></>}
               </p>
               <ul className="space-y-1">
@@ -154,6 +160,8 @@ export function ResultsEntry({ eventId, text, challongeUrl, members, hasChallong
               <Button type="button" variant="outline" size="sm" onClick={() => setList(formatResultsText(preview.rows, members))}>Write the detected BOM IDs into the list</Button>
             </div>
           )}
+            </div>
+          </div>
           <Button type="submit">Save results</Button>
         </ActionForm>
       )}

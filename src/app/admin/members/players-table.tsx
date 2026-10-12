@@ -1,11 +1,12 @@
 "use client";
-import { ChevronLeft, ChevronRight, Pencil, Search, Trash2 } from "lucide-react";
+import { Pencil, Search, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { BomIdBadge } from "@/components/bom/bom-id-badge";
 import { ActionForm } from "@/components/form/action-form";
 import { Button } from "@/components/ui/button";
 import { Input, NativeSelect } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
+import { Pagination } from "@/components/ui/pagination";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AGE_GROUPS, HEAR_FROM } from "@/domain/join-request";
 import { PLAYER_ROLES, type PlayerRole, type PlayerStatus } from "@/domain/types";
@@ -146,11 +147,7 @@ export function PlayersTable({ players }: { players: PlayerRowData[] }) {
           </TableBody>
         </Table>
       </div>
-      <nav aria-label="Members pages" className="flex items-center justify-between gap-3">
-        <Button type="button" variant="outline" size="sm" disabled={current === 0} onClick={() => setPage(current - 1)}><ChevronLeft aria-hidden />Previous</Button>
-        <span className="text-muted-foreground text-sm">Page {current + 1} of {pages} · {matches.length} of {players.length} members</span>
-        <Button type="button" variant="outline" size="sm" disabled={current === pages - 1} onClick={() => setPage(current + 1)}>Next<ChevronRight aria-hidden /></Button>
-      </nav>
+      <Pagination label="Members pages" page={current} pages={pages} onChange={setPage} summary={`${matches.length} of ${players.length} members`} />
 
       <Modal open={editing !== null} onClose={() => setEditing(null)} title={editing ? `Edit ${editing.name}` : "Edit member"} wide>
         {editing && <EditForm key={editing.id} p={editing} onDone={() => setEditing(null)} />}
