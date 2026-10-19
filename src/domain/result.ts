@@ -52,9 +52,10 @@ const TK_MARK = /(\(tk\)|\*)\s*$/i;
  *
  * A member is found by the BOM ID in brackets, else by blader name. "(TK)" or "*" after the name gives the Tiger King,
  * once. A name that matches no member is saved as a guest (Non BOM ID); write "[Non BOM ID]" to make a guest even when a
- * member has the same name. Only the top 8 and the Tiger King can have combos.
+ * member has the same name. Only the top 8 and the Tiger King can have combos. A guest can be Tiger King only when
+ * `guestTigerKing` is set (Unrank events, which give no points).
  */
-export function parseResultsText(text: string, players: Candidate[]): ResultRow[] {
+export function parseResultsText(text: string, players: Candidate[], opts: { guestTigerKing?: boolean } = {}): ResultRow[] {
   const squash = (v: string) => v.toLowerCase().replace(/[\s-]/g, "");
   const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
   if (lines.length === 0) throw new Error("Add at least one member");
@@ -123,11 +124,11 @@ export function parseResultsText(text: string, players: Candidate[]): ResultRow[
       // Marked Non BOM ID: counted as a participant, never shown on the leaderboard.
       const guestName = rest.slice(0, 60);
       if (!guestName) throw new Error("A line has no name");
-      if (tigerKing) tigerGuests.push(guestName);
-      else rows.push({ playerId: null, guestName, place, tigerKing: false, combos });
+      if (tigerKing && !opts.guestTigerKing) tigerGuests.push(guestName);
+      else rows.push({ playerId: null, guestName, place, tigerKing, combos });
     }
   }
-  if (tigerGuests.length) throw new Error(`${tigerGuests.join(", ")} has no BOM ID, so cannot be Tiger King`);
+  if (tigerGuests.length) throw new Error(`${tigerGuests.join(", ")} has no BOM ID, so cannot be Tiger King (only in Unrank events)`);
   const keys = rows.map((r) => r.playerId ?? `guest:${r.guestName!.toLowerCase()}`);
   if (new Set(keys).size !== keys.length) throw new Error("A name is listed twice");
   if (rows.filter((r) => r.tigerKing).length > 1) throw new Error("Only one Tiger King per event");

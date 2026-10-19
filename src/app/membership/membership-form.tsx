@@ -4,13 +4,13 @@ import { startTransition, useActionState, useState } from "react";
 import Image from "next/image";
 import { CalendarDays, MapPin } from "lucide-react";
 import { WhatsappIcon } from "@/components/bom/brand-icons";
-import { MemberCard } from "@/components/bom/member-card";
+import { FlippableCardImages } from "@/components/bom/flippable-card-images";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input, NativeSelect, Textarea } from "@/components/ui/input";
 import { AGE_GROUPS, HEAR_FROM } from "@/domain/join-request";
 import { MEMBERSHIP_FEE } from "@/lib/content";
-import { ADMIN_WHATSAPP, ADMIN_WHATSAPP_URL, PAYMENT_ACCOUNT } from "@/lib/venue";
+import { PAYMENT_ACCOUNT } from "@/lib/venue";
 import { ProofUpload } from "@/components/form/proof-upload";
 import { checkBladerName, registerMember } from "./actions";
 import { BomIdBadge } from "@/components/bom/bom-id-badge";
@@ -20,7 +20,7 @@ type Props = { since: string; nextEvent: string | null; venue: string; whatsappI
 const label = "text-muted-foreground mb-1 block text-xs uppercase";
 const Req = () => <span className="text-destructive" aria-hidden> *</span>;
 
-export function MembershipForm({ since, nextEvent, venue, whatsappInvite }: Props) {
+export function MembershipForm({ nextEvent, venue, whatsappInvite }: Props) {
   const [state, run, pending] = useActionState(registerMember, {});
   const [ageGroup, setAgeGroup] = useState("");
   const [nameTaken, setNameTaken] = useState(false);
@@ -29,7 +29,7 @@ export function MembershipForm({ since, nextEvent, venue, whatsappInvite }: Prop
   if (state.ok && state.data) {
     return (
       <div className="space-y-4">
-        <MemberCard bomId={state.data.bomId} bladerName={state.data.bladerName} since={since} />
+        <FlippableCardImages className="mx-auto w-full max-w-md" />
         <Card className="border-primary">
           <CardHeader>
             <CardTitle>Welcome, {state.data.bladerName}!</CardTitle>
@@ -107,7 +107,7 @@ export function MembershipForm({ since, nextEvent, venue, whatsappInvite }: Prop
               <Image src="/print/G609448641-0703A01-gma_branding-1792299733.png" alt="BOM payment QRIS" width={1000} height={1150} className="mx-auto w-full max-w-xs rounded-md" />
               <p>{PAYMENT_ACCOUNT}</p>
               <p className="text-muted-foreground">
-                Please contact our admin (<a href={ADMIN_WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="text-primary underline">{ADMIN_WHATSAPP}</a>) if you have any question, like wanting to choose a certain number as your ID number or to pick up the card.
+                Please contact our admin in {whatsappInvite ? <a href={whatsappInvite} target="_blank" rel="noopener noreferrer" className="text-primary underline">Whatsapp group</a> : "Whatsapp group"}
               </p>
             </div>
             <div>

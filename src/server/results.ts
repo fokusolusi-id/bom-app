@@ -81,7 +81,7 @@ export function supabaseResults(client: SupabaseClient): ResultsRepository {
     },
     async replaceForEvent(eventId, rows) {
       const members = rows.flatMap((r) => (r.playerId ? [{ event_id: eventId, player_id: r.playerId, place: r.place, tiger_king: r.tigerKing, combos: r.combos }] : []));
-      const guests = rows.flatMap((r) => (r.guestName ? [{ event_id: eventId, guest_name: r.guestName, place: r.place, tiger_king: false, combos: r.combos }] : []));
+      const guests = rows.flatMap((r) => (r.guestName ? [{ event_id: eventId, guest_name: r.guestName, place: r.place, tiger_king: r.tigerKing, combos: r.combos }] : []));
       if (members.length) {
         const { error } = await client.from("event_placements").upsert(members, { onConflict: "event_id,player_id" });
         check(error, "Failed to save results");

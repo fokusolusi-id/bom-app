@@ -31,8 +31,8 @@ const MODES = [["manual", "Add one by one"], ["paste", "Paste a list"], ["challo
 type Mode = (typeof MODES)[number][0];
 
 /** Three ways to enter an event's results: add a member at a time, paste the whole list, or read the final ranking of a Challonge bracket. */
-export function ResultsEntry({ eventId, text, challongeUrl, members, hasChallongeKey }: {
-  eventId: string; text: string; challongeUrl: string | null; members: { id: string; name: string; bom_id: string }[]; hasChallongeKey: boolean;
+export function ResultsEntry({ eventId, text, challongeUrl, members, hasChallongeKey, tier }: {
+  tier: string; eventId: string; text: string; challongeUrl: string | null; members: { id: string; name: string; bom_id: string }[]; hasChallongeKey: boolean;
 }) {
   const [mode, setMode] = useState<Mode>(challongeUrl ? "challonge" : "paste");
   const [list, setList] = useState(text);
@@ -48,11 +48,11 @@ export function ResultsEntry({ eventId, text, challongeUrl, members, hasChallong
   const preview = useMemo(() => {
     if (list.trim() === "") return null;
     try {
-      return { rows: parseResultsText(list, members) };
+      return { rows: parseResultsText(list, members, { guestTigerKing: tier === "Unrank" }) };
     } catch (e) {
       return { error: e instanceof Error ? e.message : "Check the list" };
     }
-  }, [list, members]);
+  }, [list, members, tier]);
 
   // Typing "dewa", "bom 1" or the full suggestion all find the member.
   const chosen = findMember(members, memberText);
@@ -128,7 +128,7 @@ export function ResultsEntry({ eventId, text, challongeUrl, members, hasChallong
             <HelpTip label="How to enter results">
               <p><b>Top 8:</b> the place, then a BOM ID or a name (or both: <code>1 [BOM-001] Decade</code>). That is all that is needed. Optionally, up to three combo lines under it. <b>Leave a blank line between members.</b></p>
               <p><b>9th and below:</b> number them (<code>9 [BOM-010]</code>), then one member per line, just a BOM ID or a name. Only the top 8 can have combos.</p>
-              <p>Add (TK) after the Tiger King, once. Two members can share a place.</p>
+              <p>Add (TK) after the Tiger King, once. Two members can share a place.{tier === "Unrank" && " In an Unrank event a Non BOM ID can be the Tiger King too (no points are given)."}</p>
               <p><b>Not a member?</b> Write <code>[Non BOM ID]</code> instead of the BOM ID. A name that matches no member is also saved as Non BOM ID automatically: it counts as a participant but is not shown on the leaderboard or in results.</p>
               <p>A plain list of names, one per line, still works (first line is 1st place). Saving replaces the results of this event.</p>
               <pre className="bg-muted/60 rounded p-2 whitespace-pre">{TEMPLATE}</pre>

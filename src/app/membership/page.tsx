@@ -1,5 +1,5 @@
+import { FlippableCardImages } from "@/components/bom/flippable-card-images";
 import { Check } from "lucide-react";
-import Image from "next/image";
 import { RibbonBanner } from "@/components/bom/ribbon-banner";
 import { SectionHeading } from "@/components/bom/section-heading";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -39,7 +39,7 @@ export default async function MembershipPage() {
               ))}
             </ul>
             <p className="mt-4 max-w-xl">Don&apos;t miss out on these exclusive perks—join us now and elevate your Beyblade experience with us!</p>
-            <Image src="/print/bom-emoney-03.png" alt="BOM Emoney Membership Card" width={1028} height={650} className="mt-6 w-full max-w-md rounded-xl" />
+            <FlippableCardImages className="mt-6 w-full max-w-md" />
           </section>
 
           <section aria-labelledby="how">
