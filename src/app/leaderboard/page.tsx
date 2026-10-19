@@ -12,7 +12,7 @@ export const metadata = { title: "Leaderboard | BOM" };
 export const revalidate = 30;
 
 const prizes = [
-  ["Top 25 (page 1)", "Draft Pick Prize"],
+  ["Top 16", "Draft Pick Prize"],
   ["Tiger Elder", "the member with the most appearances (admins excluded)"],
   ["Tiger Supreme King", "the member with the most Tiger King badges"],
 ] as const;
