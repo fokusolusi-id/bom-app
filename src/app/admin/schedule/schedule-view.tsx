@@ -14,6 +14,8 @@ import { EVENT_TYPE_LABEL } from "@/lib/event-style";
 import { cn } from "@/lib/utils";
 import { deleteScheduleEvent } from "../jadwal/actions";
 import { EventForm } from "./event-form";
+import { BREAKS_HREF, ScheduleSideMenu, startOfTodayWib } from "./side-menu";
+import { ScheduleTabs } from "./schedule-tabs";
 
 const when = new Intl.DateTimeFormat("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "Asia/Jakarta" });
 const dayOnly = new Intl.DateTimeFormat("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Jakarta" });
@@ -28,7 +30,8 @@ export async function ScheduleView({ community, type }: { community?: string; ty
   const staff = await requireStaff();
   const supabase = staff.supabase;
   const now = new Date();
-  const from = new Date(now.getTime() - 30 * DAY).toISOString();
+  // Upcoming events from today on; everything before today is under the Past Events tab.
+  const from = startOfTodayWib(now).toISOString();
   const to = new Date(now.getTime() + 365 * DAY).toISOString();
   const [events, subs] = await Promise.all([
     supabaseScheduleEvents(supabase).between(from, to, { includeInactive: true }),
@@ -36,12 +39,14 @@ export async function ScheduleView({ community, type }: { community?: string; ty
   ]);
   // Organizers see and manage only their own sub communities; admins see them all.
   const communities = subs.flatMap((s) => (s.id && (staff.isAdmin || staff.communityIds.includes(s.id)) ? [{ id: s.id, name: s.name }] : []));
-  const types = staff.isAdmin ? EVENT_TYPES : ORGANIZER_EVENT_TYPES;
+  // Breaks and holidays have their own tab, so the events tab has no Break type.
+  const types = (staff.isAdmin ? EVENT_TYPES : ORGANIZER_EVENT_TYPES).filter((t) => t !== "Break");
   // All events by default; ?c=<id> narrows it to one community, ?c=bom to events without a community.
   const requested = community;
   const filter = requested === BOM || communities.some((c) => c.id === requested) ? requested! : ALL;
-  const typeFilter = EVENT_TYPES.find((t) => t === type) ?? null;
+  const typeFilter = types.find((t) => t === type) ?? null;
   const shown = events
+    .filter((e) => e.tier !== "Break")
     .filter((e) => staff.isAdmin || (e.sub_community_id !== null && staff.communityIds.includes(e.sub_community_id)))
     .filter((e) => (filter === ALL ? true : filter === BOM ? e.sub_community_id === null : e.sub_community_id === filter))
     .filter((e) => typeFilter === null || e.tier === typeFilter);
@@ -52,19 +57,15 @@ export async function ScheduleView({ community, type }: { community?: string; ty
     if (t) q.set("t", t);
     return q.size ? `/admin/schedule?${q}` : "/admin/schedule";
   };
-  const chips = [{ key: ALL, label: "All events" }, ...communities.map((c) => ({ key: c.id, label: c.name })), ...(staff.isAdmin ? [{ key: BOM, label: "BOM only" }] : [])];
+  const chips = [{ key: ALL, label: "Upcoming Events" }, ...communities.map((c) => ({ key: c.id, label: c.name })), ...(staff.isAdmin ? [{ key: BOM, label: "BOM only" }] : [])];
   return (
-    <AdminPage title="Schedule" hint="Events on the Schedule page and the homepage. Shows the last 30 days up to one year ahead.">
+    <AdminPage title="Schedule" hint="Upcoming events on the Schedule page and the homepage, from today up to one year ahead. Past events are under the Past Events tab.">
+      <ScheduleTabs active="upcoming" />
       <div className="grid gap-8 md:grid-cols-[11rem_1fr]">
-        <nav aria-label="Community" className="md:sticky md:top-20 md:self-start">
-          <ul className="font-display flex flex-wrap gap-4 text-sm font-bold italic uppercase md:flex-col md:gap-1">
-            {chips.map((c) => (
-              <li key={c.key}>
-                <Link href={href(c.key, typeFilter)} aria-current={c.key === filter ? "page" : undefined} className={cn("block py-1", c.key === filter ? "text-primary" : "hover:text-primary")}>{c.label}</Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
+        <ScheduleSideMenu items={[
+          ...chips.map((c) => ({ href: href(c.key, typeFilter), label: c.label, active: c.key === filter })),
+          ...(staff.isAdmin ? [{ href: BREAKS_HREF, label: "Break / Holiday", active: false }] : []),
+        ]} />
         <div className="min-w-0 space-y-6">
       <AddCard title="New event"><EventForm communities={communities} types={types} allowBom={staff.isAdmin} defaultCommunity={filter === BOM || filter === ALL ? (staff.isAdmin ? "" : communities[0]?.id) : filter} /></AddCard>
       <nav aria-label="Competition type" className="flex flex-wrap gap-2">

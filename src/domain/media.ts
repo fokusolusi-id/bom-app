@@ -4,11 +4,11 @@ export const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const IMAGE_TYPES: Record<string, string> = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
 export const IMAGE_ACCEPT = Object.keys(IMAGE_TYPES).join(",");
 
-export type MediaFolder = "sub-communities" | "founding-team" | "news" | "gallery" | "sponsors" | "rules";
+export type MediaFolder = "sub-communities" | "founding-team" | "news" | "gallery" | "sponsors" | "rules" | "popup";
 
 // Sub community uploads are uuid-named; founding team photos may also be hand-named (e.g. dewa.jpg).
 const FILE_NAME: Record<MediaFolder, string> = {
-  "sub-communities": "[0-9a-f-]{36}", "founding-team": "[A-Za-z0-9_-]{1,80}", news: "[A-Za-z0-9_-]{1,80}", gallery: "[A-Za-z0-9_-]{1,80}", sponsors: "[A-Za-z0-9_-]{1,80}", rules: "[0-9a-f-]{36}",
+  "sub-communities": "[0-9a-f-]{36}", "founding-team": "[A-Za-z0-9_-]{1,80}", news: "[A-Za-z0-9_-]{1,80}", gallery: "[A-Za-z0-9_-]{1,80}", sponsors: "[A-Za-z0-9_-]{1,80}", rules: "[0-9a-f-]{36}", popup: "[A-Za-z0-9_-]{1,80}",
 };
 
 export const MAX_PDF_BYTES = 10 * 1024 * 1024;

@@ -11,8 +11,8 @@ import type { FormState } from "@/lib/form-state";
 import { cn } from "@/lib/utils";
 import { fetchChallongeResults, saveEventResults, setPlacement } from "./actions";
 
-// What a list looks like: the top 8 with their place, BOM ID, name and up to three combos; after a blank line everyone else, just a BOM ID or a name.
-const TEMPLATE = "1 [BOM-001] Decade (TK)\nAP 1-80 LR\nHR 9-60 LO\nPW 3-60 R\n\n2 [BOM-002] Mr. DiBo\nDSt 6-70 J\nCDg 3-60 E\nTB 1-60 R\n\n3 [Non BOM ID] Vampire\nAP 1-50 R\nPW 3-60 LR\nHR 9-60 Nr\n\n(4th to 8th the same way)\n\n[BOM-013]\nRal_X\nBoM 25";
+// What a list looks like. Members are separated by a blank line. Combos are optional: all an entry needs is a BOM ID or a name. From 9th on, one member per line.
+const TEMPLATE = "1 [BOM-001] Decade (TK)\nAP 1-80 LR\nHR 9-60 LO\nPW 3-60 R\n\n2 [BOM-002] Mr. DiBo\nDSt 6-70 J\n\n3 [BOM-013]\n\n4 Ral_X\n\n5 [Non BOM ID] Vampire\n\n9 [BOM-010]\nBoM 25\nStranger";
 const memberLabel = (p: { name: string; bom_id: string }) => `${p.name} ${formatBomId(p.bom_id)}`;
 const squash = (v: string) => v.toLowerCase().replace(/[\s-[\]]/g, "");
 
@@ -126,8 +126,8 @@ export function ResultsEntry({ eventId, text, challongeUrl, members, hasChallong
             <label className="text-sm font-bold" htmlFor={`results-${eventId}`}>{mode === "challonge" ? "Results from the bracket" : "Enter all results at once"}</label>
             {list.trim() === "" && <Button type="button" variant="outline" size="sm" onClick={() => setList(TEMPLATE)}>Insert the template</Button>}
             <HelpTip label="How to enter results">
-              <p><b>Top 8:</b> place, then the BOM ID in brackets, then the name. The up to three lines under it are the combos they won with. Only the top 8 have combos.</p>
-              <p><b>Everyone else:</b> after a blank line, one per line, just a BOM ID or a name (no place, no combos).</p>
+              <p><b>Top 8:</b> the place, then a BOM ID or a name (or both: <code>1 [BOM-001] Decade</code>). That is all that is needed. Optionally, up to three combo lines under it. <b>Leave a blank line between members.</b></p>
+              <p><b>9th and below:</b> number them (<code>9 [BOM-010]</code>), then one member per line, just a BOM ID or a name. Only the top 8 can have combos.</p>
               <p>Add (TK) after the Tiger King, once. Two members can share a place.</p>
               <p><b>Not a member?</b> Write <code>[Non BOM ID]</code> instead of the BOM ID. A name that matches no member is also saved as Non BOM ID automatically: it counts as a participant but is not shown on the leaderboard or in results.</p>
               <p>A plain list of names, one per line, still works (first line is 1st place). Saving replaces the results of this event.</p>

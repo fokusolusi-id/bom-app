@@ -1,60 +1,33 @@
 "use client";
 import { ExternalLink, Pencil, Trash2 } from "lucide-react";
-import Image from "next/image";
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { TierMark } from "@/components/bom/tier-mark";
-import { TIER_TILE, TierTile } from "@/components/bom/tier-tile";
 import { Button } from "@/components/ui/button";
 import { NativeSelect } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
 import { Pagination } from "@/components/ui/pagination";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { TIERS, type Tier } from "@/domain/tier";
+import { TIER_LABELS, type TierLabel } from "@/domain/tier";
 import { EVENT_TYPE_LABEL } from "@/lib/event-style";
 import { deleteEventResults } from "./actions";
-import { PlacementRow } from "./placement-row";
-import { ResultsEntry } from "./results-entry";
 
 export type ResultEvent = {
-  id: string; name: string; tier: Tier; startsAt: string; challongeUrl: string | null;
+  id: string; name: string; tier: TierLabel; startsAt: string; challongeUrl: string | null;
   communityId: string | null; communityName: string; logo: { src: string; alt: string };
   text: string;
   rows: { id: string; playerId: string | null; name: string; bomId: string | null; place: number | null; tigerKing: boolean; combos: string[]; points: number }[];
 };
 
 const PAGE_SIZE = 25;
-const PARTICIPANTS_PER_PAGE = 8;
 const when = new Intl.DateTimeFormat("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Jakarta" });
 const BOM = "bom";
 
-/** The participants of one event, 8 per page. Starts on page 1 for each event (the caller keys it by event). */
-function Participants({ eventId, rows }: { eventId: string; rows: ResultEvent["rows"] }) {
-  const [page, setPage] = useState(0);
-  const pages = Math.max(1, Math.ceil(rows.length / PARTICIPANTS_PER_PAGE));
-  // Deleting the last member on a page moves back to the page before.
-  const current = Math.min(page, pages - 1);
-  const shownRows = rows.slice(current * PARTICIPANTS_PER_PAGE, (current + 1) * PARTICIPANTS_PER_PAGE);
-  return (
-    <div className="space-y-2">
-      <p className="text-muted-foreground text-sm">{rows.length} participants</p>
-      <ul className="space-y-2 text-sm">
-        {shownRows.map((pl) => (
-          <PlacementRow key={pl.id} eventId={eventId} rowId={pl.id} playerId={pl.playerId} name={pl.name} bomId={pl.bomId} place={pl.place} tigerKing={pl.tigerKing} combos={pl.combos} points={pl.points} />
-        ))}
-      </ul>
-      <Pagination label="Participants pages" page={current} pages={pages} onChange={setPage} />
-    </div>
-  );
-}
-
-/** All past events in a filterable list (by competition type and sub community). Edit opens the event's results in a dialog. */
-export function ResultsBrowser({ events, members, hasChallongeKey }: {
-  events: ResultEvent[]; members: { id: string; name: string; bom_id: string }[]; hasChallongeKey: boolean;
-}) {
+/** All past events in a filterable list (by competition type and sub community). The pencil opens the event on its own page. */
+export function ResultsBrowser({ events }: { events: ResultEvent[] }) {
   const [type, setType] = useState("all");
   const [community, setCommunity] = useState("all");
   const [page, setPage] = useState(0);
-  const [openId, setOpenId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<ResultEvent | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -71,8 +44,6 @@ export function ResultsBrowser({ events, members, hasChallongeKey }: {
   const pages = Math.max(1, Math.ceil(shown.length / PAGE_SIZE));
   const current = Math.min(page, pages - 1);
   const rows = shown.slice(current * PAGE_SIZE, (current + 1) * PAGE_SIZE);
-  // The dialog reads the event from the live list, so it shows the new results right after a save.
-  const open = events.find((e) => e.id === openId) ?? null;
 
   return (
     <div className="space-y-4">
@@ -80,7 +51,7 @@ export function ResultsBrowser({ events, members, hasChallongeKey }: {
         <label className="text-muted-foreground flex flex-col gap-1 text-xs uppercase">Competition type
           <NativeSelect value={type} onChange={(e) => { setType(e.target.value); setPage(0); }} className="text-base text-white">
             <option value="all">All types</option>
-            {TIERS.map((t) => <option key={t} value={t}>{EVENT_TYPE_LABEL(t)}</option>)}
+            {TIER_LABELS.map((t) => <option key={t} value={t}>{EVENT_TYPE_LABEL(t)}</option>)}
           </NativeSelect>
         </label>
         <label className="text-muted-foreground flex flex-col gap-1 text-xs uppercase">Sub community
@@ -113,13 +84,13 @@ export function ResultsBrowser({ events, members, hasChallongeKey }: {
                 <TableCell><TierMark tier={e.tier} tileClassName="size-8" className="text-sm whitespace-nowrap" /></TableCell>
                 <TableCell className="font-bold">
                   {e.name}
-                  {e.challongeUrl && <a href={e.challongeUrl} target="_blank" rel="noopener noreferrer" className="text-primary ml-2 inline-flex items-center gap-0.5 text-xs font-normal underline">Bracket<ExternalLink className="size-3" aria-hidden /></a>}
+                  {e.challongeUrl && <a href={e.challongeUrl} target="_blank" rel="noopener noreferrer" className="text-primary mt-0.5 flex w-fit items-center gap-0.5 text-xs font-normal underline">Bracket<ExternalLink className="size-3" aria-hidden /></a>}
                 </TableCell>
                 <TableCell className="text-muted-foreground">{e.communityName}</TableCell>
                 <TableCell className={`font-num tabular text-right ${e.rows.length === 0 ? "text-muted-foreground" : ""}`}>{e.rows.length === 0 ? "No results" : e.rows.length}</TableCell>
                 <TableCell>
                   <span className="flex justify-end gap-1">
-                    <Button type="button" variant="outline" size="sm" className="w-8 px-0" onClick={() => setOpenId(e.id)} aria-label={`Edit results of ${e.name}`}><Pencil aria-hidden /></Button>
+                    <Button variant="outline" size="sm" className="w-8 px-0" asChild><Link href={`/admin/leaderboard/results/${e.id}`} aria-label={`Edit results of ${e.name}`}><Pencil aria-hidden /></Link></Button>
                     <Button type="button" variant="outline" size="sm" className="text-destructive w-8 px-0" disabled={e.rows.length === 0} onClick={() => { setDeleteError(null); setDeleting(e); }} aria-label={`Delete all results of ${e.name}`}><Trash2 aria-hidden /></Button>
                   </span>
                 </TableCell>
@@ -153,28 +124,6 @@ export function ResultsBrowser({ events, members, hasChallongeKey }: {
         )}
       </Modal>
 
-      <Modal open={open !== null} onClose={() => setOpenId(null)} title={open ? `Results: ${open.name}` : "Results"} extraWide>
-        {open && (
-          <div className="space-y-6">
-            <div className="flex flex-wrap items-center gap-4">
-              <div className="flex items-center gap-2">
-                <Image src={open.logo.src} alt={open.logo.alt} width={96} height={96} className="size-14 object-contain" />
-                <TierTile tier={open.tier} className="size-12" />
-              </div>
-              <div>
-                <div className={`font-label font-bold tracking-[0.08em] uppercase italic ${TIER_TILE[open.tier].title}`}>{EVENT_TYPE_LABEL(open.tier)}</div>
-                <p className="text-muted-foreground text-sm">{when.format(new Date(open.startsAt))} · {open.communityName}</p>
-              </div>
-            </div>
-            <div className="space-y-8">
-            <Participants key={open.id} eventId={open.id} rows={open.rows} />
-              <div>
-              <ResultsEntry key={open.id} eventId={open.id} text={open.text} challongeUrl={open.challongeUrl} members={members} hasChallongeKey={hasChallongeKey} />
-              </div>
-            </div>
-          </div>
-        )}
-      </Modal>
     </div>
   );
 }

@@ -92,3 +92,19 @@
   background-clip: text;
   color: transparent;
 }
+
+/* The claw marks of the homepage logo: all three are wiped in together from the top down, as if scratched in one swipe. */
+@property --claw-p { syntax: "<percentage>"; inherits: false; initial-value: 130%; }
+@keyframes claw-scratch {
+  from { --claw-p: -10%; filter: brightness(2) drop-shadow(0 0 14px rgb(255 136 17 / 0.9)); }
+  60% { filter: brightness(1.3) drop-shadow(0 0 10px rgb(255 136 17 / 0.5)); }
+  to { --claw-p: 130%; filter: brightness(1) drop-shadow(0 0 0 transparent); }
+}
+.claw-layer {
+  -webkit-mask-image: linear-gradient(180deg, #000 calc(var(--claw-p) - 14%), transparent var(--claw-p));
+  mask-image: linear-gradient(180deg, #000 calc(var(--claw-p) - 14%), transparent var(--claw-p));
+  animation: claw-scratch 1s cubic-bezier(0.3, 0.1, 0.25, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .claw-layer { animation: none; -webkit-mask-image: none; mask-image: none; }
+}

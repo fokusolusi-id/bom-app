@@ -59,6 +59,10 @@ export const SliderSection = () => (
   <Section id="slider" section="news" title="Slider (What's new)" hint="Uploaded video (MP4/WebM, max 20 MB) or a YouTube link. Shown on the homepage below the gallery." />
 );
 
+export const PopupSection = () => (
+  <Section id="popup" section="popup" title="Event pop-up" hint="Pictures of upcoming events (JPG/PNG/WebP, max 5 MB). When the homepage opens they show in a pop-up: one picture, or a slider if there are several, in this order. Add a caption to say what it is. Untick 'Show on website' to hide one, or delete them all to turn the pop-up off." />
+);
+
 export const GallerySection = () => (
   <Section id="gallery" section="gallery" title="Gallery" hint="JPG/PNG/WebP photos, max 5 MB. Shown on the homepage as a full-screen slideshow with thumbnails, in this order." />
 );

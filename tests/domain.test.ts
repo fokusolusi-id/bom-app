@@ -318,7 +318,7 @@ describe("schedule events", () => {
     for (const bad of ["", "2026-13-40T99:00", "tomorrow", null]) expect(() => wibLocalToIso(bad)).toThrow();
   });
   it("parses an event", () => {
-    expect(ev(base)).toEqual({ sub_community_id: A, name: "Weekly Ranked", starts_at: "2026-10-10T11:00:00.000Z", place: "Deli Park", tier: "Ranked", is_active: true });
+    expect(ev(base)).toEqual({ sub_community_id: A, name: "Weekly Ranked", starts_at: "2026-10-10T11:00:00.000Z", place: "Deli Park", challonge_url: null, tier: "Ranked", is_active: true });
   });
   it("allows an event without a community and the Unrank level", () => {
     expect(ev({ ...base, sub_community_id: "", tier: "Unrank" })).toMatchObject({ sub_community_id: null, tier: "Unrank" });
@@ -497,5 +497,20 @@ describe("break and holiday events", () => {
   it("still need a name and a time for everything else", () => {
     expect(() => parseEventInput(form({ tier: "Ranked", starts_at: "2026-10-29T18:00" }))).toThrow();
     expect(() => parseEventInput(form({ tier: "Ranked", name: "Weekly", starts_at: "" }))).toThrow(/date/i);
+  });
+});
+
+describe("Challonge link on a schedule event", () => {
+  const form = (o: Record<string, string>) => (k: string) => o[k] ?? "";
+  const base = { tier: "Ranked", name: "Weekly Ranked", starts_at: "2026-10-31T18:00" };
+
+  it("is optional, and cleaned up to the bracket address", () => {
+    expect(parseEventInput(form(base)).challonge_url).toBeNull();
+    expect(parseEventInput(form({ ...base, challonge_url: "challonge.com/dxm_topcut/standings" })).challonge_url).toBe("https://challonge.com/dxm_topcut");
+    expect(() => parseEventInput(form({ ...base, challonge_url: "https://example.com/x" }))).toThrow(/challonge/i);
+  });
+
+  it("is not kept for a break", () => {
+    expect(parseEventInput(form({ tier: "Break", starts_on: "2026-10-29", challonge_url: "https://challonge.com/x" })).challonge_url).toBeUndefined();
   });
 });

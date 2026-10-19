@@ -15,7 +15,7 @@ export async function loadUpcomingEvents(limit: number, now = new Date()): Promi
       const bom = eventUsesBomLogo(e.tier) || !e.community?.image_path;
       return {
         title: `${e.tier === "Unrank" ? "" : e.tier === "Break" ? "Break: " : `BOM ${e.tier}: `}${e.name}`,
-        at: new Date(e.starts_at), name: e.name, type: e.tier, place: eventPlace(e, VENUE),
+        at: new Date(e.starts_at), name: e.name, type: e.tier, place: eventPlace(e, VENUE), challongeUrl: e.challonge_url ?? null,
         logo: bom ? { src: BOM_LOGO, alt: "BOM" } : { src: mediaUrl(e.community!.image_path!), alt: e.community!.name },
       };
     }),

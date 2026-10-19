@@ -6,9 +6,20 @@ import { competitionPath } from "@/lib/content";
 import { cn } from "@/lib/utils";
 import { TIER_TILE, TierTile } from "./tier-tile";
 
-/** What an event is worth at this level, from the scoring rules so the page cannot drift from the leaderboard. */
-function pointsText(tier: TierLabel): string {
-  return tier === "Unrank" ? "No points awarded." : `All points count ${tierMultiplier(tier)}x.`;
+/** The points of a level, in the style of the "Points by competition type" boxes on the leaderboard: a bordered box with the multiplier big. */
+function PointsBox({ tier, compact }: { tier: TierLabel; compact?: boolean }) {
+  return (
+    <div className={cn("bg-card inline-block rounded-md border", compact ? "px-1 py-0.5" : "px-3 py-2")}>
+      {tier === "Unrank" ? (
+        <span className={cn("text-muted-foreground", compact ? "text-[0.5rem]" : "text-sm")}>No points</span>
+      ) : (
+        <>
+          <span className={cn("font-num tabular font-black italic", compact ? "text-[0.7rem]" : "text-xl")}>{tierMultiplier(tier)}x</span>{" "}
+          <span className={cn("text-muted-foreground", compact ? "text-[0.45rem]" : "text-sm")}>points</span>
+        </>
+      )}
+    </div>
+  );
 }
 
 /**
@@ -22,9 +33,8 @@ export function CompetitionLadder({ details = true, bullets: showBullets = true,
         <ul className="text-muted-foreground list-disc space-y-1 pl-4 text-[clamp(0.8rem,6.5cqw,1rem)] marker:text-primary">
           {tierBullets.map((b) => <li key={b}>{b}</li>)}
           {tier === "Unrank" && scheduleLink && <li>Check the <Link href="/schedule" className="text-primary underline">schedule</Link> for the next date.</li>}
-          <li className="font-bold text-white">{pointsText(tier)}</li>
         </ul>
-      ) : <p className="text-[clamp(0.8rem,6.5cqw,1rem)] font-bold text-white">{pointsText(tier)}</p>}
+      ) : null}
     </>
   );
   return (
@@ -41,6 +51,7 @@ export function CompetitionLadder({ details = true, bullets: showBullets = true,
             </div>
             <div className={cn("font-display text-[0.45rem] leading-tight font-black tracking-tighter italic uppercase", TIER_TILE[tier].title)}>{tier}</div>
             <div className="font-label text-[0.45rem] leading-tight font-bold tracking-wide text-white uppercase italic">{freq}</div>
+            <PointsBox tier={tier} compact />
           </li>
         ))}
       </ol>
@@ -72,6 +83,7 @@ export function CompetitionLadder({ details = true, bullets: showBullets = true,
                 <span className={cn("block text-[clamp(1.1rem,12.5cqw,2.25rem)]", look.title)}>{tier}</span>
               </h3>
               <p className="font-label text-[clamp(0.8rem,7cqw,1.125rem)] font-bold tracking-[0.08em] text-white uppercase italic">{freq}</p>
+              <PointsBox tier={tier} />
               {details && detail(tier, tierBullets)}
             </div>
           </li>
