@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { hasSupabase } from "@/lib/supabase/env";
 import { LoginForm } from "./login-form";
 
-export const metadata = { title: "Admin login | BOM" };
+export const metadata = { title: "Admin login | Beyblade of Medan" };
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const { error } = await searchParams;

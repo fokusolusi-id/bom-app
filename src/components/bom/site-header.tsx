@@ -4,7 +4,7 @@ import { MobileMenu } from "@/components/bom/mobile-menu";
 import { NavLink } from "@/components/nav-link";
 
 const nav = [
-  ["/about-bom", "About BOM"],
+  ["/about-us", "About Us"],
   ["/rules", "Rules"],
   ["/membership", "Membership"],
   ["/schedule", "Schedule"],
@@ -18,7 +18,7 @@ export function SiteHeader() {
     <header className="bg-background sticky top-0 z-40 border-b">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
         <Link href="/" className="flex items-center gap-3">
-          <Image src="/brand/logo-768.png" alt="BOM Beyblade of Medan" width={44} height={44} />
+          <Image src="/brand/logo-768.png" alt="Beyblade of Medan" width={44} height={44} />
           <span className="font-display text-lg font-extrabold italic uppercase">Beyblade of Medan</span>
         </Link>
         <nav aria-label="Main" className="hidden gap-6 md:flex">

@@ -13,7 +13,7 @@ import type { Player } from "@/domain/types";
 
 type Row = Pick<Player, "bom_id" | "name" | "points"> & { week: number; previous: number | null; change: number; trophies: number; move: "up" | "down" | "new" | null };
 
-export const PAGE_SIZE = 25;
+export const PAGE_SIZE = 16;
 
 function Trophies({ count }: { count: number }) {
   return count > 0
@@ -28,7 +28,7 @@ function Change({ row }: { row: Row }) {
   return <span className="text-muted-foreground">–</span>;
 }
 
-/** Leaderboard with search (name or BOM ID), sorting by points (default, highest first), blader name or BOM ID, and pages of 25. */
+/** Leaderboard with search (name or BOM ID), sorting by points (default, highest first), blader name or BOM ID, and pages of 16. */
 export function LeaderboardTable({ players }: { players: Row[] }) {
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<{ key: SortKey; dir: SortDir }>({ key: "points", dir: "desc" });

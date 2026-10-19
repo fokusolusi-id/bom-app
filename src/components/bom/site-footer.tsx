@@ -8,7 +8,7 @@ export function SiteFooter() {
       <div className="mx-auto max-w-6xl px-4 py-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
-            <Image src="/brand/logo-768.png" alt="BOM Beyblade of Medan" width={48} height={48} />
+            <Image src="/brand/logo-768.png" alt="Beyblade of Medan" width={48} height={48} />
             <div className="text-muted-foreground space-y-1 text-xs">
               <p>© {new Date().getFullYear()} Beyblade of Medan. All rights reserved.</p>
               <p>Fan community. Not affiliated with Takara Tomy &amp; Hasbro.</p>

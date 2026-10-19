@@ -29,7 +29,7 @@ export async function BreaksView() {
         <ScheduleSideMenu items={[
           { href: "/admin/schedule", label: "Upcoming Events", active: false },
           ...subs.flatMap((s) => (s.id ? [{ href: `/admin/schedule?c=${s.id}`, label: s.name, active: false }] : [])),
-          { href: "/admin/schedule?c=bom", label: "BOM only", active: false },
+          { href: "/admin/schedule?c=bom", label: "Beyblade of Medan only", active: false },
           { href: BREAKS_HREF, label: "Break / Holiday", active: true },
         ]} />
         <div className="min-w-0 space-y-6">

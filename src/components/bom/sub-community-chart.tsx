@@ -12,7 +12,7 @@ export function SubCommunityChart({ subs }: { subs: SubCommunity[] }) {
   return (
     <div aria-label="Community structure">
       <div className="flex flex-col items-center">
-        <Image src="/brand/logo-768.png" alt="BOM" width={160} height={160} />
+        <Image src="/brand/logo-768.png" alt="Beyblade of Medan" width={160} height={160} />
         <div aria-hidden className="bg-primary h-8 w-0.5" />
       </div>
       <ul className="mx-auto flex max-w-sm flex-col xl:max-w-none xl:flex-row">

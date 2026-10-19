@@ -9,7 +9,7 @@ import { requireAdmin } from "@/server/admin-session";
 import { supabaseSettings } from "@/server/settings";
 import { prepareRulebookUpload, saveRulesPage } from "./actions";
 
-export const metadata = { title: "Rules | Admin BOM" };
+export const metadata = { title: "Rules | Admin Beyblade of Medan" };
 
 const label = "text-muted-foreground flex flex-col gap-1 text-xs";
 

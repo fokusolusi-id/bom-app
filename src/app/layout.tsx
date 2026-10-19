@@ -5,7 +5,7 @@ import { HideOnAdmin } from "@/components/bom/hide-on-admin";
 import { SiteFooter } from "@/components/bom/site-footer";
 
 export const metadata: Metadata = {
-  title: "BOM | Beyblade of Medan",
+  title: "Beyblade of Medan",
   description: "Rumah Beyblade X kompetitif di Sumatera Utara, tempat pemain Medan naik kelas sampai ke panggung dunia. Built in Medan. Battle anywhere.",
   icons: {
     icon: [

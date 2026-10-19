@@ -54,7 +54,7 @@ export function NewsSlider({ items }: { items: NewsItem[] }) {
       <div className="relative mx-auto aspect-video max-h-[calc(100svh-6rem)] w-full">
         {item.kind === "youtube" && item.youtubeId ? (
           <iframe
-            key={item.youtubeId} ref={frame} title={item.caption ?? "BOM video"}
+            key={item.youtubeId} ref={frame} title={item.caption ?? "Beyblade of Medan video"}
             src={`${YT_ORIGIN}/embed/${item.youtubeId}?autoplay=${autoplay}&mute=1&rel=0&enablejsapi=1&origin=${encodeURIComponent(origin)}${single ? `&loop=1&playlist=${item.youtubeId}` : ""}`}
             allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowFullScreen className="size-full"
             onLoad={() => frame.current?.contentWindow?.postMessage(JSON.stringify({ event: "listening", id: 1, channel: "widget" }), YT_ORIGIN)}
@@ -62,7 +62,7 @@ export function NewsSlider({ items }: { items: NewsItem[] }) {
         ) : item.path ? (
           <video
             key={item.path} src={mediaUrl(item.path)} muted playsInline autoPlay={!reduced} loop={single} controls={reduced}
-            preload="metadata" aria-label={item.caption ?? "BOM video"} className="size-full object-contain" onEnded={() => !single && go(1)}
+            preload="metadata" aria-label={item.caption ?? "Beyblade of Medan video"} className="size-full object-contain" onEnded={() => !single && go(1)}
           />
         ) : null}
         {count > 1 && (

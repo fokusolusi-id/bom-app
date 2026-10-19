@@ -12,7 +12,7 @@ export async function setPlayerStatus(playerId: string, status: "registered" | "
     await supabasePlayers(supabase).setStatus(playerId, status);
     revalidatePath("/admin/members");
     revalidatePath("/leaderboard");
-    revalidatePath("/about-bom");
+    revalidatePath("/about-us");
     revalidatePath("/member/[bomId]", "page");
   });
 }

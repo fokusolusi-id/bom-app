@@ -32,7 +32,7 @@ export async function ArchivesView({ community }: { community?: string }) {
         <ScheduleSideMenu items={[
           { href: PAST_HREF, label: "Past Events", active: filter === "all" },
           ...communities.map((c) => ({ href: `${PAST_HREF}&c=${c.id}`, label: c.name, active: filter === c.id })),
-          ...(staff.isAdmin ? [{ href: `${PAST_HREF}&c=bom`, label: "BOM only", active: filter === "bom" }] : []),
+          ...(staff.isAdmin ? [{ href: `${PAST_HREF}&c=bom`, label: "Beyblade of Medan only", active: filter === "bom" }] : []),
         ]} />
         <div className="min-w-0">
           <ArchiveBrowser key={filter} rows={rows} communities={communities} types={types} allowBom={staff.isAdmin} />

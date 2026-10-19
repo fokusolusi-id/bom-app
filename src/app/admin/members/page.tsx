@@ -3,7 +3,7 @@ import { NonMembersSection } from "./non-members-section";
 import { PlayersSection } from "./players-section";
 import { SignupsSection } from "./signups-section";
 
-export const metadata = { title: "Members | Admin BOM" };
+export const metadata = { title: "Members | Admin Beyblade of Medan" };
 
 const sections = [["sign-ups", "Waiting for activation"], ["members", "Members"], ["non-members", "Non BOM ID"]] as const;
 

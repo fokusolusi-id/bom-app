@@ -167,7 +167,7 @@ export default async function Home() {
       <section aria-labelledby="sub-komunitas">
         <SectionHeading id="sub-komunitas">Sub Communities</SectionHeading>
         <SubCommunityChart subs={subs} />
-        <Button variant="outline" className="mt-6" asChild><Link href="/about-bom">About BOM<ArrowRight aria-hidden /></Link></Button>
+        <Button variant="outline" className="mt-6" asChild><Link href="/about-us">About Us<ArrowRight aria-hidden /></Link></Button>
       </section>
 
       <section aria-labelledby="numbers">

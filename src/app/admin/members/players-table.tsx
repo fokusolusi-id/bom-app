@@ -61,7 +61,7 @@ function EditForm({ p, onDone }: { p: PlayerRowData; onDone: () => void }) {
           {AGE_GROUPS.map(([v, t]) => <option key={v} value={v}>{t}</option>)}
         </NativeSelect>
       </label>
-      <label className={label}>Heard about BOM from
+      <label className={label}>Heard about Beyblade of Medan from
         <NativeSelect name="hear_from" defaultValue={p.hear_from ?? ""} className={input}>
           <option value="">-</option>
           {HEAR_FROM.map((h) => <option key={h} value={h}>{h}</option>)}

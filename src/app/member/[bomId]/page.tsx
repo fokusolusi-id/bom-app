@@ -36,7 +36,7 @@ async function loadPlayer(raw: string) {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const player = await loadPlayer((await params).bomId);
-  return { title: player ? `${player.name} ${formatBomId(player.bom_id)} | BOM` : "Member | BOM" };
+  return { title: player ? `${player.name} ${formatBomId(player.bom_id)} | Beyblade of Medan` : "Member | Beyblade of Medan" };
 }
 
 export default async function MemberPage({ params }: Props) {

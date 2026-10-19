@@ -57,12 +57,12 @@ export async function sendRegistrationEmail(input: Registration, bomId: string) 
     `WhatsApp: ${input.whatsapp}`,
     `Age: ${input.ageGroup}${input.guardianName ? ` | Guardian: ${input.guardianName} ${input.guardianWhatsapp}` : ""}`,
     `Address: ${input.address}`,
-    `Heard about BOM from: ${input.hearFrom ?? "-"}`,
+    `Heard about Beyblade of Medan from: ${input.hearFrom ?? "-"}`,
     `Photo/video consent: ${input.photoConsent ? "yes" : "no"}`,
     "Payment screenshot: see /admin/members",
   ];
   try {
-    await sendEmail({ to: committee, subject: `New BOM sign-up: ${input.bladerName} ${formatBomId(bomId)}`, text: lines.join("\n") });
+    await sendEmail({ to: committee, subject: `New Beyblade of Medan sign-up: ${input.bladerName} ${formatBomId(bomId)}`, text: lines.join("\n") });
   } catch (e) {
     console.error(e);
   }

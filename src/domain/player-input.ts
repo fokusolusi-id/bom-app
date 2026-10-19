@@ -42,7 +42,7 @@ export function parsePlayerInput(get: (key: string) => unknown): PlayerInput {
     age_group: ageGroup,
     guardian_name: minor ? parseText(get("guardian_name"), "Guardian name", 60) : null,
     guardian_whatsapp: minor ? normalizeWhatsapp(get("guardian_whatsapp")) : null,
-    hear_from: optional(get("hear_from"), "Heard about BOM from", 40),
+    hear_from: optional(get("hear_from"), "Heard about Beyblade of Medan from", 40),
     photo_consent: checked(get("photo_consent")),
   };
 }

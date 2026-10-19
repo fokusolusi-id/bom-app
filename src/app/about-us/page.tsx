@@ -13,7 +13,7 @@ import { teamStrip } from "@/domain/team";
 import { publicTeam } from "@/server/team";
 import { publicSubCommunities } from "@/server/sub-communities";
 
-export const metadata = { title: "About | BOM" };
+export const metadata = { title: "About Us | Beyblade of Medan" };
 export const revalidate = 60;
 
 export default async function AboutUsPage() {
@@ -25,7 +25,7 @@ export default async function AboutUsPage() {
     <main className="mx-auto max-w-6xl space-y-16 px-4 py-12">
       <section className="grid items-center gap-10 overflow-x-clip md:grid-cols-2">
         <div className="space-y-6">
-          <RibbonBanner>About BOM</RibbonBanner>
+          <RibbonBanner>About Us</RibbonBanner>
           <h1 id="story" className="text-5xl leading-none md:text-7xl">Our <span className="text-primary">Story</span></h1>
           <div>
             <div className="text-muted-foreground max-w-xl space-y-4">
@@ -58,9 +58,9 @@ export default async function AboutUsPage() {
         ))}
       </ul>
       <p className="mt-8 max-w-xl">
-        Are you interested in joining BOM? We would love to hear from you.<br />
+        Are you interested in joining Beyblade of Medan? We would love to hear from you.<br />
         Email us at{" "}
-        <a href={`mailto:${PARTNER_EMAIL}?subject=${encodeURIComponent("Community joining BOM")}`} className="text-primary font-bold underline">{PARTNER_EMAIL}</a>.
+        <a href={`mailto:${PARTNER_EMAIL}?subject=${encodeURIComponent("Community joining Beyblade of Medan")}`} className="text-primary font-bold underline">{PARTNER_EMAIL}</a>.
       </p>
       </section>
 

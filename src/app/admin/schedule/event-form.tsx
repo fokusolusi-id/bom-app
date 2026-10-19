@@ -30,7 +30,7 @@ export function EventForm({ e, communities, defaultCommunity, types, allowBom }:
       ) : (
         <>
           <NativeSelect name="sub_community_id" aria-label="Community" defaultValue={e ? (e.sub_community_id ?? "") : (defaultCommunity ?? "")}>
-            {allowBom && <option value="">All communities (BOM)</option>}
+            {allowBom && <option value="">All communities (Beyblade of Medan)</option>}
             {communities.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
           </NativeSelect>
           <Input name="name" defaultValue={e?.name === "Break / Holiday" ? "" : e?.name} placeholder="Event name (e.g. Weekly Ranked)" aria-label="Event name" maxLength={80} required className="sm:col-span-2" />
