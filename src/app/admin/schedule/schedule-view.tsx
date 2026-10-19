@@ -82,7 +82,7 @@ export async function ScheduleView({ community, type }: { community?: string; ty
           <Card key={e.id}>
             <CardHeader className="space-y-2">
               <TierMark tier={e.tier} tileClassName="size-12" className="text-lg" />
-              <CardTitle className="font-display text-2xl leading-tight font-extrabold italic uppercase">
+              <CardTitle className="font-display text-2xl leading-tight font-extrabold normal-case italic">
                 {e.name}
                 {!e.is_active && <span className="text-muted-foreground ml-2 text-sm font-normal normal-case not-italic">(hidden)</span>}
               </CardTitle>

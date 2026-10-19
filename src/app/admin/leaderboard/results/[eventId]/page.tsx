@@ -35,7 +35,7 @@ export default async function EventResultsPage({ params }: { params: Promise<{ e
           </div>
           <div>
             <div className={`font-label text-lg font-bold tracking-[0.08em] uppercase italic ${TIER_TILE[event.tier].title}`}>{EVENT_TYPE_LABEL(event.tier)}</div>
-            <h2 className="font-display text-2xl leading-tight font-extrabold italic uppercase">{event.name}</h2>
+            <h2 className="font-display text-2xl leading-tight font-extrabold normal-case italic">{event.name}</h2>
             <p className="text-muted-foreground text-sm">
               {when.format(new Date(event.startsAt))} · {event.communityName}
             </p>

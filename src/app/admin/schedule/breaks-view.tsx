@@ -39,7 +39,7 @@ export async function BreaksView() {
           {breaks.map((e) => (
             <Card key={e.id}>
               <CardHeader>
-                <CardTitle className="font-display text-xl leading-tight font-extrabold italic uppercase">
+                <CardTitle className="font-display text-xl leading-tight font-extrabold normal-case italic">
                   {day.format(new Date(e.starts_at))}
                   {e.starts_at < today && <span className="text-muted-foreground ml-2 text-sm font-normal normal-case not-italic">(past)</span>}
                   {!e.is_active && <span className="text-muted-foreground ml-2 text-sm font-normal normal-case not-italic">(hidden)</span>}
