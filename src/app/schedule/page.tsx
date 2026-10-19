@@ -19,7 +19,7 @@ import { publicScheduleEvents } from "@/server/schedule-events";
 export const metadata: Metadata = { title: "Schedule | BOM" };
 export const revalidate = 60;
 
-const DAY_NAMES = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const monthName = new Intl.DateTimeFormat("en-GB", { month: "long", year: "numeric", timeZone: "UTC" });
 
 function currentMonth(): Month {
@@ -108,7 +108,7 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
           <li key={day}><Card className={`flex-row items-start gap-3 border-0 p-3 ${EVENT_STYLE[eventsOn(day)[0].tier].bg}`}>
             <div className="w-10 text-center">
               <div className={`font-num text-3xl font-black italic ${EVENT_STYLE[eventsOn(day)[0].tier].ink}`}>{day}</div>
-              <div className={`text-xs uppercase ${EVENT_STYLE[eventsOn(day)[0].tier].soft}`}>{DAY_NAMES[(weekdayOf(view, day) + 6) % 7]}</div>
+              <div className={`text-xs uppercase ${EVENT_STYLE[eventsOn(day)[0].tier].soft}`}>{DAY_NAMES[weekdayOf(view, day)]}</div>
             </div>
             <div className="min-w-0 flex-1 space-y-2">{eventsOn(day).map((e) => <EventChip key={e.id} e={e} />)}</div>
           </Card></li>
