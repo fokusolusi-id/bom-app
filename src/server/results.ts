@@ -2,7 +2,7 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { PlacementInput, ResultRow } from "@/domain/result";
 import type { PlacementRow } from "@/domain/types";
-import { TIERS } from "@/domain/tier";
+import { TIER_LABELS } from "@/domain/tier";
 import { hasSupabase } from "@/lib/supabase/env";
 import { check } from "./db";
 import { createPublicClient } from "./supabase-public";
@@ -10,6 +10,8 @@ import { createPublicClient } from "./supabase-public";
 
 /** The top eight of an event, in order, with its sub community. */
 export type Podium = { name: string; tier: string; startsAt: string; challongeUrl: string | null; communityLogo: string | null; communityName: string | null; participants: number; top: { place: number; name: string; bomId: string | null; tigerKing: boolean; combos: string[] }[] };
+
+export type GuestSummary = { name: string; events: { eventId: string; eventName: string; tier: string; startsAt: string; place: number | null }[] };
 
 export interface ResultsRepository {
   /** The most recent past events (shown on the site) with a member in the top eight, newest first. Guests without a BOM ID are left out. */
@@ -22,6 +24,10 @@ export interface ResultsRepository {
   removeRow(eventId: string, rowId: string): Promise<void>;
   /** Deletes every result row of the event, members and guests. The event itself stays in the schedule. */
   clearEvent(eventId: string): Promise<void>;
+  /** People in results without a BOM ID (guests), by name, with the events they took part in. */
+  guests(): Promise<GuestSummary[]>;
+  /** Makes every result of this guest name belong to a member instead. */
+  linkGuest(guestName: string, playerId: string): Promise<void>;
   setPlacement(input: PlacementInput): Promise<void>;
   /** Makes these rows the whole result of the event: new ones are added, changed ones updated, the rest removed. */
   replaceForEvent(eventId: string, rows: ResultRow[]): Promise<void>;
@@ -33,7 +39,8 @@ export function supabaseResults(client: SupabaseClient): ResultsRepository {
       const { data, error } = await client
         .from("schedule_events")
         .select("name,tier,starts_at,challonge_url,community:sub_communities(name,image_path),event_placements(place,tiger_king,combos,guest_name,player:players(name,bom_id))")
-        .in("tier", TIERS).eq("is_active", true).lte("starts_at", nowIso)
+        // Unrank included: it earns no points, but its results are shown like any other event.
+        .in("tier", TIER_LABELS).eq("is_active", true).lte("starts_at", nowIso)
         .order("starts_at", { ascending: false }).limit(30);
       check(error, "Failed to load latest results");
       type Row = { name: string; tier: string; starts_at: string; challonge_url: string | null; community: { name: string; image_path: string | null } | null; event_placements: { place: number | null; tiger_king: boolean; combos: string[]; guest_name: string | null; player: { name: string; bom_id: string } | null }[] };
@@ -88,6 +95,28 @@ export function supabaseResults(client: SupabaseClient): ResultsRepository {
         const { error } = await client.from("event_placements").insert(guests);
         check(error, "Failed to save results");
       }
+    },
+    async guests() {
+      const { data, error } = await client
+        .from("event_placements")
+        .select("guest_name,place,event:schedule_events!inner(id,name,tier,starts_at)")
+        .not("guest_name", "is", null);
+      check(error, "Failed to load the Non BOM ID list");
+      const byName = new Map<string, GuestSummary>();
+      for (const r of (data ?? []) as unknown as { guest_name: string; place: number | null; event: { id: string; name: string; tier: string; starts_at: string } }[]) {
+        const key = r.guest_name.toLowerCase();
+        const entry = byName.get(key) ?? { name: r.guest_name, events: [] };
+        entry.events.push({ eventId: r.event.id, eventName: r.event.name, tier: r.event.tier, startsAt: r.event.starts_at, place: r.place });
+        byName.set(key, entry);
+      }
+      return [...byName.values()]
+        .map((g) => ({ ...g, events: g.events.sort((a, b) => b.startsAt.localeCompare(a.startsAt)) }))
+        .sort((a, b) => b.events.length - a.events.length || a.name.localeCompare(b.name));
+    },
+    async linkGuest(guestName, playerId) {
+      const { error } = await client.from("event_placements").update({ player_id: playerId, guest_name: null }).ilike("guest_name", guestName.replace(/[\\%_]/g, "\\$&"));
+      if (error?.message.includes("event_placements_event_player_key")) throw new Error("That member already has a result in one of these events. Remove one of them first.");
+      check(error, "Failed to link the results");
     },
     async clearEvent(eventId) {
       const { error } = await client.from("event_placements").delete().eq("event_id", eventId);

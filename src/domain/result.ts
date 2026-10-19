@@ -46,7 +46,9 @@ const TK_MARK = /(\(tk\)|\*)\s*$/i;
  * - A plain list, one member per line (blader name or BOM ID). The first line is 1st place, the second 2nd, up to 8th;
  *   every line after that took part without a place.
  * - A numbered list, when the first line starts with a place ("1 [BOM-001] Decade (TK)"). Each numbered line is one
- *   member with that place (two members can share 3rd); the lines under it, up to three, are the combos they won with.
+ *   member with that place (two members can share 3rd). Separate members with a blank line; the lines under a member, up to three,
+ *   are the combos they won with. A name without a place number is the next place. From 9th on there are no combos, so every
+ *   line is one member.
  *
  * A member is found by the BOM ID in brackets, else by blader name. "(TK)" or "*" after the name gives the Tiger King,
  * once. A name that matches no member is saved as a guest (Non BOM ID); write "[Non BOM ID]" to make a guest even when a
@@ -58,13 +60,14 @@ export function parseResultsText(text: string, players: Candidate[]): ResultRow[
   if (lines.length === 0) throw new Error("Add at least one member");
   const numbered = NUMBERED.test(lines[0]);
 
-  // Group the lines into entries: a header, and (in a numbered list) up to three combo lines under a top-8 header.
-  // After a blank line, or once a header has its three combos, a plain line is the next member (no place, no combos).
+  // Group the lines into entries. In a numbered list a blank line ends an entry; the next line starts the next one (numbered or just a
+  // name). Under a header in 1st to 8th place, the following lines are its combos (up to three). From 9th on, and after three combos,
+  // every line is the next member.
   const entries: { header: string; rank: number | null; combos: string[] }[] = [];
-  let closed = false;
+  let afterBlank = true;
   let plainRank = 0;
   for (const line of text.split(/\r?\n/).map((l) => l.trim())) {
-    if (line === "") { closed = true; continue; }
+    if (line === "") { afterBlank = true; continue; }
     const m = NUMBERED.exec(line);
     const last = entries[entries.length - 1];
     if (!numbered) {
@@ -74,12 +77,14 @@ export function parseResultsText(text: string, players: Candidate[]): ResultRow[
     } else if (m) {
       entries.push({ header: m[2], rank: Number(m[1]), combos: [] });
       plainRank = Number(m[1]);
-      closed = false;
-    } else if (last && !closed && last.rank !== null && last.rank >= 1 && last.rank <= TOP_PLACES && last.combos.length < MAX_COMBOS) {
+      afterBlank = false;
+    } else if (last && !afterBlank && last.rank !== null && last.rank >= 1 && last.rank <= TOP_PLACES && last.combos.length < MAX_COMBOS) {
       last.combos.push(line);
     } else {
+      // Not a place number, not a combo: the next member, one place after the last.
       plainRank += 1;
       entries.push({ header: line, rank: plainRank, combos: [] });
+      afterBlank = false;
     }
   }
 

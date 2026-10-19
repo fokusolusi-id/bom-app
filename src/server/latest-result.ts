@@ -1,6 +1,6 @@
 import "server-only";
 import { eventUsesBomLogo } from "@/domain/event";
-import type { Tier } from "@/domain/tier";
+import type { TierLabel } from "@/domain/tier";
 import { mediaUrl } from "@/lib/media";
 import { BOM_LOGO } from "@/lib/tier-icon";
 import { eventPoints } from "@/domain/standings";
@@ -8,7 +8,7 @@ import { publicResults } from "./results";
 import { publicPointsTable } from "./settings";
 
 export type LatestResult = {
-  title: string; tier: Tier; date: string; challongeUrl: string | null;
+  title: string; tier: TierLabel; date: string; challongeUrl: string | null;
   logo: { src: string; alt: string };
   top: { place: number; name: string; bomId: string | null; tigerKing: boolean; combos: string[]; points: number }[];
 };
@@ -19,7 +19,7 @@ const dateFmt = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short
 export async function latestResults(now: Date, limit = 2): Promise<LatestResult[]> {
   const [podiums, table] = await Promise.all([publicResults().recentPodiums(now.toISOString(), limit), publicPointsTable()]);
   return podiums.map((p) => {
-    const tier = p.tier as Tier;
+    const tier = p.tier as TierLabel;
     const bom = eventUsesBomLogo(tier) || !p.communityLogo;
     return {
       title: p.name, tier, date: dateFmt.format(new Date(p.startsAt)), challongeUrl: p.challongeUrl,

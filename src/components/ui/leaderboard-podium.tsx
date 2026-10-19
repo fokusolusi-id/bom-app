@@ -31,7 +31,7 @@ const STEPS = [
 /** The winning stair: the top three of an event on a podium. Steps with nobody on them stay empty. */
 function LeaderboardPodium({ rankings, valueLabel = "pts", className, ...props }: LeaderboardPodiumProps) {
   return (
-    <div className={cn("grid grid-cols-3 items-end gap-2", className)} role="group" aria-label="Winners" {...props}>
+    <div className={cn("grid grid-cols-3 grid-rows-[1fr] items-end gap-2", className)} role="group" aria-label="Winners" {...props}>
       {STEPS.map((step) => {
         const people = rankings.filter((r) => r.rank === step.rank)
         return (

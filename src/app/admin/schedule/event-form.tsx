@@ -11,14 +11,18 @@ import { saveScheduleEvent } from "../jadwal/actions";
 export function EventForm({ e, communities, defaultCommunity, types, allowBom }: {
   e?: ScheduleEventView; communities: { id: string; name: string }[]; defaultCommunity?: string; types: readonly EventType[]; allowBom: boolean;
 }) {
-  const [tier, setTier] = useState<EventType>(e?.tier ?? "Ranked");
+  const [tier, setTier] = useState<EventType>(e?.tier ?? (types.length === 1 ? types[0] : "Ranked"));
   const isBreak = tier === "Break";
   return (
     <ActionForm action={saveScheduleEvent} resetOnSuccess={!e} className="grid gap-3 sm:grid-cols-2">
       {e?.id && <input type="hidden" name="id" value={e.id} />}
-      <NativeSelect name="tier" aria-label="Competition type" value={tier} onChange={(ev) => setTier(ev.target.value as EventType)} className={isBreak ? "sm:col-span-2" : ""}>
-        {types.map((t) => <option key={t} value={t}>{EVENT_TYPE_LABEL(t)}</option>)}
-      </NativeSelect>
+      {types.length === 1 ? (
+        <input type="hidden" name="tier" value={types[0]} />
+      ) : (
+        <NativeSelect name="tier" aria-label="Competition type" value={tier} onChange={(ev) => setTier(ev.target.value as EventType)} className={isBreak ? "sm:col-span-2" : ""}>
+          {types.map((t) => <option key={t} value={t}>{EVENT_TYPE_LABEL(t)}</option>)}
+        </NativeSelect>
+      )}
       {isBreak ? (
         <label className="text-muted-foreground flex flex-col gap-1 text-xs sm:col-span-2">Date of the break
           <Input name="starts_on" type="date" defaultValue={e ? isoToWibLocal(e.starts_at).slice(0, 10) : ""} required className="text-base text-white" />
@@ -35,6 +39,9 @@ export function EventForm({ e, communities, defaultCommunity, types, allowBom }:
           </label>
           <label className="text-muted-foreground flex flex-col gap-1 text-xs">Place (optional)
             <Input name="place" defaultValue={e?.place ?? ""} placeholder="Empty = the community's address" maxLength={120} className="text-base text-white" />
+          </label>
+          <label className="text-muted-foreground flex flex-col gap-1 text-xs sm:col-span-2">Challonge link (optional)
+            <Input name="challonge_url" type="url" defaultValue={e?.challonge_url ?? ""} placeholder="https://challonge.com/your_bracket" maxLength={200} className="text-base text-white" />
           </label>
         </>
       )}

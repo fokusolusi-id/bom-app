@@ -181,8 +181,8 @@ describe("results with winning combos", () => {
     expect(parseResultsText("1 Decade\na\nb\nc\nMr. DiBo", players).map((r) => [r.guestName ?? r.playerId, r.place, r.combos.length])).toEqual([["decade", 1, 3], ["dibo", 2, 0]]);
   });
 
-  it("reads plain lines after a blank line as the next members: just a BOM ID or a name", () => {
-    const text = "1 [BOM-123] Decade (TK)\nAP 1-80 LR\n\nMr. DiBo\nbom 500\nStranger";
+  it("reads members separated by blank lines, numbered or just a BOM ID or a name", () => {
+    const text = "1 [BOM-123] Decade (TK)\nAP 1-80 LR\n\n2 Mr. DiBo\n\nbom 500\n\nStranger";
     // Past 8th they have no place at all.
     const late = "8 [BOM-500] P0\nAP 1-80 LR\n\nMr. DiBo\nStranger";
     expect(parseResultsText(late, players).map((r) => [r.place, r.combos.length])).toEqual([[8, 1], [null, 0], [null, 0]]);
@@ -258,5 +258,38 @@ describe("page numbers", () => {
     expect(pageNumbers(20, 0)).toEqual([0, 1, null, 18, 19]);
     expect(pageNumbers(20, 10)).toEqual([0, 1, null, 9, 10, 11, null, 18, 19]);
     expect(pageNumbers(20, 19)).toEqual([0, 1, null, 18, 19]);
+  });
+});
+
+describe("combos are optional", () => {
+  const players = [{ id: "a", name: "Decade", bom_id: "BoM-123" }, { id: "b", name: "Mr. DiBo", bom_id: "BoM-002" }, { id: "c", name: "Ral_X", bom_id: "BoM-007" }];
+
+  it("needs only a BOM ID or a name per entry", () => {
+    const rows = parseResultsText("1 [BOM-123]\n2 Mr. DiBo\n3 BoM-007\n4 Vampire", players);
+    expect(rows.map((r) => [r.playerId ?? r.guestName, r.place, r.combos.length])).toEqual([["a", 1, 0], ["b", 2, 0], ["c", 3, 0], ["Vampire", 4, 0]]);
+  });
+
+  it("takes entries with and without combos in the same list", () => {
+    const rows = parseResultsText("1 Decade\nAP 1-80 LR\n2 Mr. DiBo\n3 Ral_X\nDSt 6-70 J\nCDg 3-60 E", players);
+    expect(rows.map((r) => r.combos.length)).toEqual([1, 0, 2]);
+  });
+});
+
+describe("a pasted list from Challonge-style results", () => {
+  const players = [{ id: "xt", name: "XtaegunS", bom_id: "BoM-010" }, { id: "sh", name: "SHAI HULUD", bom_id: "BoM-555" }];
+  const pasted = [
+    "1 Given TR", "Ssc 1-60 NR", "Ebh 1-50 K", "Wr 3-60 L", "",
+    "2 XtaegunS", "AP 1-60R", "WR 9-60 FB", "Ssc 1-70 LR", "",
+    "3 BoM NERV", "Ssc 4-50 J", "Cdg 5-60 E", "Hw 9-60 K", "",
+    "4 Shai Hulud", "GV HT", "UDPH 9-70 NR", "Ssc 1-70 LR", "",
+    "Predator X ", "Ssc 3-60 NR", "TB 1-50 R", "WR 9-60 LR",
+  ].join("\n");
+
+  it("keeps the combos with their member: five members, none of the combos is a member", () => {
+    const rows = parseResultsText(pasted, players);
+    expect(rows.map((r) => [r.playerId ?? r.guestName, r.place, r.combos.length])).toEqual([
+      ["Given TR", 1, 3], ["xt", 2, 3], ["BoM NERV", 3, 3], ["sh", 4, 3], ["Predator X", 5, 3],
+    ]);
+    expect(rows[4].combos).toEqual(["Ssc 3-60 NR", "TB 1-50 R", "WR 9-60 LR"]);
   });
 });

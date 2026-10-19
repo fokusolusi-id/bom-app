@@ -1,4 +1,5 @@
 import { TIER_LABELS, usesBomLogo, type TierLabel } from "./tier";
+import { parseChallongeUrl } from "./challonge";
 import { isUuid, parseText } from "./validation";
 
 /** What kind of day it is: a competition level, or a break / holiday with no gathering. */
@@ -70,6 +71,8 @@ export function parseEventInput(get: (key: string) => unknown): ScheduleEventInp
     name: parseText(get("name"), "Event name", 80),
     starts_at: wibLocalToIso(get("starts_at")),
     place: parseText(get("place"), "Place", 120, "") || null,
+    // Optional: the Challonge bracket of this event, shown with it on the site.
+    challonge_url: parseChallongeUrl(get("challonge_url"))?.url ?? null,
     tier,
     is_active: get("is_active") === "on" || get("is_active") === "true",
   };

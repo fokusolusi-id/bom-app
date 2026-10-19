@@ -2,10 +2,10 @@ import { parseImagePath } from "./media";
 import { isUuid, parseText } from "./validation";
 import { parseYoutubeId } from "./youtube";
 
-export const SECTIONS = ["news", "gallery"] as const;
+export const SECTIONS = ["news", "gallery", "popup"] as const;
 export type MediaSection = (typeof SECTIONS)[number];
 
-/** `image` for the gallery; `video` (uploaded file) or `youtube` for What's new. */
+/** `image` for the gallery and the pop-up; `video` (uploaded file) or `youtube` for What's new. */
 export type SiteMedia = {
   id?: string; section: MediaSection; kind: "image" | "video" | "youtube";
   path: string | null; youtube_id: string | null; caption: string | null; sort_order: number; is_active: boolean;
@@ -13,7 +13,7 @@ export type SiteMedia = {
 export type SiteMediaInput = Omit<SiteMedia, "id"> & { id?: string };
 
 export function parseSection(raw: unknown): MediaSection {
-  if (raw !== "news" && raw !== "gallery") throw new Error("Invalid section");
+  if (raw !== "news" && raw !== "gallery" && raw !== "popup") throw new Error("Invalid section");
   return raw;
 }
 
@@ -28,7 +28,7 @@ export function parseSiteMediaInput(get: (key: string) => unknown): SiteMediaInp
   const link = typeof get("youtube_url") === "string" ? (get("youtube_url") as string).trim() : "";
   let kind: SiteMedia["kind"];
   let youtubeId: string | null = null;
-  if (section === "gallery") {
+  if (section === "gallery" || section === "popup") {
     if (!path) throw new Error("Upload a photo first");
     kind = "image";
   } else if (link) {

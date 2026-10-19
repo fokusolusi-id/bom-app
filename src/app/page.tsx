@@ -10,6 +10,8 @@ import { SectionHeading } from "@/components/bom/section-heading";
 import { BomIdBadge } from "@/components/bom/bom-id-badge";
 import { LeaderboardPodium } from "@/components/ui/leaderboard-podium";
 import { TIER_TILE, TierTile } from "@/components/bom/tier-tile";
+import { ClawHero } from "@/components/bom/claw-hero";
+import { HomePopup } from "@/components/bom/home-popup";
 import { SponsorsSection } from "@/components/bom/sponsors-section";
 import { SubCommunityChart } from "@/components/bom/sub-community-chart";
 import { Button } from "@/components/ui/button";
@@ -33,13 +35,14 @@ const EVENT_LIMIT = 2;
 export default async function Home() {
   const now = new Date();
   const media = publicSiteMedia();
-  const [subs, results, news, gallery] = await Promise.all([
-    publicSubCommunities().listActive(), latestResults(now), media.list("news"), media.list("gallery"),
+  const [subs, results, news, gallery, popup] = await Promise.all([
+    publicSubCommunities().listActive(), latestResults(now), media.list("news"), media.list("gallery"), media.list("popup"),
   ]);
   const [events, counts] = await Promise.all([loadUpcomingEvents(EVENT_LIMIT, now), loadCommunityCounts(subs.length, now)]);
 
   return (
     <main className="mx-auto max-w-6xl space-y-16 px-4 py-12">
+      <HomePopup slides={popup.flatMap((m) => (m.id && m.path ? [{ id: m.id, path: m.path, caption: m.caption }] : []))} />
       <section className="grid items-center gap-10 md:grid-cols-2">
         <div className="space-y-6">
           <RibbonBanner>Beyblade X Sumatera Utara</RibbonBanner>
@@ -50,7 +53,7 @@ export default async function Home() {
             <Button size="lg" variant="outline" asChild><Link href="/leaderboard">View leaderboard</Link></Button>
           </div>
         </div>
-        <div className="flex justify-center"><Image src="/brand/logo-768.png" alt="BOM logo" width={420} height={420} priority /></div>
+        <ClawHero />
       </section>
 
       <section aria-labelledby="next-event">
@@ -76,9 +79,12 @@ export default async function Home() {
                           <div className="font-display text-2xl leading-tight font-extrabold italic uppercase">{e.name ?? e.title}</div>
                           <p className="flex items-center gap-2"><CalendarDays className="text-primary size-5 shrink-0" aria-hidden />{formatWhen(e)}</p>
                           <p className="flex items-center gap-2"><MapPin className="text-primary size-5 shrink-0" aria-hidden />{e.place ?? VENUE}</p>
-                          <Button variant="outline" size="sm" className="mt-auto self-start border-2 border-[var(--bom-orange)] bg-black/60 text-[var(--bom-orange)] hover:bg-black/80 hover:text-[var(--bom-orange)]" asChild>
+                          <div className="mt-auto flex flex-wrap gap-2 self-start">
+                          <Button variant="outline" size="sm" className="border-2 border-[var(--bom-orange)] bg-black/60 text-[var(--bom-orange)] hover:bg-black/80 hover:text-[var(--bom-orange)]" asChild>
                             <a href={!e.place || e.place === VENUE ? DIRECTIONS_URL : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(e.place)}`} target="_blank" rel="noopener noreferrer"><MapPin aria-hidden />Map</a>
                           </Button>
+                            {e.challongeUrl && <Button variant="outline" size="sm" className="border-2 border-[var(--bom-orange)] bg-black/60 text-[var(--bom-orange)] hover:bg-black/80 hover:text-[var(--bom-orange)]" asChild><a href={e.challongeUrl} target="_blank" rel="noopener noreferrer"><Trophy aria-hidden />Challonge bracket</a></Button>}
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
@@ -107,11 +113,11 @@ export default async function Home() {
       <section aria-labelledby="latest">
         <SectionHeading id="latest">Latest result</SectionHeading>
         {results.length > 0 ? (
-          <ul className="grid gap-4 md:grid-cols-2">
+          <ul aria-label="Latest results" className="grid gap-4 md:grid-cols-2 md:grid-rows-[auto_auto_1fr_auto]">
             {results.map((r, i) => (
-              <li key={`${r.title}-${r.date}`}>
-                <Card className={`h-full ${i === 0 ? "border-primary border-2" : ""}`}>
-                  <CardContent className="space-y-4">
+              <li key={`${r.title}-${r.date}`} className="md:row-span-4 md:grid md:grid-rows-subgrid">
+                <Card className={`h-full md:row-span-4 md:grid md:grid-rows-subgrid border-2 ${i === 0 ? "border-primary" : ""}`}>
+                  <CardContent className="space-y-4 md:row-span-4 md:grid md:grid-rows-subgrid md:space-y-0">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
                       <div className="flex shrink-0 items-center gap-2">
                         <Image src={r.logo.src} alt={r.logo.alt} width={96} height={96} className="size-16 object-contain" />
@@ -120,11 +126,11 @@ export default async function Home() {
                       <div className="min-w-0">
                         <div className={`font-label text-lg font-bold tracking-[0.08em] uppercase italic ${TIER_TILE[r.tier].title}`}>{EVENT_TYPE_LABEL(r.tier)}{i === 0 && <span className="text-primary ml-2 text-xs not-italic">Latest</span>}</div>
                         <div className="font-display text-xl leading-tight font-extrabold italic uppercase">{r.title}</div>
-                        <p className="text-muted-foreground text-sm">{r.date} · points earned that week</p>
+                        <p className="text-muted-foreground text-sm">{r.date}{r.tier === "Unrank" ? " · no points" : " · points earned that week"}</p>
                       </div>
                     </div>
                     {/* The winning stair: the top three, then everyone in the top eight below. */}
-                    <LeaderboardPodium rankings={r.top.filter((t) => t.place <= 3).map((t) => ({ rank: t.place, name: t.name, bomId: t.bomId, value: t.points, tigerKing: t.tigerKing }))} />
+                    <LeaderboardPodium rankings={r.top.filter((t) => t.place <= 3).map((t) => ({ rank: t.place, name: t.name, bomId: t.bomId, value: r.tier === "Unrank" ? undefined : t.points, tigerKing: t.tigerKing }))} />
                     <ol className="space-y-1.5">
                       {r.top.map((t) => (
                         <li key={t.place} className="flex flex-wrap items-center gap-x-3 gap-y-0.5">
@@ -142,7 +148,7 @@ export default async function Home() {
                           )}
                           {t.tigerKing && <Crown className="size-4 text-red-500" aria-label="Tiger King" />}
                           {t.place <= 3 && <Trophy className={`size-4 ${t.place === 1 ? "text-yellow-400" : t.place === 2 ? "text-neutral-300" : "text-amber-600"}`} aria-label={`Place ${t.place}`} />}
-                          {t.bomId && <span className="font-num tabular text-muted-foreground ml-auto text-sm">+{t.points} pts</span>}
+                          {t.bomId && r.tier !== "Unrank" && <span className="font-num tabular text-muted-foreground ml-auto text-sm">+{t.points} pts</span>}
                           {t.combos.length > 0 && <span className="text-muted-foreground basis-full pl-9 font-mono text-xs">{t.combos.join(" · ")}</span>}
                         </li>
                       ))}

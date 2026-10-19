@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { ClawHero } from "@/components/bom/claw-hero";
 import { Badge } from "@/components/ui/badge";
 import { JoinUs } from "@/components/bom/join-us";
 import { MemberCarousel } from "@/components/bom/member-carousel";
@@ -40,7 +40,7 @@ export default async function AboutUsPage() {
             </ul>
           </div>
         </div>
-        <div className="flex justify-center"><Image src="/brand/logo-768.png" alt="BOM logo" width={420} height={420} priority /></div>
+        <ClawHero />
       </section>
 
       <section aria-labelledby="path">

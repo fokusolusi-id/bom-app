@@ -15,7 +15,7 @@ export function nextWeekly(now: Date, weekday: number, time: string): Date {
 
 /** `type` is the competition level (or "Break"), `logo` the sub komunitas or BOM logo; both are optional extras for display. */
 export type NextEvent = {
-  title: string; at: Date; hasTime: boolean; name?: string; type?: string; logo?: { src: string; alt: string }; place?: string;
+  title: string; at: Date; hasTime: boolean; name?: string; type?: string; logo?: { src: string; alt: string }; place?: string; challongeUrl?: string | null;
 };
 
 /**
@@ -26,7 +26,7 @@ export function upcomingEvents(opts: {
   now: Date;
   weekly: { weekday: number; time: string } | null;
   /** Events with an exact time. Past ones are ignored. */
-  scheduled?: { title: string; at: Date; name?: string; type?: string; logo?: { src: string; alt: string }; place?: string }[];
+  scheduled?: { title: string; at: Date; name?: string; type?: string; logo?: { src: string; alt: string }; place?: string; challongeUrl?: string | null }[];
   limit: number;
 }): NextEvent[] {
   const { now, weekly, limit, scheduled = [] } = opts;

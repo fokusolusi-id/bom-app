@@ -19,6 +19,7 @@ async function revalidate(supabase: Awaited<ReturnType<typeof requireAdmin>>) {
   // Organizers cannot write other members' points under the database rules, so the recalculation uses the service key when there is one.
   await syncPlayerPoints(hasServiceKey() ? createServiceClient() : supabase);
   revalidatePath("/admin/leaderboard");
+  revalidatePath("/admin/leaderboard/results/[eventId]", "page");
   revalidatePath("/leaderboard");
   revalidatePath("/admin/members");
   revalidatePath("/");
