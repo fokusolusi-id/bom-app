@@ -8,6 +8,7 @@ import { CompetitionLadder } from "@/components/bom/competition-ladder";
 import { RibbonBanner } from "@/components/bom/ribbon-banner";
 import { SectionHeading } from "@/components/bom/section-heading";
 import { BomIdBadge } from "@/components/bom/bom-id-badge";
+import { LeaderboardPodium } from "@/components/ui/leaderboard-podium";
 import { TIER_TILE, TierTile } from "@/components/bom/tier-tile";
 import { SponsorsSection } from "@/components/bom/sponsors-section";
 import { SubCommunityChart } from "@/components/bom/sub-community-chart";
@@ -122,6 +123,8 @@ export default async function Home() {
                         <p className="text-muted-foreground text-sm">{r.date} · points earned that week</p>
                       </div>
                     </div>
+                    {/* The winning stair: the top three, then everyone in the top eight below. */}
+                    <LeaderboardPodium rankings={r.top.filter((t) => t.place <= 3).map((t) => ({ rank: t.place, name: t.name, bomId: t.bomId, value: t.points, tigerKing: t.tigerKing }))} />
                     <ol className="space-y-1.5">
                       {r.top.map((t) => (
                         <li key={t.place} className="flex flex-wrap items-center gap-x-3 gap-y-0.5">
@@ -137,8 +140,8 @@ export default async function Home() {
                               <span className={t.place === 1 ? "font-bold" : ""}>{t.name}</span>
                             </>
                           )}
-                          {t.tigerKing && <Crown className="size-4 text-yellow-400" aria-label="Tiger King" />}
-                          {t.place === 1 && <Trophy className="text-primary size-4" aria-label="Champion" />}
+                          {t.tigerKing && <Crown className="size-4 text-red-500" aria-label="Tiger King" />}
+                          {t.place <= 3 && <Trophy className={`size-4 ${t.place === 1 ? "text-yellow-400" : t.place === 2 ? "text-neutral-300" : "text-amber-600"}`} aria-label={`Place ${t.place}`} />}
                           {t.bomId && <span className="font-num tabular text-muted-foreground ml-auto text-sm">+{t.points} pts</span>}
                           {t.combos.length > 0 && <span className="text-muted-foreground basis-full pl-9 font-mono text-xs">{t.combos.join(" · ")}</span>}
                         </li>

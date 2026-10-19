@@ -5,7 +5,7 @@ const H = 240;
 const PAD = { top: 20, right: 20, bottom: 36, left: 44 };
 const day = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", timeZone: "Asia/Jakarta" });
 
-/** Points history: a bar for what each event gave and a line for the running total. Plain SVG, so it renders on the server. */
+/** Points history as an area chart of the running total, with a dot and the total at each event. Plain SVG, so it renders on the server. */
 export function PointsChart({ rows }: { rows: HistoryRow[] }) {
   if (rows.length === 0) return null;
   const max = Math.max(...rows.map((r) => r.total), 1);
@@ -28,12 +28,14 @@ export function PointsChart({ rows }: { rows: HistoryRow[] }) {
             <text x={PAD.left - 8} y={y(t) + 4} textAnchor="end" className="fill-muted-foreground text-[11px]">{t}</text>
           </g>
         ))}
-        {rows.map((r, i) => (
-          <g key={r.eventId}>
-            <rect x={x(i) - Math.min(step * 0.3, 18)} y={y(r.points)} width={Math.min(step * 0.6, 36)} height={PAD.top + plotH - y(r.points)} className="fill-primary/25" />
-            {i % labelEvery === 0 && <text x={x(i)} y={H - 12} textAnchor="middle" className="fill-muted-foreground text-[11px]">{day.format(new Date(r.startsAt))}</text>}
-          </g>
-        ))}
+        <defs>
+          <linearGradient id="points-area" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" className="[stop-color:var(--bom-orange)]" stopOpacity="0.45" />
+            <stop offset="100%" className="[stop-color:var(--bom-orange)]" stopOpacity="0.02" />
+          </linearGradient>
+        </defs>
+        <path d={`${line} L${x(rows.length - 1)},${y(0)} L${x(0)},${y(0)} Z`} fill="url(#points-area)" />
+        {rows.map((r, i) => (i % labelEvery === 0 ? <text key={r.eventId} x={x(i)} y={H - 12} textAnchor="middle" className="fill-muted-foreground text-[11px]">{day.format(new Date(r.startsAt))}</text> : null))}
         <path d={line} fill="none" className="stroke-primary" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
         {rows.map((r, i) => (
           <g key={`${r.eventId}-dot`}>
@@ -43,8 +45,7 @@ export function PointsChart({ rows }: { rows: HistoryRow[] }) {
         ))}
       </svg>
       <figcaption className="text-muted-foreground mt-2 flex flex-wrap gap-4 text-xs">
-        <span className="flex items-center gap-1.5"><span className="bg-primary inline-block h-0.5 w-4" aria-hidden />Total points</span>
-        <span className="flex items-center gap-1.5"><span className="bg-primary/25 inline-block size-3" aria-hidden />Points from the event</span>
+        <span className="flex items-center gap-1.5"><span className="bg-primary inline-block h-0.5 w-4" aria-hidden />Total points after each event</span>
       </figcaption>
     </figure>
   );

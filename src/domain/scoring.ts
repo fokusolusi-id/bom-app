@@ -1,8 +1,8 @@
 import type { Tier } from "./tier";
 
-/** Ranked counts 1x, Cup 2x, Major 3x and Championship 4x. */
-const MULTIPLIER: Record<Tier, 1 | 2 | 3 | 4> = { Ranked: 1, Cup: 2, Major: 3, Championship: 4 };
+/** Ranked and Cup count 1x, Major 1.5x and Championship 2x. */
+const MULTIPLIER: Record<Tier, number> = { Ranked: 1, Cup: 1, Major: 1.5, Championship: 2 };
 
-export function tierMultiplier(tier: Tier): 1 | 2 | 3 | 4 {
+export function tierMultiplier(tier: Tier): number {
   return MULTIPLIER[tier];
 }

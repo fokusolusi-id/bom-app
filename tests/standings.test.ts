@@ -16,7 +16,9 @@ describe("points from results", () => {
     expect(eventPoints(T, "Ranked", { place: 1, tigerKing: false }, 20)).toBe(4.25);
     expect(eventPoints(T, "Ranked", { place: 5, tigerKing: false }, 65)).toBe(0.55 + 2.5 + 1);
     expect(eventPoints(T, "Ranked", { place: 2, tigerKing: true }, 20)).toBe(3 + 0.25 + 1);
-    expect(eventPoints(T, "Cup", { place: 1, tigerKing: false }, 20)).toBe(8.5);
+    expect(eventPoints(T, "Cup", { place: 1, tigerKing: false }, 20)).toBe(4.25);
+    expect(eventPoints(T, "Major", { place: 1, tigerKing: false }, 20)).toBe(6.38);
+    expect(eventPoints(T, "Championship", { place: 1, tigerKing: false }, 20)).toBe(8.5);
     expect(eventPoints(T, "Unrank", { place: 1, tigerKing: false }, 20)).toBe(0);
   });
 });
@@ -40,7 +42,7 @@ describe("standings", () => {
   });
 });
 
-import { parseResultsText } from "@/domain/result";
+import { parseCombos, parseResultsText } from "@/domain/result";
 
 describe("results typed as a list", () => {
   const players = ["Mr. DiBo", "Prett", "3R Zero", ...Array.from({ length: 8 }, (_, i) => `P${i}`)].map((name, i) => ({ id: `id-${i}`, name, bom_id: `BoM-${String(i + 1).padStart(3, "0")}` }));
@@ -168,11 +170,24 @@ describe("results with winning combos", () => {
     expect(parseResultsText("1 [Non BOM ID] Decade", players)[0]).toMatchObject({ playerId: null, guestName: "Decade" });
   });
 
-  it("allows combos only for the top 8 and the Tiger King, and at most three", () => {
-    const lines = Array.from({ length: 9 }, (_, i) => `${i + 1} [BOM-${500 + (i % 8)}] ${i < 8 ? `P${i}` : "Late"}`);
-    expect(() => parseResultsText(`${lines.slice(0, 8).join("\n")}\n9 Late\nAP 1-80 LR`, players)).toThrow(/top 8/i);
-    expect(parseResultsText(`${lines.slice(0, 8).join("\n")}\n9 Late (TK)\nAP 1-80 LR`.replace("Late (TK)", "[BOM-002] Mr. DiBo (TK)"), players).at(-1)?.combos).toEqual(["AP 1-80 LR"]);
-    expect(() => parseResultsText("1 Decade\na\nb\nc\nd", players)).toThrow(/at most 3/i);
+  it("allows combos only for the top 8, and at most three", () => {
+    const top8 = Array.from({ length: 8 }, (_, i) => `${i + 1} [BOM-${500 + i}] P${i}`).join("\n");
+    // Combos under a place after 8th are not combos: the line is read as the next member.
+    expect(parseResultsText(`${top8}\n9 [BOM-002] Mr. DiBo\nAP 1-80 LR`, players).at(-1)).toMatchObject({ place: null, combos: [] });
+    expect(() => parseResultsText("9 Late\n1 P0\nAP 1-80 LR", players)).not.toThrow();
+    expect(() => parseCombos("AP 1-80 LR", 9)).toThrow(/top 8/i);
+    expect(parseCombos("AP 1-80 LR", 8)).toEqual(["AP 1-80 LR"]);
+    // A fourth line under a member is the next member (2nd place here), not a fourth combo.
+    expect(parseResultsText("1 Decade\na\nb\nc\nMr. DiBo", players).map((r) => [r.guestName ?? r.playerId, r.place, r.combos.length])).toEqual([["decade", 1, 3], ["dibo", 2, 0]]);
+  });
+
+  it("reads plain lines after a blank line as the next members: just a BOM ID or a name", () => {
+    const text = "1 [BOM-123] Decade (TK)\nAP 1-80 LR\n\nMr. DiBo\nbom 500\nStranger";
+    // Past 8th they have no place at all.
+    const late = "8 [BOM-500] P0\nAP 1-80 LR\n\nMr. DiBo\nStranger";
+    expect(parseResultsText(late, players).map((r) => [r.place, r.combos.length])).toEqual([[8, 1], [null, 0], [null, 0]]);
+    const rows = parseResultsText(text, players);
+    expect(rows.map((r) => [r.playerId ?? r.guestName, r.place, r.combos.length])).toEqual([["decade", 1, 1], ["dibo", 2, 0], ["p0", 3, 0], ["Stranger", 4, 0]]);
   });
 
   it("still reads a plain list of names", () => {

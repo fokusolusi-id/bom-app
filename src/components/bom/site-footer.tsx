@@ -1,6 +1,6 @@
 import Image from "next/image";
-import { INSTAGRAM } from "@/lib/venue";
-import { InstagramIcon } from "./brand-icons";
+import { INSTAGRAM, TIKTOK } from "@/lib/venue";
+import { InstagramIcon, TiktokIcon } from "./brand-icons";
 
 export function SiteFooter() {
   return (
@@ -18,6 +18,10 @@ export function SiteFooter() {
             <a href={`https://www.instagram.com/${INSTAGRAM}`} target="_blank" rel="noopener noreferrer" className="hover:text-primary flex items-center gap-2 text-sm text-white">
               <InstagramIcon />
               @{INSTAGRAM}
+            </a>
+            <a href={`https://www.tiktok.com/@${TIKTOK}`} target="_blank" rel="noopener noreferrer" className="hover:text-primary flex items-center gap-2 text-sm text-white">
+              <TiktokIcon />
+              @{TIKTOK}
             </a>
           </div>
         </div>

@@ -24,7 +24,7 @@ export function sizeColumn(sizes: string[], count: number): number {
 
 /**
  * Points of one player at one event: Participant always, plus the points for the place, Top Cut for places after the
- * first four, and Tiger King when awarded. The sum is multiplied by the competition level (Cup 2x, Major 3x, Championship 4x).
+ * first four, and Tiger King when awarded. The sum is multiplied by the competition level (Ranked and Cup 1x, Major 1.5x, Championship 2x).
  */
 export function eventPoints(table: PointsTable, tier: string, p: Pick<Participation, "place" | "tigerKing">, participants: number): number {
   if (!isTier(tier)) return 0;

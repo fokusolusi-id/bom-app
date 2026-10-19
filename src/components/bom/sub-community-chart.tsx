@@ -22,9 +22,9 @@ export function SubCommunityChart({ subs }: { subs: SubCommunity[] }) {
             className="before:bg-primary lg:after:bg-primary relative flex-1 pt-8 before:absolute before:top-0 before:left-1/2 before:h-8 before:w-0.5 before:-translate-x-1/2 lg:px-2 lg:after:absolute lg:after:inset-x-0 lg:after:top-0 lg:after:h-0.5 lg:first:after:left-1/2 lg:last:after:right-1/2"
           >
             <Card className="h-full items-center text-center">
-              {s.image_path && <Image src={mediaUrl(s.image_path)} alt={s.name} width={320} height={320} className="aspect-square w-full max-w-40 rounded-md object-contain" />}
+              {s.image_path && <Image src={mediaUrl(s.image_path)} alt={s.name} width={320} height={320} className="size-32 shrink-0 rounded-md object-contain" />}
               <CardHeader className="items-center">
-                <CardTitle>{s.name}</CardTitle>
+                <CardTitle className="normal-case">{s.name}</CardTitle>
                 {s.focus && <p className="text-sm">{s.focus}</p>}
                 {s.instagram && (
                   <a href={`https://www.instagram.com/${s.instagram}`} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-primary mt-1 inline-flex items-center gap-1.5 text-sm">

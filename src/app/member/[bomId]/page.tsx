@@ -6,6 +6,7 @@ import { MemberCard } from "@/components/bom/member-card";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { PlaceTrophy } from "@/components/bom/place-trophy";
 import { PointsChart } from "@/components/bom/points-chart";
 import { RibbonBanner } from "@/components/bom/ribbon-banner";
 import { TierMark } from "@/components/bom/tier-mark";
@@ -63,7 +64,7 @@ export default async function MemberPage({ params }: Props) {
     ["Events played", history.length],
     ["Best place", places.length ? `#${Math.min(...places)}` : "–"],
     ["Wins (1st)", places.filter((p) => p === 1).length],
-    ["Trophies", trophies],
+    ["Tiger King", trophies],
   ] as const;
 
   return (
@@ -90,7 +91,7 @@ export default async function MemberPage({ params }: Props) {
           <Card key={label}>
             <CardContent className="py-4">
               <div className="text-muted-foreground text-xs uppercase">{label}</div>
-              <div className="font-num tabular text-primary flex items-center gap-1.5 text-3xl font-black italic">{value}{label === "Trophies" && <Crown className="size-6 text-yellow-400" aria-hidden />}</div>
+              <div className="font-num tabular text-primary flex items-center gap-1.5 text-3xl font-black italic">{value}{label === "Tiger King" && <Crown className="size-6 text-red-500" aria-hidden />}</div>
             </CardContent>
           </Card>
         ))}
@@ -131,10 +132,10 @@ export default async function MemberPage({ params }: Props) {
                   <li key={h.eventId} className="rounded-lg border p-3">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <div className="font-bold break-words">{h.name}{h.tigerKing && <Crown className="ml-2 inline size-4 align-text-bottom text-yellow-400" aria-label="Tiger King" />}{h.challongeUrl && <a href={h.challongeUrl} target="_blank" rel="noopener noreferrer" className="text-primary ml-2 inline-flex items-center gap-0.5 text-xs font-normal underline">Bracket<ExternalLink className="size-3" aria-hidden /></a>}{h.combos.length > 0 && <div className="text-muted-foreground mt-1 font-mono text-xs font-normal">{h.combos.join(" · ")}</div>}</div>
+                        <div className="font-bold break-words">{h.name}{h.tigerKing && <Crown className="ml-2 inline size-4 align-text-bottom text-red-500" aria-label="Tiger King" />}{h.challongeUrl && <a href={h.challongeUrl} target="_blank" rel="noopener noreferrer" className="text-primary ml-2 inline-flex items-center gap-0.5 text-xs font-normal underline">Bracket<ExternalLink className="size-3" aria-hidden /></a>}{h.combos.length > 0 && <div className="text-muted-foreground mt-1 font-mono text-xs font-normal">{h.combos.join(" · ")}</div>}</div>
                         <span className="flex flex-wrap items-center gap-x-3 gap-y-1"><TierMark tier={h.tier as Tier} /><span className="text-muted-foreground text-xs whitespace-nowrap">{tierMultiplier(h.tier as Tier)}x points</span></span>
                       </div>
-                      <div className="font-num tabular text-primary text-2xl font-black italic">{h.place === null ? <span className="text-muted-foreground text-base font-normal not-italic">Played</span> : `#${h.place}`}</div>
+                      <div className="font-num tabular text-primary flex items-center gap-1.5 text-2xl font-black italic"><PlaceTrophy place={h.place} />{h.place === null ? <span className="text-muted-foreground text-base font-normal not-italic">Played</span> : `#${h.place}`}</div>
                     </div>
                     <dl className="mt-3 grid grid-cols-3 gap-2 text-sm">
                       <div><dt className="text-muted-foreground text-xs uppercase">Date</dt><dd>{fmt(h.startsAt)}</dd></div>
@@ -150,11 +151,11 @@ export default async function MemberPage({ params }: Props) {
               <TableBody>
                 {[...history].reverse().map((h) => (
                   <TableRow key={h.eventId}>
-                    <TableCell className="font-bold">{h.name}{h.tigerKing && <Crown className="ml-2 inline size-4 align-text-bottom text-yellow-400" aria-label="Tiger King" />}{h.challongeUrl && <a href={h.challongeUrl} target="_blank" rel="noopener noreferrer" className="text-primary ml-2 inline-flex items-center gap-0.5 text-xs font-normal underline">Bracket<ExternalLink className="size-3" aria-hidden /></a>}{h.combos.length > 0 && <div className="text-muted-foreground mt-1 font-mono text-xs font-normal">{h.combos.join(" · ")}</div>}</TableCell>
+                    <TableCell className="font-bold">{h.name}{h.tigerKing && <Crown className="ml-2 inline size-4 align-text-bottom text-red-500" aria-label="Tiger King" />}{h.challongeUrl && <a href={h.challongeUrl} target="_blank" rel="noopener noreferrer" className="text-primary ml-2 inline-flex items-center gap-0.5 text-xs font-normal underline">Bracket<ExternalLink className="size-3" aria-hidden /></a>}{h.combos.length > 0 && <div className="text-muted-foreground mt-1 font-mono text-xs font-normal">{h.combos.join(" · ")}</div>}</TableCell>
                     <TableCell><span className="flex flex-wrap items-center gap-x-3 gap-y-1"><TierMark tier={h.tier as Tier} /><span className="text-muted-foreground text-xs whitespace-nowrap">{tierMultiplier(h.tier as Tier)}x points</span></span></TableCell>
                     <TableCell>{fmt(h.startsAt)}</TableCell>
                     <TableCell className="font-num tabular text-muted-foreground text-right">{h.participants}</TableCell>
-                    <TableCell className="font-num tabular text-primary text-right text-xl font-black italic">{h.place === null ? <span className="text-muted-foreground text-base font-normal not-italic">Played</span> : `#${h.place}`}</TableCell>
+                    <TableCell className="font-num tabular text-primary text-right text-xl font-black italic"><span className="inline-flex items-center justify-end gap-1.5"><PlaceTrophy place={h.place} />{h.place === null ? <span className="text-muted-foreground text-base font-normal not-italic">Played</span> : `#${h.place}`}</span></TableCell>
                     <TableCell className="font-num tabular text-right font-bold">+{h.points}</TableCell>
                   </TableRow>
                 ))}

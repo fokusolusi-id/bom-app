@@ -43,9 +43,14 @@ function EventChip({ e }: { e: ScheduleEventView }) {
         <TierTile tier={e.tier} className={e.tier === "Break" ? "size-16" : "size-14"} />
       </div>
       <div className={`font-label text-[11px] font-bold tracking-[0.08em] uppercase italic ${c.soft}`}>{EVENT_TYPE_LABEL(e.tier)}</div>
-      <div className={`text-sm leading-tight font-bold ${c.ink}`}>{e.name}</div>
-      {e.tier !== "Break" && <div className={`text-xs font-bold ${c.ink}`}>{wibTime(e.starts_at)} WIB</div>}
-      <div className={`text-xs leading-tight ${c.soft}`}>{eventPlace(e, VENUE)}</div>
+      {/* A break is only its tile and label: no name, time or place. */}
+      {e.tier !== "Break" && (
+        <>
+          <div className={`text-sm leading-tight font-bold ${c.ink}`}>{e.name}</div>
+          <div className={`text-xs font-bold ${c.ink}`}>{wibTime(e.starts_at)} WIB</div>
+          <div className={`text-xs leading-tight ${c.soft}`}>{eventPlace(e, VENUE)}</div>
+        </>
+      )}
     </div>
   );
 }

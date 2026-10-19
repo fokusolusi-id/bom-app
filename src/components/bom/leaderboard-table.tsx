@@ -17,7 +17,7 @@ export const PAGE_SIZE = 25;
 
 function Trophies({ count }: { count: number }) {
   return count > 0
-    ? <span className="inline-flex gap-0.5 text-yellow-400" role="img" aria-label={`${count} Tiger King`}>{Array.from({ length: count }, (_, i) => <Crown key={i} className="size-5" aria-hidden />)}</span>
+    ? <span className="inline-flex gap-0.5 text-red-500" role="img" aria-label={`${count} Tiger King`}>{Array.from({ length: count }, (_, i) => <Crown key={i} className="size-5" aria-hidden />)}</span>
     : <span className="text-muted-foreground">–</span>;
 }
 
@@ -69,7 +69,7 @@ export function LeaderboardTable({ players }: { players: Row[] }) {
               <TableHead className="w-16">No</TableHead>
               {header("bom_id", "BOM ID", "w-px whitespace-nowrap pr-1")}
               {header("name", "Blader", "pl-1")}
-              <TableHead className="whitespace-nowrap">Trophy</TableHead>
+              <TableHead className="whitespace-nowrap">Tiger King</TableHead>
               {header("points", "Total Points", "text-right whitespace-nowrap")}
               <TableHead className="text-right whitespace-nowrap">Points This Week</TableHead>
               <TableHead className="text-right whitespace-nowrap">Rank Last Week</TableHead>

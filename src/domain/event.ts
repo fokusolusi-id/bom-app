@@ -46,7 +46,20 @@ export const wibDay = (iso: string) => isoToWibLocal(iso).slice(0, 10);
 /** "HH:mm" of an instant in Medan time. */
 export const wibTime = (iso: string) => isoToWibLocal(iso).slice(11, 16);
 
+/** A break or holiday needs only a date: it has no name, place or community, and sits at 10:00 Medan time. */
+export const BREAK_NAME = "Break / Holiday";
+
 export function parseEventInput(get: (key: string) => unknown): ScheduleEventInput {
+  const tier = parseEventType(get("tier"));
+  if (tier === "Break") {
+    const id = get("id");
+    if (id !== null && id !== undefined && id !== "" && !isUuid(id)) throw new Error("Invalid id");
+    // The date field, or the date part of a full date and time sent by an older form.
+    const raw = [get("starts_on"), get("starts_at")].find((v) => typeof v === "string" && /^\d{4}-\d{2}-\d{2}/.test(v.trim())) as string | undefined;
+    const date = raw?.trim().slice(0, 10);
+    if (!date) throw new Error("Choose the date of the break");
+    return { ...(id ? { id: id as string } : {}), sub_community_id: null, name: BREAK_NAME, starts_at: wibLocalToIso(`${date}T10:00`), place: null, tier, is_active: get("is_active") === "on" || get("is_active") === "true" };
+  }
   const id = get("id");
   if (id !== null && id !== undefined && id !== "" && !isUuid(id)) throw new Error("Invalid id");
   const community = get("sub_community_id");
@@ -57,7 +70,7 @@ export function parseEventInput(get: (key: string) => unknown): ScheduleEventInp
     name: parseText(get("name"), "Event name", 80),
     starts_at: wibLocalToIso(get("starts_at")),
     place: parseText(get("place"), "Place", 120, "") || null,
-    tier: parseEventType(get("tier")),
+    tier,
     is_active: get("is_active") === "on" || get("is_active") === "true",
   };
 }
