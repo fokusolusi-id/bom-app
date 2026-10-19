@@ -25,7 +25,7 @@ export async function latestResults(now: Date, limit = 2): Promise<LatestResult[
       title: p.name, tier, date: dateFmt.format(new Date(p.startsAt)), challongeUrl: p.challongeUrl,
       // A guest earns no points.
       top: p.top.map((t) => ({ ...t, points: t.bomId ? eventPoints(table, p.tier, { place: t.place, tigerKing: t.tigerKing }, p.participants) : 0 })),
-      logo: bom ? { src: BOM_LOGO, alt: "BOM" } : { src: mediaUrl(p.communityLogo!), alt: p.communityName ?? "" },
+      logo: bom ? { src: BOM_LOGO, alt: "Beyblade of Medan" } : { src: mediaUrl(p.communityLogo!), alt: p.communityName ?? "" },
     };
   });
 }

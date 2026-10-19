@@ -1,3 +1,4 @@
+import { TIER_INFO } from "@/domain/tier";
 import "server-only";
 import { eventPlace, eventUsesBomLogo, pickOnePerDay } from "@/domain/event";
 import { type NextEvent, upcomingEvents } from "@/domain/next-event";
@@ -14,9 +15,9 @@ export async function loadUpcomingEvents(limit: number, now = new Date()): Promi
     scheduled: pickOnePerDay(scheduled).map((e) => {
       const bom = eventUsesBomLogo(e.tier) || !e.community?.image_path;
       return {
-        title: `${e.tier === "Unrank" ? "" : e.tier === "Break" ? "Break: " : `BOM ${e.tier}: `}${e.name}`,
+        title: `${e.tier === "Unrank" ? "" : e.tier === "Break" ? "Break: " : `${TIER_INFO[e.tier].code} ${e.tier}: `}${e.name}`,
         at: new Date(e.starts_at), name: e.name, type: e.tier, place: eventPlace(e, VENUE), challongeUrl: e.challonge_url ?? null,
-        logo: bom ? { src: BOM_LOGO, alt: "BOM" } : { src: mediaUrl(e.community!.image_path!), alt: e.community!.name },
+        logo: bom ? { src: BOM_LOGO, alt: "Beyblade of Medan" } : { src: mediaUrl(e.community!.image_path!), alt: e.community!.name },
       };
     }),
   });

@@ -16,7 +16,7 @@ import { BOM_LOGO } from "@/lib/tier-icon";
 import { VENUE } from "@/lib/venue";
 import { publicScheduleEvents } from "@/server/schedule-events";
 
-export const metadata: Metadata = { title: "Schedule | BOM" };
+export const metadata: Metadata = { title: "Schedule | Beyblade of Medan" };
 export const revalidate = 60;
 
 const DAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -33,7 +33,7 @@ function currentMonth(): Month {
  */
 function EventChip({ e }: { e: ScheduleEventView }) {
   const bom = eventUsesBomLogo(e.tier) || !e.community?.image_path;
-  const logo = bom ? { src: BOM_LOGO, alt: "BOM" } : { src: mediaUrl(e.community!.image_path!), alt: e.community!.name };
+  const logo = bom ? { src: BOM_LOGO, alt: "Beyblade of Medan" } : { src: mediaUrl(e.community!.image_path!), alt: e.community!.name };
   const c = EVENT_STYLE[e.tier];
   return (
     <div className="space-y-1.5">
@@ -76,7 +76,7 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
   return (
     <main className="mx-auto max-w-6xl px-4 py-12">
       <RibbonBanner>Schedule</RibbonBanner>
-      <p className="text-muted-foreground mt-4 max-w-xl text-sm">BOM gatherings and competitions. The icon shows the competition type and the logo shows the sub community.</p>
+      <p className="text-muted-foreground mt-4 max-w-xl text-sm">Beyblade of Medan gatherings and competitions. The icon shows the competition type and the logo shows the sub community.</p>
 
       <div className="mt-8 flex items-center justify-between">
         <Link href={`/schedule?m=${prev}`} aria-label="Previous month" className="hover:text-primary p-2"><ChevronLeft /></Link>
@@ -119,11 +119,11 @@ export default async function SchedulePage({ searchParams }: { searchParams: Pro
       <section aria-labelledby="types" className="mt-16">
         <SectionHeading id="types">Competition types</SectionHeading>
         <p className="text-muted-foreground max-w-3xl">
-          To bring more clarity and structure to our competitions, BOM runs a tiered event system. Whether you are a casual player or a top competitor, there is an event for everyone.
+          To bring more clarity and structure to our competitions, Beyblade of Medan runs a tiered event system. Whether you are a casual player or a top competitor, there is an event for everyone.
         </p>
         <div className="mt-8"><CompetitionLadder scheduleLink={false} /></div>
         <p className="text-muted-foreground mt-8 max-w-3xl">
-          From championship battles to casual side events, every BOM event is designed to make Beyblade X more competitive, engaging and fun. Let&apos;s level up the game together and make every tournament count.
+          From championship battles to casual side events, every Beyblade of Medan event is designed to make Beyblade X more competitive, engaging and fun. Let&apos;s level up the game together and make every tournament count.
         </p>
       </section>
 

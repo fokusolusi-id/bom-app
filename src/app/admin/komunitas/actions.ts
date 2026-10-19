@@ -9,7 +9,7 @@ import { supabaseSubCommunities } from "@/server/sub-communities";
 
 function revalidate() {
   revalidatePath("/admin/about");
-  revalidatePath("/about-bom");
+  revalidatePath("/about-us");
   revalidatePath("/schedule");
 }
 

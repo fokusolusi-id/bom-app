@@ -5,7 +5,7 @@ import { RibbonBanner } from "@/components/bom/ribbon-banner";
 import { umbrella } from "@/lib/content";
 import { publicRulesPage } from "@/server/settings";
 
-export const metadata = { title: "Rules | BOM" };
+export const metadata = { title: "Rules | Beyblade of Medan" };
 export const revalidate = 60;
 
 export default async function RulesPage() {

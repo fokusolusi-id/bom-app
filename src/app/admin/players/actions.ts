@@ -12,7 +12,7 @@ function revalidate() {
   revalidatePath("/admin/leaderboard");
   revalidatePath("/leaderboard");
   revalidatePath("/member/[bomId]", "page");
-  revalidatePath("/about-bom");
+  revalidatePath("/about-us");
   revalidatePath("/");
 }
 

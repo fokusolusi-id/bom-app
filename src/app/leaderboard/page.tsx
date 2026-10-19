@@ -8,7 +8,7 @@ import { publicPlayers } from "@/server/players";
 import { publicPointsTable } from "@/server/settings";
 import { publicStandings } from "@/server/standings";
 
-export const metadata = { title: "Leaderboard | BOM" };
+export const metadata = { title: "Leaderboard | Beyblade of Medan" };
 export const revalidate = 30;
 
 const prizes = [
@@ -29,7 +29,7 @@ export default async function LeaderboardPage() {
   };
   return (
     <main className="mx-auto max-w-6xl px-4 py-12">
-      <RibbonBanner>BOM Leaderboard Season 2026</RibbonBanner>
+      <RibbonBanner>Beyblade of Medan Leaderboard Season 2026</RibbonBanner>
 
       <section aria-labelledby="prizes" className="border-primary mt-8 space-y-3 border-t-[3px] pt-4">
         <h2 id="prizes" className="text-2xl">Season 2026 prizes</h2>

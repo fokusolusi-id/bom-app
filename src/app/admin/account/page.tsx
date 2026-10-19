@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { requireStaff } from "@/server/admin-session";
 import { changePassword } from "./actions";
 
-export const metadata = { title: "Account | Admin BOM" };
+export const metadata = { title: "Account | Admin Beyblade of Medan" };
 
 const label = "text-muted-foreground flex flex-col gap-1 text-xs uppercase";
 

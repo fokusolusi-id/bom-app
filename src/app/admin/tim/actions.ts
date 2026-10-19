@@ -10,7 +10,7 @@ import { supabaseTeam } from "@/server/team";
 
 function revalidate() {
   revalidatePath("/admin/about");
-  revalidatePath("/about-bom");
+  revalidatePath("/about-us");
   revalidatePath("/member/[bomId]", "page");
 }
 

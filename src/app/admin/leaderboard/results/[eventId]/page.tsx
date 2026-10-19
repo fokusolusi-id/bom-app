@@ -11,7 +11,7 @@ import { Participants } from "../../participants";
 import { loadResultEvents } from "../../results-data";
 import { ResultsEntry } from "../../results-entry";
 
-export const metadata = { title: "Event results | Admin BOM" };
+export const metadata = { title: "Event results | Admin Beyblade of Medan" };
 
 const when = new Intl.DateTimeFormat("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Jakarta" });
 

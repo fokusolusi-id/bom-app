@@ -70,7 +70,7 @@ export function ArchiveBrowser({ rows, communities, types, allowBom }: {
                   {!e.is_active && <span className="text-muted-foreground ml-2 text-xs font-normal">(hidden)</span>}
                   {e.challonge_url && <a href={e.challonge_url} target="_blank" rel="noopener noreferrer" className="text-primary ml-2 inline-flex items-center gap-0.5 text-xs font-normal underline">Bracket<ExternalLink className="size-3" aria-hidden /></a>}
                 </TableCell>
-                <TableCell className="text-muted-foreground">{e.community?.name ?? "BOM"}</TableCell>
+                <TableCell className="text-muted-foreground">{e.community?.name ?? "Beyblade of Medan"}</TableCell>
                 <TableCell className="text-muted-foreground max-w-48 truncate text-sm">{eventPlace(e, VENUE)}</TableCell>
                 <TableCell>
                   <span className="flex justify-end">

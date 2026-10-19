@@ -57,7 +57,7 @@ export async function ScheduleView({ community, type }: { community?: string; ty
     if (t) q.set("t", t);
     return q.size ? `/admin/schedule?${q}` : "/admin/schedule";
   };
-  const chips = [{ key: ALL, label: "Upcoming Events" }, ...communities.map((c) => ({ key: c.id, label: c.name })), ...(staff.isAdmin ? [{ key: BOM, label: "BOM only" }] : [])];
+  const chips = [{ key: ALL, label: "Upcoming Events" }, ...communities.map((c) => ({ key: c.id, label: c.name })), ...(staff.isAdmin ? [{ key: BOM, label: "Beyblade of Medan only" }] : [])];
   return (
     <AdminPage title="Schedule" hint="Upcoming events on the Schedule page and the homepage, from today up to one year ahead. Past events are under the Past Events tab.">
       <ScheduleTabs active="upcoming" />
@@ -86,7 +86,7 @@ export async function ScheduleView({ community, type }: { community?: string; ty
                 {e.name}
                 {!e.is_active && <span className="text-muted-foreground ml-2 text-sm font-normal normal-case not-italic">(hidden)</span>}
               </CardTitle>
-              <p className="text-muted-foreground text-sm">{e.tier === "Break" ? dayOnly.format(new Date(e.starts_at)) : `${when.format(new Date(e.starts_at))} WIB · ${e.community?.name ?? "BOM"} · ${eventPlace(e, VENUE)}`}</p>
+              <p className="text-muted-foreground text-sm">{e.tier === "Break" ? dayOnly.format(new Date(e.starts_at)) : `${when.format(new Date(e.starts_at))} WIB · ${e.community?.name ?? "Beyblade of Medan"} · ${eventPlace(e, VENUE)}`}</p>
             </CardHeader>
             <CardContent className="space-y-3">
               {canManageEvent(staff, e) ? (

@@ -33,10 +33,10 @@ export const MEMBERSHIP_FEE = "IDR 100.000";
 
 export const memberBenefits = [
   "Faster registration in weekly gatherings",
-  "Registered in BOM Leaderboard (Exclusive on www.beybladeofmedan.com)",
+  "Registered in Beyblade of Medan Leaderboard (Exclusive on www.beybladeofmedan.com)",
   "Special discount on Beyblade products from sponsors, partnered local hobby stores, and partnered cafes",
   "Priority seeding in certain tournaments.",
-  "Special offers on BOM merchandise (t-shirts, stickers, lanyard, accessories)",
+  "Special offers on Beyblade of Medan merchandise (t-shirts, stickers, lanyard, accessories)",
 ] as const;
 
 export const registrationSteps = [
@@ -47,7 +47,7 @@ export const registrationSteps = [
 
 export const faq = [
   ["How much is membership?", `${MEMBERSHIP_FEE}, for the Emoney Membership Card.`],
-  ["What do I get?", "Faster registration for weekly gatherings, a BOM Leaderboard spot, partner discounts, priority seeding in certain tournaments and special merchandise offers."],
+  ["What do I get?", "Faster registration for weekly gatherings, a Beyblade of Medan Leaderboard spot, partner discounts, priority seeding in certain tournaments and special merchandise offers."],
   ["Can I join an event without a BOM ID?", "Yes. You can join an event without a BOM ID, you only need to pay the event fee. A BOM ID is for the leaderboard and the membership perks."],
   ["Do I need my own Beyblade?", "No. The Try corner at every gathering provides a launcher, a bey and a stadium."],
   ["Can kids join?", "Yes. Under 12 needs a guardian's name and WhatsApp number on the form."],
@@ -77,7 +77,7 @@ export const DEFAULT_POINTS_TABLE: PointsTable = {
 
 /** The Rules page until an admin edits it (and if it cannot be loaded). */
 export const DEFAULT_RULES_PAGE: RulesPage = {
-  intro: "One rulebook and one voice for every judge across all BOM sub communities.",
+  intro: "One rulebook and one voice for every judge across all Beyblade of Medan sub communities.",
   rulebooks: [
     {
       title: "Takara Tomy Regulations",
@@ -85,5 +85,5 @@ export const DEFAULT_RULES_PAGE: RulesPage = {
       href: "https://img1.wsimg.com/blobby/go/b90a29fa-631a-4c1e-b027-1e57d0b85847/BeyBladeXRegulation12thMarch2026.pdf",
     },
   ],
-  summary: "A summary of the BOM rules (3-on-3 format, finish points, decks and penalties) is coming soon.",
+  summary: "A summary of the Beyblade of Medan rules (3-on-3 format, finish points, decks and penalties) is coming soon.",
 };

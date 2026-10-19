@@ -21,6 +21,10 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   // Sub community photos from the public Supabase Storage bucket.
   images: { remotePatterns: supabaseUrl ? [new URL(`${supabaseUrl}/storage/v1/object/public/media/**`)] : [] },
+  // The About page moved from /about-bom to /about-us.
+  async redirects() {
+    return [{ source: "/about-bom", destination: "/about-us", permanent: true }];
+  },
   async headers() {
     return [{
       source: "/:path*",

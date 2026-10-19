@@ -10,7 +10,7 @@ import { supabaseSubCommunities } from "@/server/sub-communities";
 import { removeStaff } from "./actions";
 import { StaffForm } from "./staff-form";
 
-export const metadata = { title: "Access | Admin BOM" };
+export const metadata = { title: "Access | Admin Beyblade of Medan" };
 
 type Row = { id: string; user_id: string; role: "admin" | "organizer"; community: { name: string } | null };
 

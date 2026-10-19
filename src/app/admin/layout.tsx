@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 
 const adminSections = [
   ["/admin/home", "Home"],
-  ["/admin/about", "About BOM"],
+  ["/admin/about", "About Us"],
   ["/admin/rules", "Rules"],
   ["/admin/members", "Members"],
   ["/admin/schedule", "Schedule"],
@@ -27,7 +27,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     <>
       <header className="bg-background sticky top-0 z-20 border-b">
         <div className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-2">
-          <Link href="/admin/home" className="flex shrink-0 items-center gap-2" aria-label="BOM Admin">
+          <Link href="/admin/home" className="flex shrink-0 items-center gap-2" aria-label="Beyblade of Medan Admin">
             <Image src="/brand/logo-768.png" alt="" width={32} height={32} />
             <span className="font-display hidden text-sm font-extrabold italic uppercase sm:inline">Admin</span>
           </Link>

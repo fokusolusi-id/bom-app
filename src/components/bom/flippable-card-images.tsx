@@ -19,8 +19,8 @@ export function FlippableCardImages({ className }: { className?: string }) {
           aria-label={back ? "Card back shown, turn it to the front" : "Card front shown, turn it to the back"}
           onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setBack((b) => !b); } }}
         >
-          <Image src="/print/bom-emoney-03.png" alt="BOM Emoney Membership Card, front" width={1028} height={650} className="absolute inset-0 w-full rounded-xl [backface-visibility:hidden]" aria-hidden={back} />
-          <Image src="/print/bom-emoney-04.png" alt="BOM Emoney Membership Card, back" width={1028} height={650} className="absolute inset-0 w-full rounded-xl [backface-visibility:hidden] [transform:rotateY(180deg)]" aria-hidden={!back} />
+          <Image src="/print/bom-emoney-03.png" alt="Beyblade of Medan Emoney Membership Card, front" width={1028} height={650} className="absolute inset-0 w-full rounded-xl [backface-visibility:hidden]" aria-hidden={back} />
+          <Image src="/print/bom-emoney-04.png" alt="Beyblade of Medan Emoney Membership Card, back" width={1028} height={650} className="absolute inset-0 w-full rounded-xl [backface-visibility:hidden] [transform:rotateY(180deg)]" aria-hidden={!back} />
         </div>
         <div aria-hidden className="pointer-events-none absolute inset-0 grid place-items-center opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100">
           <span className="rounded-full bg-black/60 p-3 text-white shadow-lg"><RotateCw className="size-7" /></span>

@@ -2,7 +2,7 @@ import { AdminSectionsPage } from "@/components/admin/admin-page";
 import { GallerySection, PopupSection, SliderSection } from "./media-sections";
 import { SponsorSection } from "./sponsor-section";
 
-export const metadata = { title: "Home | Admin BOM" };
+export const metadata = { title: "Home | Admin Beyblade of Medan" };
 
 const sections = [["popup", "Event pop-up"], ["slider", "Slider"], ["gallery", "Gallery"], ["sponsors", "Sponsors"]] as const;
 

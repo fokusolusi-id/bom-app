@@ -9,7 +9,7 @@ import { VENUE, WHATSAPP_INVITE } from "@/lib/venue";
 import { loadUpcomingEvents } from "@/server/events";
 import { MembershipForm } from "./membership-form";
 
-export const metadata = { title: "Membership | BOM" };
+export const metadata = { title: "Membership | Beyblade of Medan" };
 export const revalidate = 60;
 
 const sinceFmt = new Intl.DateTimeFormat("en-GB", { month: "2-digit", year: "numeric", timeZone: "Asia/Jakarta" });
@@ -30,7 +30,7 @@ export default async function MembershipPage() {
             <RibbonBanner>Membership Registration</RibbonBanner>
             <h1 className="mt-6 text-4xl leading-none md:text-6xl">Official Membership Card <span className="text-primary">Beyblade of Medan</span></h1>
             <div className="text-muted-foreground mt-6 max-w-xl space-y-4">
-              <p>We are excited to announce that registration for the BOM Community membership is now open!</p>
+              <p>We are excited to announce that registration for the Beyblade of Medan Community membership is now open!</p>
               <p>With only <strong className="text-foreground">{MEMBERSHIP_FEE}</strong> (for Emoney card) you&apos;ll receive a Membership Card that comes with amazing benefits:</p>
             </div>
             <ul className="mt-4 max-w-xl space-y-2">
@@ -74,7 +74,7 @@ export default async function MembershipPage() {
           <section id="privacy" aria-labelledby="privacy-title">
             <SectionHeading id="privacy-title">Privacy notice</SectionHeading>
             <p className="text-muted-foreground max-w-xl text-sm">
-              Your blader name, BOM ID and match results are public on the leaderboard and your profile. Your full name, WhatsApp number and guardian details are only seen by the BOM committee. Photos and videos are only posted with your consent.
+              Your blader name, BOM ID and match results are public on the leaderboard and your profile. Your full name, WhatsApp number and guardian details are only seen by the Beyblade of Medan committee. Photos and videos are only posted with your consent.
             </p>
           </section>
         </div>

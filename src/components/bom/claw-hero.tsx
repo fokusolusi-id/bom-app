@@ -107,7 +107,7 @@ export function ClawHero() {
             const front = i === LAYERS - 1;
             return (
               <Image
-                key={i} src="/brand/logo-768.png" alt={front ? "BOM logo" : ""} aria-hidden={front ? undefined : true} width={420} height={420} priority={front} draggable={false}
+                key={i} src="/brand/logo-768.png" alt={front ? "Beyblade of Medan logo" : ""} aria-hidden={front ? undefined : true} width={420} height={420} priority={front} draggable={false}
                 className="absolute inset-0 size-full object-contain"
                 style={{ transform: `translateZ(${(i - (LAYERS - 1)) * DEPTH}px)`, filter: front ? undefined : `brightness(${0.18 + (i / LAYERS) * 0.3}) saturate(0.7)` }}
               />

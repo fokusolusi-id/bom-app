@@ -38,8 +38,8 @@ export async function loadResultEvents(staff: Staff, eventId?: string): Promise<
     const bom = eventUsesBomLogo(e.tier) || !e.community?.image_path;
     return [{
       id: e.id, name: e.name, tier: e.tier as TierLabel, startsAt: e.starts_at, challongeUrl: e.challonge_url ?? null,
-      communityId: e.sub_community_id, communityName: e.community?.name ?? "BOM",
-      logo: { src: bom ? BOM_LOGO : mediaUrl(e.community!.image_path!), alt: bom ? "BOM" : e.community!.name },
+      communityId: e.sub_community_id, communityName: e.community?.name ?? "Beyblade of Medan",
+      logo: { src: bom ? BOM_LOGO : mediaUrl(e.community!.image_path!), alt: bom ? "Beyblade of Medan" : e.community!.name },
       // The same shape the list is typed in: "1 [BOM-001] Name (TK)", then the combos, with a blank line between members.
       text: rows.map((r) => [`${r.place === null ? "" : `${r.place} `}${r.player_id ? formatBomId(byId.get(r.player_id)?.bom_id ?? "") : "[Non BOM ID]"} ${nameOf(r)}${r.tiger_king ? " (TK)" : ""}`, ...r.combos].join("\n")).join("\n\n"),
       rows: rows.map((r) => ({
