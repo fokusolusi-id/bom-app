@@ -16,7 +16,6 @@ describe("points from results", () => {
     expect(eventPoints(T, "Ranked", { place: 1, tigerKing: false }, 20)).toBe(4.25);
     expect(eventPoints(T, "Ranked", { place: 5, tigerKing: false }, 65)).toBe(0.55 + 2.5 + 1);
     expect(eventPoints(T, "Ranked", { place: 2, tigerKing: true }, 20)).toBe(3 + 0.25 + 1);
-    expect(eventPoints(T, "Cup", { place: 1, tigerKing: false }, 20)).toBe(4.25);
     expect(eventPoints(T, "Major", { place: 1, tigerKing: false }, 20)).toBe(6.38);
     expect(eventPoints(T, "Championship", { place: 1, tigerKing: false }, 20)).toBe(8.5);
     expect(eventPoints(T, "Unrank", { place: 1, tigerKing: false }, 20)).toBe(0);

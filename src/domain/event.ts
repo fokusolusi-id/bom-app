@@ -11,7 +11,7 @@ export function parseEventType(value: unknown): EventType {
   return value as EventType;
 }
 
-/** Cup and above, and breaks, belong to BOM as a whole and show the BOM logo. */
+/** Major and above, and breaks, belong to BOM as a whole and show the BOM logo. */
 export const eventUsesBomLogo = (type: EventType) => type === "Break" || usesBomLogo(type);
 
 export type ScheduleEvent = {
@@ -79,7 +79,7 @@ export function parseEventInput(get: (key: string) => unknown): ScheduleEventInp
 }
 
 // Which type wins a day: breaks first, then bigger competitions. Unrank and Ranked (one per sub komunitas) tie.
-const PRIORITY: Record<EventType, number> = { Break: 0, Championship: 1, Major: 2, Cup: 3, Ranked: 4, Unrank: 4 };
+const PRIORITY: Record<EventType, number> = { Break: 0, Championship: 1, Major: 2, Ranked: 3, Unrank: 3 };
 
 const sortKey = (e: { starts_at: string }) => `${(e as { id?: string }).id ?? ""}|${e.starts_at}`;
 

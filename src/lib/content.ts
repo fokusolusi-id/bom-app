@@ -14,14 +14,8 @@ export const umbrella = [
   "One leaderboard for every sub community",
 ];
 
-/** [tier, how often, what it is]. Points are not listed here: the ladder shows each level's multiplier from the domain. */
-export const competitionPath = [
-  ["Unrank", "Random, TBA", ["Fun special-format events: gimmick battles, team play and mini tourneys.", "Themed battles and experimental game modes.", "No ranking points: enjoy the game, test new strategies and have fun with the community."]],
-  ["Ranked", "Weekly", ["A regular gathering with consistent prizes and ranking points.", "Ideal for climbing the rankings and winning the season prize.", "Can also serve as a qualifier for larger tournaments."]],
-  ["Cup", "Monthly", ["Official BOM brackets with a bigger field and a place on the Wall of Fame.", "Ranking points count the same as a weekly Ranked event."]],
-  ["Major", "Quarterly", ["High-stakes competition with big prizes and sponsor support.", "Attracts the best members and shapes the leaderboard standings.", "Played in the official Beyblade X 3-on-3 format."]],
-  ["Championship", "Yearly", ["The highest and most prestigious tier of BOM tournaments.", "Bladers from across Sumatera, with exclusive prizes.", "The champion represents BOM at G1."]],
-] as const;
+/** The competition levels in order, from BK4 up to BK1. Names, descriptions and points come from TIER_INFO and the scoring rules. */
+export const competitionPath = ["Unrank", "Ranked", "Major", "Championship"] as const;
 
 export type CommunityCounts = { members: number; subCommunities: number; weeklyRanked: number };
 
@@ -30,7 +24,6 @@ export const communityNumbers = ({ members, subCommunities, weeklyRanked }: Comm
   { value: String(members), label: "active members" },
   { value: String(subCommunities), label: "Sub Communities" },
   { value: String(weeklyRanked), label: "Weekly Ranked" },
-  { value: "Monthly", label: "Cup" },
 ];
 
 /** The same numbers as one-line badges for About BOM. */
@@ -39,7 +32,7 @@ export const communityStats = (counts: CommunityCounts) => communityNumbers(coun
 export const MEMBERSHIP_FEE = "IDR 100.000";
 
 export const memberBenefits = [
-  "Faster registration in weekly gath/cup",
+  "Faster registration in weekly gatherings",
   "Registered in BOM Leaderboard (Exclusive on www.beybladeofmedan.com)",
   "Special discount on Beyblade products from sponsors, partnered local hobby stores, and partnered cafes",
   "Priority seeding in certain tournaments.",
@@ -54,7 +47,7 @@ export const registrationSteps = [
 
 export const faq = [
   ["How much is membership?", `${MEMBERSHIP_FEE}, for the Emoney Membership Card.`],
-  ["What do I get?", "Faster registration for gath and cup, a BOM Leaderboard spot, partner discounts, priority seeding in certain tournaments and special merchandise offers."],
+  ["What do I get?", "Faster registration for weekly gatherings, a BOM Leaderboard spot, partner discounts, priority seeding in certain tournaments and special merchandise offers."],
   ["Can I join an event without a BOM ID?", "Yes. You can join an event without a BOM ID, you only need to pay the event fee. A BOM ID is for the leaderboard and the membership perks."],
   ["Do I need my own Beyblade?", "No. The Try corner at every gathering provides a launcher, a bey and a stadium."],
   ["Can kids join?", "Yes. Under 12 needs a guardian's name and WhatsApp number on the form."],

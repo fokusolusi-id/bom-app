@@ -12,12 +12,12 @@ const B = "22222222-2222-2222-2222-222222222222";
 
 describe("scoring", () => {
   it("multiplies 1x, 1x, 1.5x, 2x up the ladder", () => {
-    expect((["Ranked", "Cup", "Major", "Championship"] as const).map(tierMultiplier)).toEqual([1, 1, 1.5, 2]);
+    expect((["Ranked", "Major", "Championship"] as const).map(tierMultiplier)).toEqual([1, 1.5, 2]);
   });
 });
 
 describe("parseTier", () => {
-  it("accepts known tiers", () => expect(parseTier("Cup")).toBe("Cup"));
+  it("accepts known tiers", () => expect(parseTier("Major")).toBe("Major"));
   it("rejects unknown", () => expect(() => parseTier("Casual")).toThrow());
 });
 
@@ -332,8 +332,8 @@ describe("schedule events", () => {
 });
 
 describe("event logo", () => {
-  it("shows the BOM logo for Cup and above, the sub komunitas logo for Unrank and Ranked", () => {
-    expect((["Unrank", "Ranked", "Cup", "Major", "Championship"] as const).map(usesBomLogo)).toEqual([false, false, true, true, true]);
+  it("shows the BOM logo for Major and above, the sub komunitas logo for Unrank and Ranked", () => {
+    expect((["Unrank", "Ranked", "Major", "Championship"] as const).map(usesBomLogo)).toEqual([false, false, true, true]);
   });
 });
 
@@ -350,7 +350,7 @@ describe("event place", () => {
 });
 
 describe("one event per day", () => {
-  const e = (day: string, tier: "Unrank" | "Ranked" | "Cup" | "Major" | "Championship" | "Break", id: string) => ({ id, tier, starts_at: `${day}T11:00:00.000Z` });
+  const e = (day: string, tier: "Unrank" | "Ranked" | "Major" | "Championship" | "Break", id: string) => ({ id, tier, starts_at: `${day}T11:00:00.000Z` });
   const sat = ["a", "b", "c", "d", "e"].map((id) => e("2026-10-10", "Ranked", id));
   it("keeps exactly one of several same-day community events", () => {
     expect(pickOnePerDay(sat)).toHaveLength(1);
@@ -363,8 +363,8 @@ describe("one event per day", () => {
     expect(picks.size).toBeGreaterThan(1);
   });
   it("lets a break, then the bigger competition, win the day", () => {
-    expect(pickOnePerDay([...sat, e("2026-10-10", "Cup", "cup")]).map((x) => x.id)).toEqual(["cup"]);
-    expect(pickOnePerDay([...sat, e("2026-10-10", "Cup", "cup"), e("2026-10-10", "Break", "off")]).map((x) => x.id)).toEqual(["off"]);
+    expect(pickOnePerDay([...sat, e("2026-10-10", "Major", "cup")]).map((x) => x.id)).toEqual(["cup"]);
+    expect(pickOnePerDay([...sat, e("2026-10-10", "Major", "cup"), e("2026-10-10", "Break", "off")]).map((x) => x.id)).toEqual(["off"]);
   });
   it("keeps one event for each different day, in the given order", () => {
     const list = [e("2026-10-10", "Ranked", "x"), e("2026-10-11", "Unrank", "y")];
@@ -380,9 +380,9 @@ describe("one event per day", () => {
 import { rankedDays } from "@/domain/event";
 
 describe("rankedDays", () => {
-  const at = (day: string, tier: "Ranked" | "Cup" | "Unrank") => ({ starts_at: `${day}T11:00:00.000Z`, tier });
+  const at = (day: string, tier: "Ranked" | "Major" | "Unrank") => ({ starts_at: `${day}T11:00:00.000Z`, tier });
   it("counts the different days with a Ranked event, not the events", () => {
-    expect(rankedDays([at("2026-10-10", "Ranked"), at("2026-10-10", "Ranked"), at("2026-10-15", "Ranked"), at("2026-10-12", "Unrank"), at("2026-10-14", "Cup")])).toBe(2);
+    expect(rankedDays([at("2026-10-10", "Ranked"), at("2026-10-10", "Ranked"), at("2026-10-15", "Ranked"), at("2026-10-12", "Unrank"), at("2026-10-14", "Major")])).toBe(2);
     expect(rankedDays([])).toBe(0);
   });
 });

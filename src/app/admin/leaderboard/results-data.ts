@@ -34,7 +34,7 @@ export async function loadResultEvents(staff: Staff, eventId?: string): Promise<
   const data: ResultEvent[] = events.flatMap((e) => {
     if (!e.id) return [];
     const rows = placements.filter((p) => p.event_id === e.id).sort((a, b) => (a.place ?? 999) - (b.place ?? 999) || nameOf(a).localeCompare(nameOf(b)));
-    // Cup and above belong to BOM as a whole, so they show the BOM logo, as on the calendar.
+    // Major and above belong to BOM as a whole, so they show the BOM logo, as on the calendar.
     const bom = eventUsesBomLogo(e.tier) || !e.community?.image_path;
     return [{
       id: e.id, name: e.name, tier: e.tier as TierLabel, startsAt: e.starts_at, challongeUrl: e.challonge_url ?? null,

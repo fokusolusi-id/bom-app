@@ -6,7 +6,7 @@ insert into auth.users (id, email) values ('00000000-0000-0000-0000-0000000000a1
                                           ('00000000-0000-0000-0000-0000000000b2', 'user@test.local');
 insert into public.admins (user_id) values ('00000000-0000-0000-0000-0000000000a1');
 insert into public.players (id, bom_id, name) values ('11111111-1111-1111-1111-111111111111', 'T-1', 'A');
-insert into public.schedule_events (id, name, starts_at, place, tier) values ('55555555-5555-5555-5555-555555555555', 'X', now(), 'Here', 'Cup');
+insert into public.schedule_events (id, name, starts_at, place, tier) values ('55555555-5555-5555-5555-555555555555', 'X', now(), 'Here', 'Major');
 
 select throws_ok($$insert into public.players (bom_id, name) values ('t-1', 'dup')$$, '23505', null, 'bom_id is unique case-insensitively');
 
