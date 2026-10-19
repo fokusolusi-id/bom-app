@@ -4,13 +4,13 @@ export const TOP_PLACES = 8;
 export const MAX_COMBOS = 3;
 
 /**
- * The winning combos, one per line, up to three. Only the top 8 and the Tiger King can have them.
+ * The winning combos, one per line, up to three. Only the top 8 can have them.
  * A combo is kept as typed ("AP 1-80 LR"), with the spaces tidied.
  */
-export function parseCombos(raw: unknown, place: number | null, tigerKing: boolean): string[] {
+export function parseCombos(raw: unknown, place: number | null): string[] {
   const lines = (Array.isArray(raw) ? raw.map(String) : typeof raw === "string" ? raw.split(/\r?\n/) : []).map((l) => l.replace(/\s+/g, " ").trim()).filter(Boolean);
   if (lines.length === 0) return [];
-  if (!tigerKing && (place === null || place < 1 || place > TOP_PLACES)) throw new Error("Only the top 8 and the Tiger King can have winning combos");
+  if (place === null || place < 1 || place > TOP_PLACES) throw new Error("Only the top 8 can have winning combos");
   if (lines.length > MAX_COMBOS) throw new Error(`At most ${MAX_COMBOS} combos each`);
   if (lines.some((l) => l.length > 40)) throw new Error("A combo can be at most 40 characters");
   return lines;
@@ -27,7 +27,7 @@ export function parsePlacementInput(get: (key: string) => unknown): PlacementInp
   const place = raw === null || raw === undefined || raw === "" ? null : Number(raw);
   if (place !== null && (!Number.isInteger(place) || place < 1 || place > 999)) throw new Error("Place must be 1-999");
   const tigerKing = get("tiger_king") === "on";
-  return { eventId, playerId, place, tigerKing, combos: parseCombos(get("combos"), place, tigerKing) };
+  return { eventId, playerId, place, tigerKing, combos: parseCombos(get("combos"), place) };
 }
 
 /** A line of an event's results: a member (`playerId`) or a guest without a BOM ID (`guestName`). */
@@ -58,17 +58,29 @@ export function parseResultsText(text: string, players: Candidate[]): ResultRow[
   if (lines.length === 0) throw new Error("Add at least one member");
   const numbered = NUMBERED.test(lines[0]);
 
-  // Group the lines into entries: a header, and (in a numbered list) the combo lines under it.
+  // Group the lines into entries: a header, and (in a numbered list) up to three combo lines under a top-8 header.
+  // After a blank line, or once a header has its three combos, a plain line is the next member (no place, no combos).
   const entries: { header: string; rank: number | null; combos: string[] }[] = [];
-  for (const line of lines) {
+  let closed = false;
+  let plainRank = 0;
+  for (const line of text.split(/\r?\n/).map((l) => l.trim())) {
+    if (line === "") { closed = true; continue; }
     const m = NUMBERED.exec(line);
-    // A plain list may still number its lines with a dot ("3. Name"), which is the place.
+    const last = entries[entries.length - 1];
     if (!numbered) {
+      // A plain list may still number its lines with a dot ("3. Name"), which is the place.
       const dotted = /^(\d+)[.)]\s+(.*)$/.exec(line);
       entries.push({ header: dotted ? dotted[2] : line, rank: dotted ? Number(dotted[1]) : null, combos: [] });
+    } else if (m) {
+      entries.push({ header: m[2], rank: Number(m[1]), combos: [] });
+      plainRank = Number(m[1]);
+      closed = false;
+    } else if (last && !closed && last.rank !== null && last.rank >= 1 && last.rank <= TOP_PLACES && last.combos.length < MAX_COMBOS) {
+      last.combos.push(line);
+    } else {
+      plainRank += 1;
+      entries.push({ header: line, rank: plainRank, combos: [] });
     }
-    else if (m) entries.push({ header: m[2], rank: Number(m[1]), combos: [] });
-    else entries[entries.length - 1].combos.push(line);
   }
 
   const tigerGuests: string[] = [];
@@ -99,7 +111,7 @@ export function parseResultsText(text: string, players: Candidate[]): ResultRow[
     // Both given but they point at different members (or the name looks nothing like the member): the BOM ID wins, and it is flagged.
     const alike = (a: string, b: string) => !!a && !!b && (a === b || (Math.min(a.length, b.length) >= 3 && (a.includes(b) || b.includes(a))));
     const warning = byId && looseName(rest) && !alike(looseName(rest), looseName(byId.name)) ? `BOM ID says ${byId.name}, the name says "${rest}"` : undefined;
-    const combos = parseCombos(entry.combos, place, tigerKing);
+    const combos = parseCombos(entry.combos, place);
     if (found) {
       rows.push({ playerId: found.id, guestName: null, place, tigerKing, combos, ...(warning ? { warning } : {}) });
     } else {

@@ -13,6 +13,8 @@ export function PlacementRow({ eventId, rowId, playerId, name, bomId, place, tig
   eventId: string; rowId: string; playerId: string | null; name: string; bomId: string | null; place: number | null; tigerKing: boolean; combos: string[]; points: number;
 }) {
   const [editing, setEditing] = useState(false);
+  const [placeText, setPlaceText] = useState(place === null ? "" : String(place));
+  const top8 = Number(placeText) >= 1 && Number(placeText) <= 8;
   const save = async (prev: FormState, data: FormData) => {
     const result = await setPlacement(prev, data);
     if (result.ok) setEditing(false);
@@ -28,9 +30,9 @@ export function PlacementRow({ eventId, rowId, playerId, name, bomId, place, tig
           <input type="hidden" name="event_id" value={eventId} />
           <input type="hidden" name="player_id" value={playerId} />
           <span className="min-w-24 flex-1 font-bold">{bomId && <BomIdBadge id={bomId} />} {name}</span>
-          <Input name="place" type="number" min={1} max={999} defaultValue={place ?? ""} placeholder="Place" aria-label="Place" className="w-24" />
-          <label className="flex items-center gap-1 text-sm"><input type="checkbox" name="tiger_king" defaultChecked={tigerKing} /><Crown className="size-4 text-yellow-400" aria-hidden />Tiger King</label>
-          <Textarea name="combos" defaultValue={combos.join("\n")} rows={3} placeholder={"Winning combos, one per line (top 8 and Tiger King)\nAP 1-80 LR"} aria-label="Winning combos" className="w-full font-mono text-base text-white" />
+          <Input name="place" type="number" min={1} max={999} value={placeText} onChange={(e) => setPlaceText(e.target.value)} placeholder="Place" aria-label="Place" className="w-24" />
+          <label className="flex items-center gap-1 text-sm"><input type="checkbox" name="tiger_king" defaultChecked={tigerKing} /><Crown className="size-4 text-red-500" aria-hidden />Tiger King</label>
+          {top8 && <Textarea name="combos" defaultValue={combos.join("\n")} rows={3} placeholder={"Winning combos, one per line (top 8 only)\nAP 1-80 LR"} aria-label="Winning combos" className="w-full font-mono text-base text-white" />}
           <Button type="submit" size="sm">Save</Button>
           <Button type="button" variant="outline" size="sm" className="w-8 px-0" onClick={() => setEditing(false)} aria-label="Cancel"><X aria-hidden /></Button>
         </ActionForm>
@@ -41,7 +43,7 @@ export function PlacementRow({ eventId, rowId, playerId, name, bomId, place, tig
     <li className="flex items-start justify-between gap-2">
       <span className="min-w-0 flex-1">
         <span className="text-primary inline-block w-8 font-bold">{place === null ? "–" : `#${place}`}</span>{bomId ? <BomIdBadge id={bomId} className="mr-2" /> : <span className="text-muted-foreground mr-2 rounded border px-1.5 py-0.5 text-xs uppercase">Non BOM ID</span>}{name}
-        {tigerKing && <Crown className="mx-1 inline size-4 align-text-bottom text-yellow-400" aria-label="Tiger King" />}
+        {tigerKing && <Crown className="mx-1 inline size-4 align-text-bottom text-red-500" aria-label="Tiger King" />}
         {combos.length > 0 && <span className="text-muted-foreground mt-1 block pl-8 font-mono text-xs">{combos.join(" · ")}</span>}
       </span>
       <span className="font-num tabular w-20 shrink-0 text-right font-bold">{isGuest ? <span className="text-muted-foreground text-xs font-normal">no points</span> : `${points} pts`}</span>

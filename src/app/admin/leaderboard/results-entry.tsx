@@ -11,8 +11,8 @@ import type { FormState } from "@/lib/form-state";
 import { cn } from "@/lib/utils";
 import { fetchChallongeResults, saveEventResults, setPlacement } from "./actions";
 
-// What a numbered list looks like: place, BOM ID, name, then up to three combos. The last member is not in the club yet.
-const TEMPLATE = "1 [BOM-001] Decade (TK)\nAP 1-80 LR\nHR 9-60 LO\nPW 3-60 R\n\n2 [BOM-002] Mr. DiBo\nDSt 6-70 J\nCDg 3-60 E\nTB 1-60 R\n\n3 [Non BOM ID] Vampire\nAP 1-50 R\nPW 3-60 LR\nHR 9-60 Nr";
+// What a list looks like: the top 8 with their place, BOM ID, name and up to three combos; after a blank line everyone else, just a BOM ID or a name.
+const TEMPLATE = "1 [BOM-001] Decade (TK)\nAP 1-80 LR\nHR 9-60 LO\nPW 3-60 R\n\n2 [BOM-002] Mr. DiBo\nDSt 6-70 J\nCDg 3-60 E\nTB 1-60 R\n\n3 [Non BOM ID] Vampire\nAP 1-50 R\nPW 3-60 LR\nHR 9-60 Nr\n\n(4th to 8th the same way)\n\n[BOM-013]\nRal_X\nBoM 25";
 const memberLabel = (p: { name: string; bom_id: string }) => `${p.name} ${formatBomId(p.bom_id)}`;
 const squash = (v: string) => v.toLowerCase().replace(/[\s-[\]]/g, "");
 
@@ -39,6 +39,9 @@ export function ResultsEntry({ eventId, text, challongeUrl, members, hasChallong
   const [link, setLink] = useState(challongeUrl ?? "");
   const [busy, setBusy] = useState(false);
   const [memberText, setMemberText] = useState("");
+  const [placeText, setPlaceText] = useState("");
+  // Only the top 8 have winning combos, so the box shows only for a place from 1 to 8.
+  const top8 = Number(placeText) >= 1 && Number(placeText) <= 8;
   const [note, setNote] = useState<{ error?: string; unmatched?: string[] } | null>(null);
 
   // What the list will save as, worked out as you type: which names are members, and which are Non BOM ID.
@@ -56,7 +59,7 @@ export function ResultsEntry({ eventId, text, challongeUrl, members, hasChallong
 
   const addMember = async (prev: FormState, data: FormData) => {
     const result = await setPlacement(prev, data);
-    if (result.ok) setMemberText("");
+    if (result.ok) { setMemberText(""); setPlaceText(""); }
     return result;
   };
 
@@ -93,9 +96,9 @@ export function ResultsEntry({ eventId, text, challongeUrl, members, hasChallong
             <datalist id={`members-${eventId}`}>{members.map((p) => <option key={p.id} value={memberLabel(p)} />)}</datalist>
             <input type="hidden" name="player_id" value={chosen?.id ?? ""} />
           </div>
-          <Input name="place" type="number" min={1} max={999} placeholder="Place (top 8)" aria-label="Place" />
-          <Textarea name="combos" rows={3} placeholder={"Winning combos, one per line (top 8 and Tiger King)\nAP 1-80 LR"} aria-label="Winning combos" className="font-mono text-base sm:col-span-2" />
-          <label className="flex items-center gap-2 text-sm sm:col-span-2"><input type="checkbox" name="tiger_king" /><Crown className="size-4 text-yellow-400" aria-hidden /> Tiger King (one per event)</label>
+          <Input name="place" type="number" min={1} max={999} placeholder="Place (top 8 can add combos)" aria-label="Place" value={placeText} onChange={(e) => setPlaceText(e.target.value)} />
+          {top8 && <Textarea name="combos" rows={3} placeholder={"Winning combos, one per line (top 8 only)\nAP 1-80 LR"} aria-label="Winning combos" className="font-mono text-base sm:col-span-2" />}
+          <label className="flex items-center gap-2 text-sm sm:col-span-2"><input type="checkbox" name="tiger_king" /><Crown className="size-4 text-red-500" aria-hidden /> Tiger King (one per event)</label>
           <Button type="submit" className="sm:col-span-2">Add or update member</Button>
         </ActionForm>
       )}
@@ -123,7 +126,8 @@ export function ResultsEntry({ eventId, text, challongeUrl, members, hasChallong
             <label className="text-sm font-bold" htmlFor={`results-${eventId}`}>{mode === "challonge" ? "Results from the bracket" : "Enter all results at once"}</label>
             {list.trim() === "" && <Button type="button" variant="outline" size="sm" onClick={() => setList(TEMPLATE)}>Insert the template</Button>}
             <HelpTip label="How to enter results">
-              <p>One member per entry: place, then the BOM ID in brackets, then the name. The three lines under it are the combos they won with (only the top 8 and the Tiger King).</p>
+              <p><b>Top 8:</b> place, then the BOM ID in brackets, then the name. The up to three lines under it are the combos they won with. Only the top 8 have combos.</p>
+              <p><b>Everyone else:</b> after a blank line, one per line, just a BOM ID or a name (no place, no combos).</p>
               <p>Add (TK) after the Tiger King, once. Two members can share a place.</p>
               <p><b>Not a member?</b> Write <code>[Non BOM ID]</code> instead of the BOM ID. A name that matches no member is also saved as Non BOM ID automatically: it counts as a participant but is not shown on the leaderboard or in results.</p>
               <p>A plain list of names, one per line, still works (first line is 1st place). Saving replaces the results of this event.</p>
@@ -150,7 +154,7 @@ export function ResultsEntry({ eventId, text, challongeUrl, members, hasChallong
                       <span className="text-primary w-6 font-bold">{r.place ?? "–"}</span>
                       {member ? <span className="bg-primary text-primary-foreground rounded px-1.5 text-xs font-bold">{formatBomId(member.bom_id)}</span> : <span className="rounded border border-yellow-400 px-1.5 text-xs text-yellow-400 uppercase">Non BOM ID</span>}
                       <span>{member?.name ?? r.guestName}</span>
-                      {r.tigerKing && <Crown className="size-4 text-yellow-400" aria-label="Tiger King" />}
+                      {r.tigerKing && <Crown className="size-4 text-red-500" aria-label="Tiger King" />}
                       {r.warning && <span className="text-xs text-yellow-400">⚠ {r.warning}</span>}
                       {r.combos.length > 0 && <span className="text-muted-foreground text-xs">{r.combos.length} combo{r.combos.length > 1 ? "s" : ""}</span>}
                     </li>

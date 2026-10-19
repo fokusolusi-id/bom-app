@@ -104,7 +104,7 @@ export function MembershipForm({ since, nextEvent, venue, whatsappInvite }: Prop
             <input name="website" tabIndex={-1} autoComplete="off" aria-hidden className="hidden" />
             <div className="bg-muted/40 space-y-2 rounded-md border p-3 text-sm">
               <p className="font-bold">Payment: {MEMBERSHIP_FEE}, paid once</p>
-              <Image src="/print/qris.jpg" alt="BOM payment QRIS" width={740} height={1043} className="mx-auto w-full max-w-xs rounded-md" />
+              <Image src="/print/G609448641-0703A01-gma_branding-1792299733.png" alt="BOM payment QRIS" width={1000} height={1150} className="mx-auto w-full max-w-xs rounded-md" />
               <p>{PAYMENT_ACCOUNT}</p>
               <p className="text-muted-foreground">
                 Please contact our admin (<a href={ADMIN_WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="text-primary underline">{ADMIN_WHATSAPP}</a>) if you have any question, like wanting to choose a certain number as your ID number or to pick up the card.

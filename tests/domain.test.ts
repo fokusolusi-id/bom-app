@@ -5,14 +5,14 @@ import { nextWeekly, upcomingEvents } from "@/domain/next-event";
 import { monthKey, monthWeeks, parseMonth, parseWeekday, shiftMonth, weekdayOf } from "@/domain/schedule";
 import { tierMultiplier } from "@/domain/scoring";
 import { parseTier, parseTierLabel, usesBomLogo } from "@/domain/tier";
-import { eventPlace, eventUsesBomLogo, isoToWibLocal, parseEventInput, pickOnePerDay, wibDay, wibLocalToIso, wibTime } from "@/domain/event";
+import { eventPlace, eventUsesBomLogo, isoToWibLocal, parseEventInput, pickOnePerDay, wibDay, wibLocalToIso, wibTime, BREAK_NAME } from "@/domain/event";
 
 const A = "11111111-1111-1111-1111-111111111111";
 const B = "22222222-2222-2222-2222-222222222222";
 
 describe("scoring", () => {
-  it("multiplies 1x, 2x, 3x, 4x up the ladder", () => {
-    expect((["Ranked", "Cup", "Major", "Championship"] as const).map(tierMultiplier)).toEqual([1, 2, 3, 4]);
+  it("multiplies 1x, 1x, 1.5x, 2x up the ladder", () => {
+    expect((["Ranked", "Cup", "Major", "Championship"] as const).map(tierMultiplier)).toEqual([1, 1, 1.5, 2]);
   });
 });
 
@@ -480,5 +480,22 @@ describe("rules page", () => {
     expect(asRulesPage(JSON.parse(JSON.stringify(DEFAULT_RULES_PAGE)))).toEqual(DEFAULT_RULES_PAGE);
     expect(asRulesPage({ intro: "x" })).toBeNull();
     expect(asRulesPage(null)).toBeNull();
+  });
+});
+
+
+describe("break and holiday events", () => {
+  const form = (o: Record<string, string>) => (k: string) => o[k] ?? "";
+
+  it("need only a date: no name, community, place or time", () => {
+    expect(parseEventInput(form({ tier: "Break", starts_on: "2026-10-29", sub_community_id: "11111111-1111-1111-1111-111111111111", place: "Somewhere", is_active: "on" }))).toEqual({
+      sub_community_id: null, name: BREAK_NAME, starts_at: "2026-10-29T03:00:00.000Z", place: null, tier: "Break", is_active: true,
+    });
+    expect(() => parseEventInput(form({ tier: "Break" }))).toThrow(/date/i);
+  });
+
+  it("still need a name and a time for everything else", () => {
+    expect(() => parseEventInput(form({ tier: "Ranked", starts_at: "2026-10-29T18:00" }))).toThrow();
+    expect(() => parseEventInput(form({ tier: "Ranked", name: "Weekly", starts_at: "" }))).toThrow(/date/i);
   });
 });
