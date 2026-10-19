@@ -43,7 +43,7 @@ export default async function Home() {
   return (
     <main className="mx-auto max-w-6xl space-y-16 px-4 py-12">
       <HomePopup slides={popup.flatMap((m) => (m.id && m.path ? [{ id: m.id, path: m.path, caption: m.caption }] : []))} />
-      <section className="grid items-center gap-10 max-md:overflow-x-clip md:grid-cols-2">
+      <section className="grid items-center gap-10 overflow-x-clip md:grid-cols-2">
         <div className="space-y-6">
           <RibbonBanner>Beyblade X Sumatera Utara</RibbonBanner>
           <h1 className="text-5xl leading-none md:text-7xl">Built in Medan. <span className="text-primary">Battle anywhere.</span></h1>
@@ -176,7 +176,7 @@ export default async function Home() {
           {communityNumbers(counts).map(({ value, label }) => (
             <li key={label}>
               <Card className="h-full items-center justify-center gap-1 py-6 text-center">
-                <span className="font-display text-4xl leading-none font-black text-white italic uppercase md:text-5xl">{value}</span>
+                <span className="font-display max-w-full text-3xl leading-none font-black break-words text-white italic uppercase lg:text-5xl">{value}</span>
                 <span className="font-label text-primary text-base font-bold tracking-[0.08em] uppercase italic">{label}</span>
               </Card>
             </li>

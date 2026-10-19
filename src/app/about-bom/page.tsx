@@ -23,7 +23,7 @@ export default async function AboutUsPage() {
   const stats = communityStats(counts);
   return (
     <main className="mx-auto max-w-6xl space-y-16 px-4 py-12">
-      <section className="grid items-center gap-10 max-md:overflow-x-clip md:grid-cols-2">
+      <section className="grid items-center gap-10 overflow-x-clip md:grid-cols-2">
         <div className="space-y-6">
           <RibbonBanner>About BOM</RibbonBanner>
           <h1 id="story" className="text-5xl leading-none md:text-7xl">Our <span className="text-primary">Story</span></h1>

@@ -48,7 +48,7 @@ export const memberBenefits = [
 
 export const registrationSteps = [
   ["Register", "Fill in the form, upload your payment screenshot and get your BOM ID right away."],
-  ["Pay and get your card", `Pay ${MEMBERSHIP_FEE} once (QRIS or transfer) and upload the screenshot. The committee verifies it and contacts you on WhatsApp for your card.`],
+  ["Pay and get your card", `Pay ${MEMBERSHIP_FEE} once (QRIS) and upload the screenshot. The committee verifies it and contacts you on WhatsApp for your card.`],
   ["Come to Ranked", "Show up to a weekly Ranked session with your card. Your first match activates your ID and puts you on the leaderboard."],
 ] as const;
 

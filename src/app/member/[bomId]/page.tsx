@@ -2,7 +2,7 @@ import { ArrowLeft, Crown, ExternalLink } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
-import { MemberCard } from "@/components/bom/member-card";
+import { FlippableMemberCard } from "@/components/bom/flippable-member-card";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -83,7 +83,7 @@ export default async function MemberPage({ params }: Props) {
             </div>
           </div>
         </div>
-        <MemberCard bomId={player.bom_id} bladerName={player.name} since={since} qr={qr} />
+        <FlippableMemberCard bomId={player.bom_id} bladerName={player.name} since={since} qr={qr} />
       </div>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6">
