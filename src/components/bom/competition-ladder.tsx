@@ -24,14 +24,19 @@ export function CompetitionLadder({ details = true, bullets: showBullets = true,
       {LEVELS.map((tier) => {
         const style = EVENT_STYLE[tier];
         const info = TIER_INFO[tier];
+        // Ranked is a dark ticket, so its code and name take the brand orange.
+        const accent = tier === "Ranked" ? "text-[var(--bom-orange)]" : "";
         return (
           <li key={tier} className="bg-card flex flex-col rounded-xl" style={TICKET_MASK}>
             <div className={cn("relative flex flex-col justify-between rounded-t-xl p-4", style.bg, style.ink)} style={{ height: TOP }}>
               <TierTile tier={tier} className="absolute top-3 right-3 size-14" />
-              <div className={cn("font-label text-xs font-bold tracking-[0.2em] uppercase italic", style.soft)}>Beyblade of Medan</div>
+              <div className="pr-14">
+                <div className={cn("font-label text-[0.65rem] font-bold tracking-[0.12em] uppercase italic", style.soft)}>Beyblade of Medan</div>
+                <div className={cn("font-label text-[0.65rem] font-bold tracking-[0.12em] uppercase italic", style.soft)}>Kompetisi</div>
+              </div>
               <div>
-                <div className="font-display text-6xl leading-none font-black tracking-tight italic">{info.code}</div>
-                <div className="font-display mt-1 text-xl leading-none font-black italic uppercase">{tier}</div>
+                <div className={cn("font-display text-6xl leading-none font-black tracking-tight italic", accent)}>{info.code}</div>
+                <div className={cn("font-display mt-1 text-xl leading-none font-black italic uppercase", accent)}>{tier}</div>
               </div>
             </div>
             <div aria-hidden className="mx-4 border-t-2 border-dashed border-white/25" />
