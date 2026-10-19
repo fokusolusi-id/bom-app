@@ -13,15 +13,14 @@ const NEAR = 0.7;
 /**
  * The homepage logo on its claw marks. The three claws scratch in together from the top down; the logo sits in the middle as a
  * stack of layers, so it has real thickness and tilts toward the mouse. Each time the mouse comes onto the logo the claws scratch
- * again and the tiger roars once, through to its end and never looped; a hover while the roar is still playing does not start
- * another. The sound is played through the Web Audio API, which needs the visitor to have clicked, tapped or pressed a key on the
+ * again; the tiger roars only once per visit (the first time the sound can play), through to its end and never looped. The sound is played through the Web Audio API, which needs the visitor to have clicked, tapped or pressed a key on the
  * page once (that first touch unlocks it).
  */
 export function ClawHero() {
   const stage = useRef<HTMLDivElement>(null);
   const ctx = useRef<AudioContext | null>(null);
   const roarSound = useRef<AudioBuffer | null>(null);
-  const playing = useRef(0);
+  const roared = useRef(false);
   const lastScratch = useRef(0);
   const wasNear = useRef(false);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
@@ -47,19 +46,18 @@ export function ClawHero() {
     };
   }, []);
 
-  /** One roar: played once through, never looped or cut short; a hover while it is still playing does not start another. Silent until the page has been touched once. */
+  /** The one roar of the visit: played through, never looped or cut short. A hover before the page has been touched is silent and does not use it up. */
   const roar = useCallback(() => {
     const c = ctx.current;
     const buffer = roarSound.current;
-    if (!c || !buffer || c.state !== "running" || playing.current > 0) return;
+    if (!c || !buffer || c.state !== "running" || roared.current) return;
     const source = c.createBufferSource();
     source.buffer = buffer;
     source.loop = false;
     const volume = c.createGain();
     volume.gain.value = 0.7;
     source.connect(volume).connect(c.destination);
-    playing.current += 1;
-    source.onended = () => { playing.current -= 1; };
+    roared.current = true;
     source.start();
   }, []);
 

@@ -26,9 +26,9 @@ export function shiftMonth({ year, month }: Month, delta: number): Month {
   return { year: Math.floor(i / 12), month: (i % 12) + 1 };
 }
 
-/** Weeks of a month, Monday first. Each cell is a day of month, or null for padding. */
+/** Weeks of a month, Sunday first. Each cell is a day of month, or null for padding. */
 export function monthWeeks({ year, month }: Month): (number | null)[][] {
-  const first = (new Date(Date.UTC(year, month - 1, 1)).getUTCDay() + 6) % 7; // Monday = 0
+  const first = new Date(Date.UTC(year, month - 1, 1)).getUTCDay(); // Sunday = 0
   const days = new Date(Date.UTC(year, month, 0)).getUTCDate();
   const cells: (number | null)[] = [...Array<null>(first).fill(null), ...Array.from({ length: days }, (_, i) => i + 1)];
   while (cells.length % 7) cells.push(null);

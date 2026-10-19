@@ -154,10 +154,10 @@ describe("schedule", () => {
     expect(monthKey({ year: 2026, month: 3 })).toBe("2026-03");
   });
 
-  it("monthWeeks pads Monday-first weeks", () => {
+  it("monthWeeks pads Sunday-first weeks", () => {
     const weeks = monthWeeks({ year: 2026, month: 10 }); // 1 Oct 2026 is a Thursday
     expect(weeks.every((w) => w.length === 7)).toBe(true);
-    expect(weeks[0]).toEqual([null, null, null, 1, 2, 3, 4]);
+    expect(weeks[0]).toEqual([null, null, null, null, 1, 2, 3]);
     expect(weeks.flat().filter((d) => d !== null)).toHaveLength(31);
     expect(weekdayOf({ year: 2026, month: 10 }, 3)).toBe(6);
   });
