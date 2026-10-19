@@ -93,13 +93,13 @@ export function ClawHero() {
   }, [approach]);
 
   return (
-    <div ref={stage} className="relative mx-auto aspect-square w-full max-w-[36rem] select-none [perspective:900px]" onPointerDown={() => { void ctx.current?.resume().then(approach).catch(() => {}); }}>
+    <div ref={stage} className="relative mx-auto aspect-square w-full max-w-[36rem] max-md:max-w-[22rem] select-none [perspective:900px]" onPointerDown={() => { void ctx.current?.resume().then(approach).catch(() => {}); }}>
       <div
         className="absolute inset-0 transition-transform duration-150 ease-out [transform-style:preserve-3d]"
         style={{ transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)` }}
       >
         {/* The claws, behind the logo. Remounted on every approach of the mouse, so they scratch again. */}
-        <div key={scratch} className="absolute inset-[-14%] [transform:translateZ(-30px)]" aria-hidden>
+        <div key={scratch} className="absolute inset-[-14%] max-md:inset-[-4%] [transform:translateZ(-30px)]" aria-hidden>
           {/* eslint-disable-next-line @next/next/no-img-element -- a decorative layer, drawn by a CSS mask */}
           <img src="/brand/claw.png" alt="" draggable={false} className="claw-layer absolute inset-0 size-full object-contain" />
         </div>
