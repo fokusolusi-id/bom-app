@@ -8,7 +8,6 @@ import { cn } from "@/lib/utils";
 export const TIER_TILE: Record<EventType, { icon: string | null; edge: string; ground: string; title: string }> = {
   Unrank: { icon: "0-bom-unrank", edge: "bg-[var(--bom-fur)]", ground: "bg-[var(--bom-fur-dark)]", title: "text-[var(--bom-fur-light)]" },
   Ranked: { icon: "1-bom-rank", edge: "bg-white", ground: "bg-[var(--bom-surface-2)]", title: "text-white" },
-  Cup: { icon: "2-bom-cup", edge: "bg-white", ground: "bg-[var(--bom-surface-2)]", title: "text-[#2f8a14]" },
   Major: { icon: "3-bom-major", edge: "bg-white", ground: "bg-[var(--bom-orange)]", title: "text-[var(--bom-orange)]" },
   Championship: { icon: "4-bomb-championship", edge: "bg-white", ground: "bg-[var(--bom-loss)]", title: "text-[var(--bom-loss)]" },
   Break: { icon: null, edge: "bg-[var(--bom-fur)]", ground: "bg-[var(--bom-fur-light)]", title: "text-[var(--bom-fur-light)]" },

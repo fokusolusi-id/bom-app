@@ -13,5 +13,5 @@ export type PlayerContact = {
 };
 export type Player = { id?: string; bom_id: string; name: string; points: number; status?: PlayerStatus; role?: PlayerRole; contact?: PlayerContact; photo_path?: string | null; created_at?: string };
 
-/** A player's final place at an event (Cup, Major or Championship), joined with the event. */
+/** A player's final place at an event (Ranked, Major or Championship), joined with the event. */
 export type PlacementRow = { place: number | null; event: { id: string; name: string; tier: Tier; starts_at: string } };

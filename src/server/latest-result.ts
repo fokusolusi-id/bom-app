@@ -15,7 +15,7 @@ export type LatestResult = {
 
 const dateFmt = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Jakarta" });
 
-/** The last events that have a champion recorded, newest first, each with its top eight. Cup and above show the BOM logo, Ranked its sub community's. */
+/** The last events that have a champion recorded, newest first, each with its top eight. Major and above show the BOM logo, Ranked its sub community's. */
 export async function latestResults(now: Date, limit = 2): Promise<LatestResult[]> {
   const [podiums, table] = await Promise.all([publicResults().recentPodiums(now.toISOString(), limit), publicPointsTable()]);
   return podiums.map((p) => {

@@ -9,13 +9,13 @@ const organizer = { isAdmin: false, communityIds: [DXM] };
 describe("who may manage what", () => {
   it("lets admins manage everything", () => {
     expect(canManageEvent(admin, { sub_community_id: null, tier: "Championship" })).toBe(true);
-    expect(canManageResults(admin, { sub_community_id: null, tier: "Cup" })).toBe(true);
+    expect(canManageResults(admin, { sub_community_id: null, tier: "Major" })).toBe(true);
   });
 
   it("lets an organizer manage Unrank and Ranked events of their own community only", () => {
     expect(canManageEvent(organizer, { sub_community_id: DXM, tier: "Ranked" })).toBe(true);
     expect(canManageEvent(organizer, { sub_community_id: DXM, tier: "Unrank" })).toBe(true);
-    expect(canManageEvent(organizer, { sub_community_id: DXM, tier: "Cup" })).toBe(false);
+    expect(canManageEvent(organizer, { sub_community_id: DXM, tier: "Major" })).toBe(false);
     expect(canManageEvent(organizer, { sub_community_id: OTHER, tier: "Ranked" })).toBe(false);
     expect(canManageEvent(organizer, { sub_community_id: null, tier: "Ranked" })).toBe(false);
   });

@@ -28,7 +28,7 @@ function currentMonth(): Month {
 }
 
 /**
- * One event: the logo (the sub komunitas, or BOM for Cup and above) and the competition icon on top, then the type name,
+ * One event: the logo (the sub komunitas, or BOM for Major and above) and the competition icon on top, then the type name,
  * event name, time and place on their own lines. A break has no logo and no time, just its icon.
  */
 function EventChip({ e }: { e: ScheduleEventView }) {

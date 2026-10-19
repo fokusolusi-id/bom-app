@@ -172,7 +172,7 @@ export default async function Home() {
 
       <section aria-labelledby="numbers">
         <SectionHeading id="numbers">By the numbers</SectionHeading>
-        <ul className="grid grid-cols-2 gap-3 md:grid-cols-4">
+        <ul className="grid grid-cols-2 gap-3 md:grid-cols-3">
           {communityNumbers(counts).map(({ value, label }) => (
             <li key={label}>
               <Card className="h-full items-center justify-center gap-1 py-6 text-center">

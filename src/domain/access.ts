@@ -3,7 +3,7 @@ import { isUuid, parseText } from "./validation";
 /** What the signed-in staff member may do. Admins can do everything; organizers only manage their own sub communities. */
 export type Access = { isAdmin: boolean; communityIds: string[] };
 
-/** Organizers run the weekly gatherings: Unrank and Ranked. Cup and above belong to BOM as a whole. */
+/** Organizers run the weekly gatherings: Unrank and Ranked. Major and above belong to BOM as a whole. */
 export const ORGANIZER_EVENT_TYPES = ["Unrank", "Ranked"] as const;
 
 /** Results (and points) exist only for Ranked events at this level. */
