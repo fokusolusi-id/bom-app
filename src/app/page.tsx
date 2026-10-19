@@ -76,7 +76,7 @@ export default async function Home() {
                               <span className={TIER_TILE[type].title}>{EVENT_TYPE_LABEL(type)}</span>
                             </div>
                           )}
-                          <div className="font-display text-2xl leading-tight font-extrabold italic uppercase">{e.name ?? e.title}</div>
+                          <div className="font-display text-2xl leading-tight font-extrabold italic">{e.name ?? e.title}</div>
                           <p className="flex items-center gap-2"><CalendarDays className="text-primary size-5 shrink-0" aria-hidden />{formatWhen(e)}</p>
                           <p className="flex items-center gap-2"><MapPin className="text-primary size-5 shrink-0" aria-hidden />{e.place ?? VENUE}</p>
                           <div className="mt-auto flex flex-wrap gap-2 self-start">
@@ -125,7 +125,7 @@ export default async function Home() {
                       </div>
                       <div className="min-w-0">
                         <div className={`font-label text-lg font-bold tracking-[0.08em] uppercase italic ${TIER_TILE[r.tier].title}`}>{EVENT_TYPE_LABEL(r.tier)}{i === 0 && <span className="text-primary ml-2 text-xs not-italic">Latest</span>}</div>
-                        <div className="font-display text-xl leading-tight font-extrabold italic uppercase">{r.title}</div>
+                        <div className="font-display text-xl leading-tight font-extrabold italic">{r.title}</div>
                         <p className="text-muted-foreground text-sm">{r.date}{r.tier === "Unrank" ? " · no points" : " · points earned that week"}</p>
                       </div>
                     </div>

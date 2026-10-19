@@ -24,7 +24,7 @@ export function Modal({ open, onClose, title, children, wide, extraWide }: { ope
       {open && (
         <div className="p-5">
           <div className="mb-4 flex items-start justify-between gap-3">
-            <h2 className="text-xl">{title}</h2>
+            <h2 className="text-xl normal-case">{title}</h2>
             <Button type="button" variant="outline" size="sm" className="w-8 px-0" onClick={onClose} aria-label="Close"><X aria-hidden /></Button>
           </div>
           {children}
