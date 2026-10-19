@@ -1,7 +1,7 @@
 import { ArrowRight, CalendarDays, Crown, ExternalLink, MapPin, Trophy } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { InstagramIcon, WhatsappIcon } from "@/components/bom/brand-icons";
+import { InstagramIcon, TiktokIcon, WhatsappIcon } from "@/components/bom/brand-icons";
 import { GallerySlideshow } from "@/components/bom/gallery-slideshow";
 import { NewsSlider } from "@/components/bom/news-slider";
 import { CompetitionLadder } from "@/components/bom/competition-ladder";
@@ -21,7 +21,7 @@ import { formatWhen } from "@/domain/next-event";
 import { EVENT_STYLE, EVENT_TYPE_LABEL } from "@/lib/event-style";
 import { communityNumbers } from "@/lib/content";
 import { loadCommunityCounts } from "@/server/community-counts";
-import { DIRECTIONS_URL, INSTAGRAM, VENUE, WHATSAPP_INVITE } from "@/lib/venue";
+import { DIRECTIONS_URL, INSTAGRAM, TIKTOK, VENUE, WHATSAPP_INVITE } from "@/lib/venue";
 import { loadUpcomingEvents } from "@/server/events";
 import { latestResults } from "@/server/latest-result";
 import { publicSiteMedia } from "@/server/site-media";
@@ -206,13 +206,16 @@ export default async function Home() {
       <section aria-labelledby="join" className="bg-card rounded-lg border p-8 text-center">
         <h2 id="join" className="text-3xl md:text-5xl">Join the community</h2>
         <div className="mt-6 flex flex-wrap justify-center gap-3">
+          <Button size="lg" variant="outline" asChild>
+            <a href={`https://www.instagram.com/${INSTAGRAM}`} target="_blank" rel="noopener noreferrer"><InstagramIcon />Instagram</a>
+          </Button>
           {WHATSAPP_INVITE && (
             <Button size="lg" className="bg-[#25D366] text-black hover:bg-[#1EBE5A]" asChild>
               <a href={WHATSAPP_INVITE} target="_blank" rel="noopener noreferrer"><WhatsappIcon />WhatsApp</a>
             </Button>
           )}
           <Button size="lg" variant="outline" asChild>
-            <a href={`https://www.instagram.com/${INSTAGRAM}`} target="_blank" rel="noopener noreferrer"><InstagramIcon />Instagram</a>
+            <a href={`https://www.tiktok.com/@${TIKTOK}`} target="_blank" rel="noopener noreferrer"><TiktokIcon />TikTok</a>
           </Button>
         </div>
       </section>
