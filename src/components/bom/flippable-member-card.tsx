@@ -72,11 +72,16 @@ export function FlippableMemberCard({ bomId, bladerName, since, qr, design }: { 
   };
   return (
     <div className="space-y-3" ref={box}>
-      <div className="[perspective:1200px]">
+      <div className="group relative [perspective:1200px]">
         <div
           className="relative aspect-[1028/650] w-full cursor-pointer transition-transform duration-700 ease-out [transform-style:preserve-3d] motion-reduce:transition-none"
           style={{ transform: back ? "rotateY(180deg)" : "rotateY(0deg)" }}
           onClick={() => setBack((b) => !b)}
+          role="button"
+          tabIndex={0}
+          aria-pressed={back}
+          aria-label={back ? "Card back shown, turn it to the front" : "Card front shown, turn it to the back"}
+          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setBack((b) => !b); } }}
         >
           <div className="absolute inset-0 [backface-visibility:hidden]" aria-hidden={back}>
             <MemberCard bomId={bomId} bladerName={bladerName} since={since} qr={qr} design={design} />
@@ -85,9 +90,11 @@ export function FlippableMemberCard({ bomId, bladerName, since, qr, design }: { 
             <Image src="/print/bom-emoney-04.png" alt="Back of the member card: TikTok, Instagram, email and website of Beyblade of Medan" fill sizes="(min-width: 768px) 26rem, 100vw" className="object-cover" />
           </div>
         </div>
+        <div aria-hidden className="pointer-events-none absolute inset-0 grid place-items-center opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100">
+          <span className="rounded-full bg-black/60 p-3 text-white shadow-lg"><RotateCw className="size-7" /></span>
+        </div>
       </div>
       <div className="flex flex-wrap justify-center gap-2">
-        <Button type="button" variant="outline" size="sm" onClick={() => setBack((b) => !b)} aria-pressed={back}><RotateCw aria-hidden />{back ? "Show the front" : "Show the back"}</Button>
         <Button type="button" variant="outline" size="sm" onClick={front} disabled={busy}><Download aria-hidden />Download front</Button>
         <Button type="button" variant="outline" size="sm" onClick={() => save("/print/bom-emoney-04.png", `${bomId.toLowerCase()}-card-back.png`)}><Download aria-hidden />Download back</Button>
       </div>
