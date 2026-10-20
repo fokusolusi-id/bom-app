@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { CalendarDays, Mail, MapPin } from "lucide-react";
 import { SectionHeading } from "@/components/bom/section-heading";
 import { SponsorSlider } from "@/components/bom/sponsor-slider";
@@ -18,6 +19,7 @@ export async function SponsorsSection({ className }: { className?: string }) {
           <p className="text-muted-foreground">
             Want to become our sponsor? Put your brand in front of Medan&apos;s Beyblade X community. Get in touch and we will send you our sponsorship options.
           </p>
+          <p><Link href="/sponsorship" className="text-primary font-bold underline">See the sponsorship packages</Link></p>
           <p className="flex items-center gap-2"><Mail className="text-primary size-5 shrink-0" aria-hidden /><a href={`mailto:${PARTNER_EMAIL}`} className="hover:text-primary font-bold underline">{PARTNER_EMAIL}</a></p>
         </div>
         <div className="border-primary space-y-3 border-t-[3px] pt-4">
