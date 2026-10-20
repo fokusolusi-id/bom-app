@@ -36,7 +36,7 @@ export function MemberCard({ bomId, bladerName, since, qr, design = "print" }: {
       </div>
       {qr && (
         // eslint-disable-next-line @next/next/no-img-element -- a generated data URL
-        <img data-card-qr src={qr} alt={`QR code for ${bomId.toUpperCase()}`} className={`absolute aspect-square rounded-md bg-white ${classic ? "top-[36%] right-[6%] w-[30%]" : "top-[32%] right-[8%] w-[22%]"}`} />
+        <img data-card-qr src={qr} alt={`QR code for ${bomId.toUpperCase()}`} className={`absolute aspect-square rounded-md bg-white ${classic ? "top-[36%] right-[6%] w-[30%]" : "top-[35%] right-[10%] w-[22%]"}`} />
       )}
       {classic && <div aria-hidden className="bg-primary absolute inset-x-0 bottom-0 h-[1.5%]" />}
     </div>
