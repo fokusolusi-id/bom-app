@@ -1,3 +1,4 @@
+import { Analytics } from "@vercel/analytics/next";
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { SiteHeader } from "@/components/bom/site-header";
@@ -29,6 +30,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <HideOnAdmin><SiteHeader /></HideOnAdmin>
         {children}
         <HideOnAdmin><SiteFooter /></HideOnAdmin>
+        <Analytics />
       </body>
     </html>
   );
