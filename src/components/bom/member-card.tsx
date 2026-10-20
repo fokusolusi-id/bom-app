@@ -1,7 +1,7 @@
 import Image from "next/image";
 
 /**
- * The member's card. `design="print"` (the member page) uses the printed Emoney card (public/print/bom-emoney-03-blank.png) as its
+ * The member's card. `design="print"` (the member page) uses the printed Emoney card (public/print/bom-emoney-10.png) as its
  * background; `design="classic"` (the membership sign-up) keeps the original dark card with its own logo, title and stripe.
  * `qr` is a data URL for the QR code on the right.
  */
@@ -18,7 +18,7 @@ export function MemberCard({ bomId, bladerName, since, qr, design = "print" }: {
           </div>
         </div>
       ) : (
-        <Image src="/print/bom-emoney-03-blank.png" alt="" fill sizes="(min-width: 768px) 26rem, 100vw" priority className="object-cover" />
+        <Image src="/print/bom-emoney-10.png" alt="" fill sizes="(min-width: 768px) 26rem, 100vw" priority className="object-cover" />
       )}
       <div className="absolute bottom-[10%] left-[4%] space-y-[3%]">
         <div>

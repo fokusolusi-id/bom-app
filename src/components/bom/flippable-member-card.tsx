@@ -28,15 +28,17 @@ function save(href: string, filename: string) {
   a.remove();
 }
 
-/** Draws the front as it looks on the page (background, texts and QR code) onto a canvas at the background's full size and saves it as a PNG. */
+/** Draws the front as it looks on the page (background, texts and QR code) onto a canvas at the full size of the art (2056 x 1300) and saves it as a PNG. */
 async function downloadFront(root: HTMLElement, bomId: string) {
-  const bg = await loadImage("/print/bom-emoney-03-blank.png");
+  await document.fonts.ready;
+  const bg = await loadImage("/print/bom-emoney-10.png");
   const canvas = document.createElement("canvas");
   canvas.width = bg.naturalWidth;
   canvas.height = bg.naturalHeight;
   const ctx = canvas.getContext("2d")!;
   const k = canvas.width / root.offsetWidth;
-  ctx.drawImage(bg, 0, 0);
+  ctx.imageSmoothingQuality = "high";
+  ctx.drawImage(bg, 0, 0, canvas.width, canvas.height);
   ctx.textBaseline = "middle";
   root.querySelectorAll<HTMLElement>("[data-card-text]").forEach((el) => {
     const cs = getComputedStyle(el);
@@ -54,12 +56,14 @@ async function downloadFront(root: HTMLElement, bomId: string) {
     ctx.beginPath();
     ctx.roundRect(x * k, y * k, qr.offsetWidth * k, qr.offsetHeight * k, r);
     ctx.fill();
+    // No smoothing for the QR code: its square modules stay crisp when enlarged.
+    ctx.imageSmoothingEnabled = false;
     ctx.drawImage(await loadImage(qr.src), x * k, y * k, qr.offsetWidth * k, qr.offsetHeight * k);
   }
   save(canvas.toDataURL("image/png"), `${bomId.toLowerCase()}-card-front.png`);
 }
 
-/** The member's card that turns over on a click or with a button to show the back (public/print/bom-emoney-04.png). */
+/** The member's card that turns over on a click or with a button to show the back (public/print/bom-emoney-11.png). */
 export function FlippableMemberCard({ bomId, bladerName, since, qr, design }: { bomId: string; bladerName: string; since: string; qr?: string; design?: "print" | "classic" }) {
   const [back, setBack] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -87,7 +91,7 @@ export function FlippableMemberCard({ bomId, bladerName, since, qr, design }: { 
             <MemberCard bomId={bomId} bladerName={bladerName} since={since} qr={qr} design={design} />
           </div>
           <div className="absolute inset-0 overflow-hidden rounded-xl border border-white/10 [backface-visibility:hidden] [transform:rotateY(180deg)]" aria-hidden={!back}>
-            <Image src="/print/bom-emoney-04.png" alt="Back of the member card: TikTok, Instagram, email and website of Beyblade of Medan" fill sizes="(min-width: 768px) 26rem, 100vw" className="object-cover" />
+            <Image src="/print/bom-emoney-11.png" alt="Back of the member card: TikTok, Instagram, email and website of Beyblade of Medan" fill sizes="(min-width: 768px) 26rem, 100vw" className="object-cover" />
           </div>
         </div>
         <div aria-hidden className="pointer-events-none absolute inset-0 grid place-items-center opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100">
@@ -96,7 +100,7 @@ export function FlippableMemberCard({ bomId, bladerName, since, qr, design }: { 
       </div>
       <div className="flex flex-wrap justify-center gap-2">
         <Button type="button" variant="outline" size="sm" onClick={front} disabled={busy}><Download aria-hidden />Download front</Button>
-        <Button type="button" variant="outline" size="sm" onClick={() => save("/print/bom-emoney-04.png", `${bomId.toLowerCase()}-card-back.png`)}><Download aria-hidden />Download back</Button>
+        <Button type="button" variant="outline" size="sm" onClick={() => save("/print/bom-emoney-11.png", `${bomId.toLowerCase()}-card-back.png`)}><Download aria-hidden />Download back</Button>
       </div>
     </div>
   );
