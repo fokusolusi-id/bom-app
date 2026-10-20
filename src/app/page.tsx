@@ -13,6 +13,7 @@ import { TIER_TILE, TierTile } from "@/components/bom/tier-tile";
 import { ClawHero } from "@/components/bom/claw-hero";
 import { HomePopup } from "@/components/bom/home-popup";
 import { SponsorsSection } from "@/components/bom/sponsors-section";
+import { WinningMetaCards } from "@/components/bom/winning-meta";
 import { SubCommunityChart } from "@/components/bom/sub-community-chart";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -24,6 +25,7 @@ import { loadCommunityCounts } from "@/server/community-counts";
 import { DIRECTIONS_URL, INSTAGRAM, TIKTOK, VENUE, WHATSAPP_INVITE } from "@/lib/venue";
 import { loadUpcomingEvents } from "@/server/events";
 import { latestResults } from "@/server/latest-result";
+import { publicWinningMeta } from "@/server/winning-meta";
 import { publicSiteMedia } from "@/server/site-media";
 import { publicSubCommunities } from "@/server/sub-communities";
 
@@ -35,8 +37,8 @@ const EVENT_LIMIT = 2;
 export default async function Home() {
   const now = new Date();
   const media = publicSiteMedia();
-  const [subs, results, news, gallery, popup] = await Promise.all([
-    publicSubCommunities().listActive(), latestResults(now), media.list("news"), media.list("gallery"), media.list("popup"),
+  const [subs, results, meta, news, gallery, popup] = await Promise.all([
+    publicSubCommunities().listActive(), latestResults(now), publicWinningMeta(now), media.list("news"), media.list("gallery"), media.list("popup"),
   ]);
   const [events, counts] = await Promise.all([loadUpcomingEvents(EVENT_LIMIT, now), loadCommunityCounts(subs.length, now)]);
 
@@ -131,28 +133,38 @@ export default async function Home() {
                     </div>
                     {/* The winning stair: the top three, then everyone in the top eight below. */}
                     <LeaderboardPodium rankings={r.top.filter((t) => t.place <= 3).map((t) => ({ rank: t.place, name: t.name, bomId: t.bomId, value: r.tier === "Unrank" ? undefined : t.points, tigerKing: t.tigerKing }))} />
-                    <ol className="space-y-1.5">
-                      {r.top.map((t) => (
-                        <li key={t.place} className="flex flex-wrap items-center gap-x-3 gap-y-0.5">
-                          <span className="font-num text-primary w-6 text-center text-lg font-black italic">{t.place}</span>
-                          {t.bomId ? (
-                            <>
-                              <Link href={`/member/${t.bomId.toLowerCase()}`} aria-label={`Profile ${t.name}`}><BomIdBadge id={t.bomId} className="transition-colors hover:bg-white" /></Link>
-                              <Link href={`/member/${t.bomId.toLowerCase()}`} className={`hover:text-primary ${t.place === 1 ? "font-bold" : ""}`}>{t.name}</Link>
-                            </>
-                          ) : (
-                            <>
-                              <span className="text-muted-foreground rounded border px-1.5 py-0.5 text-xs uppercase">Non BOM ID</span>
-                              <span className={t.place === 1 ? "font-bold" : ""}>{t.name}</span>
-                            </>
-                          )}
-                          {t.tigerKing && <Crown className="size-4 text-red-500" aria-label="Tiger King" />}
-                          {t.place <= 3 && <Trophy className={`size-4 ${t.place === 1 ? "text-yellow-400" : t.place === 2 ? "text-neutral-300" : "text-amber-600"}`} aria-label={`Place ${t.place}`} />}
-                          {t.bomId && r.tier !== "Unrank" && <span className="font-num tabular text-muted-foreground ml-auto text-sm">+{t.points} pts</span>}
-                          {t.combos.length > 0 && <span className="text-muted-foreground basis-full pl-9 font-mono text-xs">{t.combos.join(" · ")}</span>}
-                        </li>
-                      ))}
-                    </ol>
+                    <div className="space-y-4">
+                      {r.top[0]?.combos.length > 0 && (
+                        <div>
+                          <div className="text-muted-foreground mb-1.5 text-xs uppercase">Winning combos of {r.top[0].name}</div>
+                          <ul className="flex flex-wrap gap-1.5">
+                            {r.top[0].combos.map((c) => <li key={c} className="bg-primary/15 text-primary rounded-md border border-primary/40 px-2 py-1 font-mono text-xs font-bold">{c}</li>)}
+                          </ul>
+                        </div>
+                      )}
+                      <ol className="space-y-1.5">
+                        {r.top.map((t) => (
+                          <li key={t.place} className="flex flex-wrap items-center gap-x-3 gap-y-0.5">
+                            <span className="font-num text-primary w-6 text-center text-lg font-black italic">{t.place}</span>
+                            {t.bomId ? (
+                              <>
+                                <Link href={`/member/${t.bomId.toLowerCase()}`} aria-label={`Profile ${t.name}`}><BomIdBadge id={t.bomId} className="transition-colors hover:bg-white" /></Link>
+                                <Link href={`/member/${t.bomId.toLowerCase()}`} className={`hover:text-primary ${t.place === 1 ? "font-bold" : ""}`}>{t.name}</Link>
+                              </>
+                            ) : (
+                              <>
+                                <span className="text-muted-foreground rounded border px-1.5 py-0.5 text-xs uppercase">Non BOM ID</span>
+                                <span className={t.place === 1 ? "font-bold" : ""}>{t.name}</span>
+                              </>
+                            )}
+                            {t.tigerKing && <Crown className="size-4 text-red-500" aria-label="Tiger King" />}
+                            {t.place <= 3 && <Trophy className={`size-4 ${t.place === 1 ? "text-yellow-400" : t.place === 2 ? "text-neutral-300" : "text-amber-600"}`} aria-label={`Place ${t.place}`} />}
+                            {t.bomId && r.tier !== "Unrank" && <span className="font-num tabular text-muted-foreground ml-auto text-sm">+{t.points} pts</span>}
+                            {t.combos.length > 0 && <span className="text-muted-foreground basis-full pl-9 font-mono text-xs">{t.combos.join(" · ")}</span>}
+                          </li>
+                        ))}
+                      </ol>
+                    </div>
                     {r.challongeUrl && <a href={r.challongeUrl} target="_blank" rel="noopener noreferrer" className="text-primary inline-flex items-center gap-1 text-sm underline">View the bracket on Challonge<ExternalLink className="size-3.5" aria-hidden /></a>}
                   </CardContent>
                 </Card>
@@ -163,6 +175,13 @@ export default async function Home() {
           <Card><CardContent><p className="text-muted-foreground">Results appear here after the first tournament.</p></CardContent></Card>
         )}
       </section>
+
+      {meta.total > 0 && (
+        <section aria-labelledby="meta">
+          <SectionHeading id="meta">Winning Combo</SectionHeading>
+          <WinningMetaCards meta={meta} />
+        </section>
+      )}
 
       <section aria-labelledby="sub-komunitas">
         <SectionHeading id="sub-komunitas">Sub Communities</SectionHeading>
