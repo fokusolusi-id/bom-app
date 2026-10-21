@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { tierMultiplier } from "@/domain/scoring";
-import { TIER_INFO, type TierLabel } from "@/domain/tier";
+import { TIER_INFO, TIER_NAME, type TierLabel } from "@/domain/tier";
 import { EVENT_STYLE } from "@/lib/event-style";
 import { cn } from "@/lib/utils";
 import { TIER_TILE, TierTile } from "./tier-tile";
 
-/** The highest level first: BK1 Championship down to BK4 Unrank. */
-const LEVELS = ["Championship", "Major", "Ranked", "Unrank"] as const satisfies readonly TierLabel[];
+/** BK4 Unrank first, up to BK1 Championship. */
+const LEVELS = ["Unrank", "Ranked", "Major", "Championship"] as const satisfies readonly TierLabel[];
 /** Height of the coloured top of a ticket; the notches and the perforation sit right under it. */
 const TOP = "9.5rem";
 const NOTCH = "0.7rem";
@@ -40,7 +40,7 @@ export function CompetitionLadder({ details = true, bullets: showBullets = true,
               </div>
               <div>
                 <div className={cn("font-display text-6xl leading-none font-black tracking-tight italic", accent)}>{info.code}</div>
-                <div className={cn("font-display mt-1 text-lg leading-none font-black italic uppercase", accent)}>{tier}</div>
+                <div className={cn("font-display mt-1 text-lg leading-none font-black italic uppercase", accent)}>{TIER_NAME[tier]}</div>
               </div>
             </div>
             <div aria-hidden className="mx-4 border-t-2 border-dashed border-white/25" />

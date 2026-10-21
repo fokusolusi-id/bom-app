@@ -21,6 +21,9 @@ export function parseTier(value: unknown): Tier {
 /** Major and Championship belong to BOM as a whole, so they show the BOM logo, not a sub community's. */
 export const usesBomLogo = (tier: TierLabel) => tier === "Major" || tier === "Championship";
 
+/** The name shown for each level. The stored value of BK2 is still "Major"; it is shown as "Cup". */
+export const TIER_NAME: Record<TierLabel, string> = { Unrank: "Unrank", Ranked: "Ranked", Major: "Cup", Championship: "Championship" };
+
 /** The competition levels as BOM names them: BK4 (Unrank) up to BK1 (Championship). */
 export const TIER_INFO: Record<TierLabel, { code: string; name: string; audience: string; tagline: string }> = {
   Unrank: { code: "BK4", name: "Beyblade of Medan Kompetisi Level 4", audience: "For Unranked Event", tagline: "Casual Gathering to Sharpen Your Skills" },
