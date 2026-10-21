@@ -1,17 +1,18 @@
-import { Mail } from "lucide-react";
+import { BadgePercent, Check, Gift, ImageIcon, Mail, Megaphone, MapPin, Presentation, Trophy, Users, type LucideIcon } from "lucide-react";
+import { TiktokIcon } from "@/components/bom/brand-icons";
 import { RibbonBanner } from "@/components/bom/ribbon-banner";
 import { Card } from "@/components/ui/card";
-import { otherIncomeIdeas, sponsorPackages } from "@/lib/sponsorship";
+import { otherIncomeIdeas, sponsorBenefits, sponsorPackages, type BenefitIcon, type SponsorTier } from "@/lib/sponsorship";
 import { PARTNER_EMAIL } from "@/lib/venue";
 
 export const metadata = { title: "Sponsorship | Beyblade of Medan" };
 
-/** Background and place on the podium (Silver left, Gold in the middle and tallest, Bronze right; on phones Gold comes first). The rise is added to the normal 1.25rem top padding. */
-const TIER_LOOK: Record<string, { bg: string; rise: string; order: string }> = {
-  Gold: { bg: "bg-[var(--bom-sponsor-gold)]", rise: "md:pt-[6.25rem]", order: "order-1 md:order-2" },
-  Silver: { bg: "bg-[var(--bom-sponsor-silver)]", rise: "md:pt-[3.75rem]", order: "order-2 md:order-1" },
-  Bronze: { bg: "bg-[var(--bom-sponsor-bronze)]", rise: "md:pt-5", order: "order-3" },
+const ICONS: Record<BenefitIcon, LucideIcon | typeof TiktokIcon> = {
+  trophy: Trophy, booth: Presentation, prize: Gift, people: Users, location: MapPin, tiktok: TiktokIcon, poster: ImageIcon, mention: Megaphone, discount: BadgePercent,
 };
+
+/** Gold, Silver and Bronze in their sponsor colours, with dark text on top. */
+const TIER_BG: Record<SponsorTier, string> = { Gold: "bg-[var(--bom-sponsor-gold)]", Silver: "bg-[var(--bom-sponsor-silver)]", Bronze: "bg-[var(--bom-sponsor-bronze)]" };
 
 export default function SponsorshipPage() {
   return (
@@ -22,24 +23,64 @@ export default function SponsorshipPage() {
         <p className="text-muted-foreground max-w-2xl">Put your brand in front of Medan&apos;s Beyblade X community. Get in touch and we will send you the details and prices.</p>
       </section>
 
-      <ul className="grid gap-4 md:grid-cols-3 md:items-end">
-        {sponsorPackages.map((p) => {
-          const look = TIER_LOOK[p.tier];
-          return (
-            <li key={p.tier} className={look.order}>
-              <Card className={`gap-4 border-0 text-black ${look.bg} ${look.rise}`}>
-                <div>
-                  <div className="font-display text-5xl leading-none font-black italic uppercase">{p.tier}</div>
-                  <div className="font-label mt-1 text-sm font-bold tracking-[0.08em] uppercase italic">{p.role}</div>
-                </div>
-                <ul className="list-disc space-y-1 pl-5 text-black/80 marker:text-black">
-                  {p.benefits.map((b) => <li key={b}>{b}</li>)}
-                </ul>
-                <p className="font-label mt-auto text-sm font-bold tracking-[0.08em] uppercase italic">Price on request</p>
-              </Card>
-            </li>
-          );
-        })}
+      {/* From md up: one table, a column per package. */}
+      <div className="hidden overflow-hidden rounded-lg border md:block">
+        <table className="w-full border-collapse text-left">
+          <caption className="sr-only">What each sponsorship package includes</caption>
+          <thead>
+            <tr>
+              <th scope="col" className="text-muted-foreground bg-card w-[46%] p-4 text-xs font-normal uppercase">What you get</th>
+              {sponsorPackages.map((p) => (
+                <th key={p.tier} scope="col" className={`${TIER_BG[p.tier]} p-4 text-center align-bottom text-black`}>
+                  <div className="font-display text-3xl leading-none font-black italic uppercase">{p.tier}</div>
+                  <div className="font-label mt-1 text-xs font-bold tracking-[0.08em] uppercase italic">{p.role}</div>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {sponsorBenefits.map((b) => {
+              const Icon = ICONS[b.icon];
+              return (
+                <tr key={b.label} className="border-t">
+                  <th scope="row" className="bg-card p-4 font-normal">
+                    <span className="flex items-center gap-3"><Icon className="text-primary size-5 shrink-0" aria-hidden />{b.label}</span>
+                  </th>
+                  {sponsorPackages.map((p) => (
+                    <td key={p.tier} className="p-4 text-center">
+                      {p.tier === b.tier
+                        ? <span className={`${TIER_BG[p.tier]} inline-grid size-7 place-items-center rounded-full text-black`}><Check className="size-4" strokeWidth={3} aria-label="Included" /></span>
+                        : <span className="text-muted-foreground" aria-label="Not included">–</span>}
+                    </td>
+                  ))}
+                </tr>
+              );
+            })}
+            <tr className="border-t">
+              <th scope="row" className="bg-card font-label p-4 text-sm font-bold tracking-[0.08em] uppercase italic">Price</th>
+              {sponsorPackages.map((p) => <td key={p.tier} className="font-label p-4 text-center text-sm font-bold tracking-[0.08em] uppercase italic">On request</td>)}
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      {/* On phones: one card per package, Gold first. */}
+      <ul className="space-y-4 md:hidden">
+        {sponsorPackages.map((p) => (
+          <li key={p.tier} className="overflow-hidden rounded-lg border">
+            <div className={`${TIER_BG[p.tier]} p-4 text-black`}>
+              <div className="font-display text-4xl leading-none font-black italic uppercase">{p.tier}</div>
+              <div className="font-label mt-1 text-sm font-bold tracking-[0.08em] uppercase italic">{p.role}</div>
+            </div>
+            <ul className="bg-card space-y-3 p-4">
+              {sponsorBenefits.filter((b) => b.tier === p.tier).map((b) => {
+                const Icon = ICONS[b.icon];
+                return <li key={b.label} className="flex items-start gap-3"><Icon className="text-primary mt-0.5 size-5 shrink-0" aria-hidden />{b.label}</li>;
+              })}
+              <li className="font-label border-t pt-3 text-sm font-bold tracking-[0.08em] uppercase italic">Price on request</li>
+            </ul>
+          </li>
+        ))}
       </ul>
 
       <section className="space-y-4">

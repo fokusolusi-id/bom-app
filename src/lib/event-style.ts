@@ -1,9 +1,9 @@
 import type { EventType } from "@/domain/event";
-import { TIER_INFO } from "@/domain/tier";
+import { TIER_INFO, TIER_NAME } from "@/domain/tier";
 
 /**
  * Colours of each event type, shared by the calendar cells and the homepage cards. They follow the competition path
- * tiles: grey Unrank, dark Ranked, orange Major with black text,
+ * tiles: grey Unrank, dark Ranked, orange Cup (stored as Major) with black text,
  * red Championship, light Break.
  * `ink` is the main text and icon colour, `soft` the secondary text; both are picked for contrast on `bg`.
  * `edge` is the tile border colour (used by the homepage cards; calendar cells have no border).
@@ -16,4 +16,4 @@ export const EVENT_STYLE: Record<EventType, { bg: string; ink: string; soft: str
   Break: { bg: "bg-[var(--bom-fur-light)]", ink: "text-black", soft: "text-black/75", edge: "border-[var(--bom-fur)]" },
 };
 
-export const EVENT_TYPE_LABEL = (type: EventType) => (type === "Break" ? "Break / Holiday" : `${TIER_INFO[type].code} ${type}`);
+export const EVENT_TYPE_LABEL = (type: EventType) => (type === "Break" ? "Break / Holiday" : `${TIER_INFO[type].code} ${TIER_NAME[type]}`);
