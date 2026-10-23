@@ -36,7 +36,7 @@ export function CompetitionLadder({ details = true, bullets: showBullets = true,
               </div>
               <div className="pr-14">
                 <div className={cn("font-label text-[0.65rem] font-bold tracking-[0.12em] uppercase italic", style.soft)}>Beyblade of Medan</div>
-                <div className={cn("font-label text-[0.65rem] font-bold tracking-[0.12em] uppercase italic", style.soft)}>Kompetisi</div>
+                <div className={cn("font-label text-[0.65rem] font-bold tracking-[0.12em] uppercase italic", style.soft)}>Kompetisi Level {info.code.replace("BK", "")}</div>
               </div>
               <div>
                 <div className={cn("font-display text-6xl leading-none font-black tracking-tight italic", accent)}>{info.code}</div>
