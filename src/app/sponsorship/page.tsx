@@ -4,6 +4,8 @@ import { RibbonBanner } from "@/components/bom/ribbon-banner";
 import { Card } from "@/components/ui/card";
 import { otherIncomeIdeas, sponsorBenefits, sponsorPackages, type BenefitIcon, type SponsorTier } from "@/lib/sponsorship";
 import { PARTNER_EMAIL } from "@/lib/venue";
+import { PackageSponsors } from "@/components/bom/package-sponsors";
+import { publicPackageSponsors } from "@/server/sponsors";
 
 export const metadata = { title: "Sponsorship | Beyblade of Medan" };
 
@@ -14,7 +16,10 @@ const ICONS: Record<BenefitIcon, LucideIcon | typeof TiktokIcon> = {
 /** Gold, Silver and Bronze in their sponsor colours, with dark text on top. */
 const TIER_BG: Record<SponsorTier, string> = { Gold: "bg-[var(--bom-sponsor-gold)]", Silver: "bg-[var(--bom-sponsor-silver)]", Bronze: "bg-[var(--bom-sponsor-bronze)]" };
 
-export default function SponsorshipPage() {
+export const revalidate = 60;
+
+export default async function SponsorshipPage() {
+  const sponsors = await publicPackageSponsors().list();
   return (
     <main className="mx-auto max-w-6xl space-y-12 px-4 py-12">
       <section className="space-y-4">
@@ -82,6 +87,13 @@ export default function SponsorshipPage() {
           </li>
         ))}
       </ul>
+
+      {sponsors.length > 0 && (
+        <section className="space-y-4">
+          <h2 className="font-display text-2xl font-extrabold italic uppercase">Our sponsors</h2>
+          <PackageSponsors sponsors={sponsors} />
+        </section>
+      )}
 
       <section className="space-y-4">
         <h2 className="font-display text-2xl font-extrabold italic uppercase">Other ways to work with us</h2>

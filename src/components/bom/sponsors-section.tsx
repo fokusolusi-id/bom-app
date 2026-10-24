@@ -1,22 +1,21 @@
 import Link from "next/link";
 import { CalendarDays, Mail, MapPin } from "lucide-react";
-import { SPONSOR_TIERS } from "@/domain/sponsor";
+import { PackageSponsors } from "@/components/bom/package-sponsors";
 import { SectionHeading } from "@/components/bom/section-heading";
 import { SponsorSlider } from "@/components/bom/sponsor-slider";
 import { Button } from "@/components/ui/button";
 import { DIRECTIONS_URL, GATHERING_SCHEDULE, PARTNER_EMAIL, VENUE } from "@/lib/venue";
-import { publicSponsors } from "@/server/sponsors";
+import { publicPackageSponsors, publicSponsors } from "@/server/sponsors";
 
 /** "Supported by": the sponsor slider, then how to become a sponsor and where the community gathers. Shared by the homepage and the leaderboard. */
 export async function SponsorsSection({ className }: { className?: string }) {
   const sponsors = await publicSponsors().list();
-  // Gold first, then Silver, then Bronze; within a package the order set in the admin (the list already comes sorted by it).
-  const rank = (tier: string) => SPONSOR_TIERS.findIndex(([t]) => t === tier);
-  const ordered = [...sponsors].sort((a, b) => rank(a.tier) - rank(b.tier));
+  const packages = await publicPackageSponsors().list();
   return (
     <section aria-labelledby="sponsors" className={className}>
       <SectionHeading id="sponsors">Supported by</SectionHeading>
-      {sponsors.length > 0 && <SponsorSlider sponsors={ordered.map((sp) => ({ id: sp.id, name: sp.name, logo: sp.logo_path, website: sp.website }))} />}
+      {packages.length > 0 && <div className="mb-8"><PackageSponsors sponsors={packages} /></div>}
+      {sponsors.length > 0 && <SponsorSlider sponsors={sponsors.map((sp) => ({ id: sp.id, name: sp.name, logo: sp.logo_path, website: sp.website }))} />}
       <div className="grid gap-6 md:grid-cols-2">
         <div className="border-primary space-y-3 border-t-[3px] pt-4">
           <h3 className="font-display text-2xl font-extrabold italic uppercase">For Business inquiries</h3>

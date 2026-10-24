@@ -10,6 +10,8 @@ import { supabaseSponsors } from "@/server/sponsors";
 function revalidate() {
   revalidatePath("/admin/home");
   revalidatePath("/");
+  revalidatePath("/sponsorship");
+  revalidatePath("/leaderboard");
 }
 
 export async function prepareSponsorLogoUpload(contentType: string): Promise<{ path: string; token: string } | { error: string }> {
@@ -38,6 +40,31 @@ export async function deleteSponsor(id: string): Promise<FormState> {
   return toFormState(async () => {
     if (!isUuid(id)) throw new Error("Invalid input");
     const repo = supabaseSponsors(supabase);
+    const existing = await repo.get(id);
+    await repo.remove(id);
+    await removeMedia(supabase, [existing?.logo_path]);
+    revalidate();
+  });
+}
+
+/** The same for the Gold, Silver and Bronze sponsors by package (table `package_sponsors`). */
+export async function savePackageSponsor(_prev: FormState, formData: FormData): Promise<FormState> {
+  const supabase = await requireAdmin();
+  return toFormState(async () => {
+    const input = parseSponsorInput((k) => formData.get(k));
+    const repo = supabaseSponsors(supabase, "package_sponsors");
+    const previous = input.id ? (await repo.get(input.id))?.logo_path : null;
+    await repo.save(input);
+    if (previous && previous !== input.logo_path) await removeMedia(supabase, [previous]);
+    revalidate();
+  }, "Saved");
+}
+
+export async function deletePackageSponsor(id: string): Promise<FormState> {
+  const supabase = await requireAdmin();
+  return toFormState(async () => {
+    if (!isUuid(id)) throw new Error("Invalid input");
+    const repo = supabaseSponsors(supabase, "package_sponsors");
     const existing = await repo.get(id);
     await repo.remove(id);
     await removeMedia(supabase, [existing?.logo_path]);
