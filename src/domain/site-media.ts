@@ -5,7 +5,7 @@ import { parseYoutubeId } from "./youtube";
 export const SECTIONS = ["news", "gallery", "popup"] as const;
 export type MediaSection = (typeof SECTIONS)[number];
 
-/** `image` for the gallery and the pop-up; `video` (uploaded file) or `youtube` for What's new. */
+/** `image` for the gallery and the pop-up (a pop-up item can be a video file too; its path says which); `video` (uploaded file) or `youtube` for What's new. */
 export type SiteMedia = {
   id?: string; section: MediaSection; kind: "image" | "video" | "youtube";
   path: string | null; youtube_id: string | null; caption: string | null; sort_order: number; is_active: boolean;
@@ -29,7 +29,7 @@ export function parseSiteMediaInput(get: (key: string) => unknown): SiteMediaInp
   let kind: SiteMedia["kind"];
   let youtubeId: string | null = null;
   if (section === "gallery" || section === "popup") {
-    if (!path) throw new Error("Upload a photo first");
+    if (!path) throw new Error(section === "popup" ? "Upload a photo or a video first" : "Upload a photo first");
     kind = "image";
   } else if (link) {
     if (path) throw new Error("Choose one: an uploaded video or a YouTube link");

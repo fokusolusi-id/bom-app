@@ -6,9 +6,9 @@ import { createClient } from "@/lib/supabase/client";
 
 type Prepare = (contentType: string) => Promise<{ path: string; token: string } | { error: string }>;
 
-/** Upload of one photo (`kind="image"`) or one video (`kind="video"`) with a preview. Submits only the storage path. */
+/** Upload of one photo (`kind="image"`), one video (`kind="video"`) or either (`kind="any"`) with a preview. Submits only the storage path. */
 export function MediaUpload({ name, label, defaultPath, prepare, kind }: {
-  name: string; label: string; defaultPath?: string | null; prepare: Prepare; kind: "image" | "video";
+  name: string; label: string; defaultPath?: string | null; prepare: Prepare; kind: "image" | "video" | "any";
 }) {
   const [path, setPath] = useState(defaultPath ?? null);
   const [busy, setBusy] = useState(false);
@@ -25,7 +25,7 @@ export function MediaUpload({ name, label, defaultPath, prepare, kind }: {
   async function upload(file: File) {
     setError(null);
     const isVideo = file.type.startsWith("video/");
-    if (isVideo !== (kind === "video")) return setError(kind === "video" ? "Choose a video file (MP4/WebM)" : "Choose a photo file (JPG/PNG/WebP)");
+    if (kind !== "any" && isVideo !== (kind === "video")) return setError(kind === "video" ? "Choose a video file (MP4/WebM)" : "Choose a photo file (JPG/PNG/WebP)");
     if (file.size > (isVideo ? MAX_VIDEO_BYTES : MAX_IMAGE_BYTES)) return setError(`The file must be at most ${isVideo ? "20" : "5"} MB`);
     setBusy(true);
     try {
@@ -39,7 +39,7 @@ export function MediaUpload({ name, label, defaultPath, prepare, kind }: {
     }
   }
 
-  const accept = MEDIA_ACCEPT.split(",").filter((t) => t.startsWith("video/") === (kind === "video")).join(",");
+  const accept = MEDIA_ACCEPT.split(",").filter((t) => kind === "any" || t.startsWith("video/") === (kind === "video")).join(",");
   return (
     <div className="col-span-full flex flex-wrap items-center gap-3">
       <input ref={hidden} type="hidden" name={name} value={path ?? ""} />

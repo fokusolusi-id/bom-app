@@ -21,7 +21,7 @@ function MediaForm({ section, item }: { section: MediaSection; item?: SiteMedia 
           <Input name="youtube_url" defaultValue={item?.youtube_id ? `https://youtu.be/${item.youtube_id}` : ""} placeholder="or a YouTube link (leave empty if you upload a video)" aria-label="Link YouTube" maxLength={200} className="sm:col-span-2" />
         </>
       ) : (
-        <MediaUpload name="path" label="Photo" defaultPath={item?.path} prepare={prepare} kind="image" />
+        <MediaUpload name="path" label={section === "popup" ? "Photo or video" : "Photo"} defaultPath={item?.path} prepare={prepare} kind={section === "popup" ? "any" : "image"} />
       )}
       <Input name="caption" defaultValue={item?.caption ?? ""} placeholder="Caption (optional)" aria-label="Caption" maxLength={120} />
       <Input name="sort_order" type="number" min={0} max={999} defaultValue={item?.sort_order ?? 0} placeholder="Order" aria-label="Order" />
@@ -60,7 +60,7 @@ export const SliderSection = () => (
 );
 
 export const PopupSection = () => (
-  <Section id="popup" section="popup" title="Event pop-up" hint="Pictures of upcoming events (JPG/PNG/WebP, max 5 MB). When the homepage opens they show in a pop-up: one picture, or a slider if there are several, in this order. Add a caption to say what it is. Untick 'Show on website' to hide one, or delete them all to turn the pop-up off." />
+  <Section id="popup" section="popup" title="Event pop-up" hint="Pictures (JPG/PNG/WebP, max 5 MB) or a video (MP4/WebM, max 20 MB) of upcoming events. When the homepage opens they show in a pop-up: one item, or a slider if there are several, in this order. A video plays in a loop, with sound. Add a caption to say what it is; put a | in it for a second line, for example: BK2 Cup #1 2026 | 31.10.2026. Untick 'Show on website' to hide one, or delete them all to turn the pop-up off." />
 );
 
 export const GallerySection = () => (

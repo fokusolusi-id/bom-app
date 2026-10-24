@@ -7,20 +7,6 @@ export type SponsorLogo = { id?: string; name: string; logo: string; website: st
 
 const STEP_MS = 3000;
 
-// A fresh random seed per page load in the browser. The server snapshot is 0, so the first render matches the
-// server's HTML and the shuffle only kicks in once the page is live.
-const clientSeed = Math.floor(Math.random() * 2 ** 31) || 1;
-const noopSubscribe = () => () => {};
-
-function shuffled<T>(list: T[], seed: number): T[] {
-  if (seed === 0) return list;
-  let a = seed;
-  const rand = () => { a = (a + 0x6d2b79f5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
-  const out = [...list];
-  for (let i = out.length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [out[i], out[j]] = [out[j], out[i]]; }
-  return out;
-}
-
 const query = "(prefers-reduced-motion: reduce)";
 const subscribeMotion = (cb: () => void) => {
   const mq = window.matchMedia(query);
@@ -30,12 +16,11 @@ const subscribeMotion = (cb: () => void) => {
 const useReducedMotion = () => useSyncExternalStore(subscribeMotion, () => window.matchMedia(query).matches, () => false);
 
 /**
- * Sponsor logos in a random order on every visit. When there are more than fit on screen the strip slides on its own,
+ * Sponsor logos in the order they come in (the order set in the admin). When there are more than fit on screen the strip slides on its own,
  * one logo at a time, and loops back to the start. Pauses on hover/focus and for reduced motion.
  */
 export function SponsorSlider({ sponsors }: { sponsors: SponsorLogo[] }) {
-  const seed = useSyncExternalStore(noopSubscribe, () => clientSeed, () => 0);
-  const items = shuffled(sponsors, seed);
+  const items = sponsors;
   const track = useRef<HTMLUListElement>(null);
   const [paused, setPaused] = useState(false);
   const reduced = useReducedMotion();

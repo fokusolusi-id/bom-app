@@ -16,6 +16,8 @@ export const MAX_VIDEO_BYTES = 20 * 1024 * 1024;
 const VIDEO_TYPES: Record<string, string> = { "video/mp4": "mp4", "video/webm": "webm" };
 export const MEDIA_ACCEPT = [...Object.keys(IMAGE_TYPES), ...Object.keys(VIDEO_TYPES)].join(",");
 const VIDEO_FOLDERS: MediaFolder[] = ["news"];
+/** The event pop-up takes photos and videos. */
+const MIXED_FOLDERS: MediaFolder[] = ["popup"];
 
 /** Extension for an upload into `folder`: video folders take only video, every other folder only photos. */
 export function mediaExtension(contentType: unknown, folder: MediaFolder): string {
@@ -24,6 +26,10 @@ export function mediaExtension(contentType: unknown, folder: MediaFolder): strin
     return "pdf";
   }
   const video = typeof contentType === "string" ? VIDEO_TYPES[contentType] : undefined;
+  if (MIXED_FOLDERS.includes(folder)) {
+    if (video) return video;
+    return imageExtension(contentType);
+  }
   if (VIDEO_FOLDERS.includes(folder)) {
     if (!video) throw new Error("Video must be MP4 or WebM");
     return video;
@@ -43,7 +49,7 @@ export function imageExtension(contentType: unknown): string {
 /** Validates a storage path produced by an upload into `folder`. Empty means "no image". */
 export function parseImagePath(raw: unknown, folder: MediaFolder): string | null {
   if (raw === null || raw === undefined || raw === "") return null;
-  const exts = VIDEO_FOLDERS.includes(folder) ? "mp4|webm" : "jpg|png|webp";
+  const exts = MIXED_FOLDERS.includes(folder) ? "jpg|png|webp|mp4|webm" : VIDEO_FOLDERS.includes(folder) ? "mp4|webm" : "jpg|png|webp";
   const pattern = new RegExp(`^${folder}/${FILE_NAME[folder]}\\.(${exts})$`);
   if (typeof raw !== "string" || !pattern.test(raw)) throw new Error("Invalid photo");
   return raw;
