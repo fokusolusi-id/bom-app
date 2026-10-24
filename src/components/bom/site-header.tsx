@@ -12,17 +12,17 @@ const nav = [
   ["/leaderboard", "Leaderboard"],
 ] as const;
 
-const linkCls = "font-label text-sm font-bold italic uppercase tracking-[0.08em]";
+const linkCls = "font-label text-xs font-bold italic uppercase tracking-[0.04em] whitespace-nowrap lg:text-sm lg:tracking-[0.08em]";
 
 export function SiteHeader() {
   return (
     <header className="bg-background sticky top-0 z-40 border-b">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-        <Link href="/" className="flex items-center gap-3">
+        <Link href="/" className="flex shrink-0 items-center gap-3">
           <Image src="/brand/logo-768.png" alt="Beyblade of Medan" width={44} height={44} />
-          <span className="font-display text-lg font-extrabold italic uppercase">Beyblade of Medan</span>
+          <span className="font-display text-base font-extrabold whitespace-nowrap italic uppercase lg:text-lg">Beyblade of Medan</span>
         </Link>
-        <nav aria-label="Main" className="hidden gap-6 md:flex">
+        <nav aria-label="Main" className="hidden gap-3 md:flex lg:gap-6">
           {nav.map(([href, label]) => <NavLink key={href} href={href} className={linkCls}>{label}</NavLink>)}
         </nav>
         <MobileMenu nav={nav} linkClass={linkCls} />

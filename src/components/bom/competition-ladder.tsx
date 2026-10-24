@@ -8,7 +8,7 @@ import { TIER_TILE, TierTile } from "./tier-tile";
 /** BK4 Unrank first, up to BK1 Championship. */
 const LEVELS = ["Unrank", "Ranked", "Major", "Championship"] as const satisfies readonly TierLabel[];
 /** Height of the coloured top of a ticket; the notches and the perforation sit right under it. */
-const TOP = "9.5rem";
+const TOP = "10.5rem";
 const NOTCH = "0.7rem";
 const notch = (side: "left" | "right") => `radial-gradient(circle ${NOTCH} at ${side === "left" ? "0" : "100%"} ${TOP}, #0000 98%, #000) ${side} / 51% 100% no-repeat`;
 const TICKET_MASK = { WebkitMask: `${notch("left")}, ${notch("right")}`, mask: `${notch("left")}, ${notch("right")}` };
@@ -20,7 +20,7 @@ const TICKET_MASK = { WebkitMask: `${notch("left")}, ${notch("right")}`, mask: `
  */
 export function CompetitionLadder({ details = true, bullets: showBullets = true, scheduleLink = true }: { details?: boolean; bullets?: boolean; scheduleLink?: boolean }) {
   return (
-    <ol aria-label="Competition levels" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <ol aria-label="Competition levels" className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
       {LEVELS.map((tier) => {
         const style = EVENT_STYLE[tier];
         const info = TIER_INFO[tier];
@@ -30,7 +30,7 @@ export function CompetitionLadder({ details = true, bullets: showBullets = true,
           <li key={tier} className="bg-card flex flex-col rounded-xl" style={TICKET_MASK}>
             <div className={cn("relative flex flex-col justify-between rounded-t-xl p-4", style.bg, style.ink)} style={{ height: TOP }}>
               <TierTile tier={tier} className="absolute top-3 right-3 size-14" />
-              <div className="font-num tabular absolute right-3 bottom-3 rounded-md bg-black/35 px-2 py-1 text-right leading-none text-white">
+              <div className="font-num tabular absolute right-3 bottom-3 hidden xl:block rounded-md bg-black/35 px-2 py-1 text-right leading-none text-white">
                 <span className="text-xl font-black italic">{tier === "Unrank" ? 0 : `${tierMultiplier(tier)}x`}</span>{" "}
                 <span className="text-[0.65rem]">points</span>
               </div>
@@ -39,13 +39,17 @@ export function CompetitionLadder({ details = true, bullets: showBullets = true,
                 <div className={cn("font-label text-[0.65rem] font-bold tracking-[0.12em] uppercase italic", style.soft)}>Kompetisi Level {info.code.replace("BK", "")}</div>
               </div>
               <div>
-                <div className={cn("font-display text-6xl leading-none font-black tracking-tight italic", accent)}>{info.code}</div>
+                <div className={cn("font-display text-5xl leading-none font-black tracking-tight italic xl:text-6xl", accent)}>{info.code}</div>
                 <div className={cn("font-display mt-1 text-lg leading-none font-black italic uppercase", accent)}>{TIER_NAME[tier]}</div>
               </div>
             </div>
             <div aria-hidden className="mx-4 border-t-2 border-dashed border-white/25" />
             <div className="flex flex-1 flex-col gap-3 p-4 pt-3">
               <p className={cn("font-label text-sm font-bold tracking-[0.08em] uppercase italic", TIER_TILE[tier].title)}>{info.audience}</p>
+              {/* Under 1280px the cards are narrow, so the points sit here instead of in the corner of the top. */}
+              <div className="font-num tabular text-2xl leading-none font-black italic xl:hidden">
+                {tier === "Unrank" ? 0 : `${tierMultiplier(tier)}x`} <span className="text-muted-foreground text-sm font-normal not-italic">points</span>
+              </div>
               {details && showBullets && (
                 <div className="text-muted-foreground space-y-1 text-sm">
                   <p>{info.tagline}</p>

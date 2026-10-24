@@ -46,6 +46,20 @@ describe("parseSubCommunityInput", () => {
 import { normalizeWhatsapp, parseRegistration } from "@/domain/join-request";
 import { imageExtension, parseImagePath } from "@/domain/media";
 
+describe("event pop-up media", () => {
+  it("takes photos and videos, but not other types", () => {
+    expect(mediaExtension("image/png", "popup")).toBe("png");
+    expect(mediaExtension("video/mp4", "popup")).toBe("mp4");
+    expect(() => mediaExtension("application/pdf", "popup")).toThrow();
+    expect(() => mediaExtension("video/mp4", "gallery")).toThrow();
+  });
+  it("accepts a photo or a video path in popup/", () => {
+    expect(parseImagePath("popup/teaser_1.mp4", "popup")).toBe("popup/teaser_1.mp4");
+    expect(parseImagePath("popup/poster.webp", "popup")).toBe("popup/poster.webp");
+    expect(() => parseImagePath("gallery/teaser.mp4", "gallery")).toThrow();
+  });
+});
+
 describe("media", () => {
   const path = "sub-communities/0f8fad5b-d9cb-469f-a165-70867728950e.webp";
   it("accepts an uploaded path or empty", () => {
