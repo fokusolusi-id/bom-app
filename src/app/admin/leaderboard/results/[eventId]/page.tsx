@@ -20,7 +20,7 @@ export default async function EventResultsPage({ params }: { params: Promise<{ e
   const { eventId } = await params;
   if (!isUuid(eventId)) notFound();
   const staff = await requireStaff();
-  const { events, members } = await loadResultEvents(staff, eventId);
+  const { events, members, table } = await loadResultEvents(staff, eventId);
   const event = events[0];
   if (!event) notFound();
   return (
@@ -44,7 +44,7 @@ export default async function EventResultsPage({ params }: { params: Promise<{ e
         </div>
 
         <Participants eventId={event.id} rows={event.rows} />
-        <ResultsEntry tier={event.tier} eventId={event.id} text={event.text} challongeUrl={event.challongeUrl} members={members} hasChallongeKey={!!process.env.CHALLONGE_API_KEY} />
+        <ResultsEntry tier={event.tier} table={table} eventId={event.id} text={event.text} challongeUrl={event.challongeUrl} members={members} hasChallongeKey={!!process.env.CHALLONGE_API_KEY} />
 
         <Link href="/admin/leaderboard#results" className="text-muted-foreground hover:text-primary flex w-fit items-center gap-1 text-sm"><ArrowLeft className="size-4" aria-hidden />Back to Leaderboard</Link>
       </div>
