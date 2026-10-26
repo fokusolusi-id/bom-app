@@ -50,9 +50,8 @@ export async function saveEventResults(eventId: string, _prev: FormState, formDa
   const state = await toFormState(async () => {
     if (!isUuid(eventId)) throw new Error("Invalid input");
     const supabase = await requireResultsAccess(staff, eventId);
-    const event = await supabaseScheduleEvents(supabase).get(eventId);
     const players = await supabasePlayers(supabase).list(1000, { includeRegistered: true });
-    const rows = parseResultsText(String(formData.get("results") ?? ""), players.flatMap((p) => (p.id ? [{ id: p.id, name: p.name, bom_id: p.bom_id }] : [])), { guestTigerKing: event?.tier === "Unrank" });
+    const rows = parseResultsText(String(formData.get("results") ?? ""), players.flatMap((p) => (p.id ? [{ id: p.id, name: p.name, bom_id: p.bom_id }] : [])));
     guests = rows.flatMap((r) => (r.guestName ? [r.guestName] : []));
     await supabaseResults(supabase).replaceForEvent(eventId, rows);
     // The Challonge bracket the list came from, kept with the event so the site can link to it.

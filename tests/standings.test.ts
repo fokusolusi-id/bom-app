@@ -54,8 +54,15 @@ describe("results typed as a list", () => {
     expect(rows[2].playerId).toBe("id-2");
   });
 
-  it.each([["", "at least one"], ["Prett\nprett", "twice"], ["Prett (TK)\nMr. DiBo *", "Only one Tiger King"], ["Nobody (TK)", "no BOM ID"]])("rejects %j", (text, message) => {
+  it.each([["", "at least one"], ["Prett\nprett", "twice"], ["Prett (TK)\nMr. DiBo *", "Only one Tiger King"]])("rejects %j", (text, message) => {
     expect(() => parseResultsText(text, players)).toThrow(new RegExp(message, "i"));
+  });
+
+  it("lets a guest (Non BOM ID) be the Tiger King", () => {
+    const rows = parseResultsText("1 Nusa TR (TK)\n\nMr. DiBo", players);
+    expect(rows[0]).toMatchObject({ playerId: null, guestName: "Nusa TR", tigerKing: true });
+    expect(rows[1]).toMatchObject({ playerId: "id-0", tigerKing: false });
+    expect(() => parseResultsText("Nusa TR (TK)\n\nPrett *", players)).toThrow(/Only one Tiger King/);
   });
 });
 

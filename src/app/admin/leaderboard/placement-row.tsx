@@ -46,7 +46,7 @@ export function PlacementRow({ eventId, rowId, playerId, name, bomId, place, tig
         {tigerKing && <Crown className="mx-1 inline size-4 align-text-bottom text-red-500" aria-label="Tiger King" />}
         {combos.length > 0 && <span className="text-muted-foreground mt-1 block pl-8 font-mono text-xs">{combos.join(" · ")}</span>}
       </span>
-      <span className="font-num tabular w-20 shrink-0 text-right font-bold">{isGuest ? <span className="text-muted-foreground text-xs font-normal">no points</span> : `${points} pts`}</span>
+      <span className="font-num tabular w-20 shrink-0 text-right font-bold">{isGuest ? null : `${points} pts`}</span>
       <span className="flex items-center gap-1">
         {!isGuest && <Button type="button" variant="outline" size="sm" className="w-8 px-0" onClick={() => setEditing(true)} aria-label={`Edit ${name}`}><Pencil aria-hidden /></Button>}
         <ActionForm action={removeResultRow.bind(null, eventId, rowId)}><Button variant="outline" size="sm" className="w-8 px-0" aria-label={`Remove ${name}`}><Trash2 aria-hidden /></Button></ActionForm>

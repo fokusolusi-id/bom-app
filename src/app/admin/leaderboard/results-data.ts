@@ -1,6 +1,7 @@
 import { canManageResults, type Access } from "@/domain/access";
 import { eventUsesBomLogo } from "@/domain/event";
 import { formatBomId } from "@/domain/profile";
+import type { PointsTable } from "@/domain/points-table";
 import { eventPoints } from "@/domain/standings";
 import type { TierLabel } from "@/domain/tier";
 import { mediaUrl } from "@/lib/media";
@@ -19,7 +20,7 @@ type Staff = Awaited<ReturnType<typeof requireStaff>> & Access;
  * be kept), each with its participants, points and the list text; or just one event by id. Only the events this person may
  * enter results for.
  */
-export async function loadResultEvents(staff: Staff, eventId?: string): Promise<{ events: ResultEvent[]; members: { id: string; name: string; bom_id: string }[] }> {
+export async function loadResultEvents(staff: Staff, eventId?: string): Promise<{ events: ResultEvent[]; members: { id: string; name: string; bom_id: string }[]; table: PointsTable }> {
   const supabase = staff.supabase;
   const [all, players, table] = await Promise.all([
     supabaseScheduleEvents(supabase).between("2020-01-01T00:00:00Z", new Date().toISOString(), { includeInactive: true }),
@@ -48,5 +49,5 @@ export async function loadResultEvents(staff: Staff, eventId?: string): Promise<
       })),
     }];
   });
-  return { events: data, members: players.flatMap((p) => (p.id ? [{ id: p.id, name: p.name, bom_id: p.bom_id }] : [])) };
+  return { events: data, members: players.flatMap((p) => (p.id ? [{ id: p.id, name: p.name, bom_id: p.bom_id }] : [])), table };
 }
