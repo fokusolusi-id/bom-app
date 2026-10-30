@@ -1,5 +1,5 @@
 "use client";
-import { Pencil, Search, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { BomIdBadge } from "@/components/bom/bom-id-badge";
 import { ActionForm } from "@/components/form/action-form";
@@ -11,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { AGE_GROUPS, HEAR_FROM } from "@/domain/join-request";
 import { PLAYER_ROLES, type PlayerRole, type PlayerStatus } from "@/domain/types";
 import type { FormState } from "@/lib/form-state";
-import { deletePlayer, savePlayer } from "../players/actions";
+import { addPlayer, deletePlayer, savePlayer } from "../players/actions";
 
 export type PlayerRowData = {
   id: string; bom_id: string; name: string; points: number; status: PlayerStatus; role: PlayerRole; created_at: string | null;
@@ -27,58 +27,69 @@ const input = "text-base text-white";
 
 const roleTone: Record<PlayerRole, string> = { member: "text-muted-foreground", organizer: "text-primary", admin: "text-yellow-400" };
 
-function EditForm({ p, onDone }: { p: PlayerRowData; onDone: () => void }) {
-  const [minor, setMinor] = useState(p.age_group === "under12");
+/** The member form: editing `p`, or adding a new member when there is no `p`. */
+function EditForm({ p, onDone, taken }: { p?: PlayerRowData; onDone: () => void; taken: Map<string, string> }) {
+  const [minor, setMinor] = useState(p?.age_group === "under12");
+  const [bomId, setBomId] = useState(p?.bom_id ?? "");
+  // Is this BOM ID used by someone else? (Checked as typed, ignoring case; a member's own ID is fine.)
+  const owner = taken.get(bomId.trim().toLowerCase());
+  const idState = bomId.trim() === "" || (p && bomId.trim().toLowerCase() === p.bom_id.toLowerCase()) ? null : owner ? "taken" : "free";
   const save = async (prev: FormState, data: FormData) => {
-    const result = await savePlayer(prev, data);
+    const result = await (p ? savePlayer : addPlayer)(prev, data);
     if (result.ok) onDone();
     return result;
   };
   return (
     <ActionForm action={save} className="grid gap-4 sm:grid-cols-2">
-      <input type="hidden" name="id" value={p.id} />
+      {p && <input type="hidden" name="id" value={p.id} />}
 
       <h3 className="text-primary text-sm font-bold uppercase sm:col-span-2">Member</h3>
-      <label className={label}>Blader name<Input name="name" defaultValue={p.name} maxLength={40} required className={input} /></label>
-      <label className={label}>BOM ID<Input name="bom_id" defaultValue={p.bom_id} maxLength={20} required className={input} /></label>
+      <label className={label}>Blader name<Input name="name" defaultValue={p?.name} maxLength={40} required className={input} /></label>
+      <label className={label}>BOM ID
+        <Input name="bom_id" value={bomId} onChange={(e) => setBomId(e.target.value)} placeholder="BoM-200" maxLength={20} required aria-invalid={idState === "taken"} className={input} />
+        {idState === "taken" && <span role="alert" className="text-destructive text-xs normal-case">Already used by {owner}</span>}
+        {idState === "free" && <span role="status" className="text-xs normal-case text-green-500">Available</span>}
+      </label>
       <label className={label}>Role
-        <NativeSelect name="role" defaultValue={p.role} className={input}>{PLAYER_ROLES.map(([v, t]) => <option key={v} value={v}>{t}</option>)}</NativeSelect>
+        <NativeSelect name="role" defaultValue={p?.role ?? "member"} className={input}>{PLAYER_ROLES.map(([v, t]) => <option key={v} value={v}>{t}</option>)}</NativeSelect>
       </label>
       <label className={label}>Status
-        <NativeSelect name="status" defaultValue={p.status} className={input}>
+        <NativeSelect name="status" defaultValue={p?.status ?? "active"} className={input}>
           <option value="active">Active (on the leaderboard)</option>
           <option value="registered">Registered (not yet active)</option>
         </NativeSelect>
       </label>
-      <label className={label}>Joined<Input value={p.created_at ? joined.format(new Date(p.created_at)) : "-"} readOnly disabled className={input} /></label>
+      {p && <label className={label}>Joined<Input value={p.created_at ? joined.format(new Date(p.created_at)) : "-"} readOnly disabled className={input} /></label>}
 
       <h3 className="text-primary text-sm font-bold uppercase sm:col-span-2">Membership details</h3>
-      <label className={label}>Full name<Input name="full_name" defaultValue={p.full_name ?? ""} maxLength={60} className={input} /></label>
-      <label className={label}>WhatsApp number<Input name="whatsapp" type="tel" defaultValue={p.whatsapp ?? ""} maxLength={20} className={input} /></label>
+      <label className={label}>Full name<Input name="full_name" defaultValue={p?.full_name ?? ""} maxLength={60} className={input} /></label>
+      <label className={label}>WhatsApp number<Input name="whatsapp" type="tel" defaultValue={p?.whatsapp ?? ""} maxLength={20} className={input} /></label>
       <label className={label}>Age group
-        <NativeSelect name="age_group" defaultValue={p.age_group ?? ""} onChange={(e) => setMinor(e.target.value === "under12")} className={input}>
+        <NativeSelect name="age_group" defaultValue={p?.age_group ?? ""} onChange={(e) => setMinor(e.target.value === "under12")} className={input}>
           <option value="">-</option>
           {AGE_GROUPS.map(([v, t]) => <option key={v} value={v}>{t}</option>)}
         </NativeSelect>
       </label>
       <label className={label}>Heard about Beyblade of Medan from
-        <NativeSelect name="hear_from" defaultValue={p.hear_from ?? ""} className={input}>
+        <NativeSelect name="hear_from" defaultValue={p?.hear_from ?? ""} className={input}>
           <option value="">-</option>
           {HEAR_FROM.map((h) => <option key={h} value={h}>{h}</option>)}
         </NativeSelect>
       </label>
       {minor && (
         <>
-          <label className={label}>Guardian name<Input name="guardian_name" defaultValue={p.guardian_name ?? ""} maxLength={60} required className={input} /></label>
-          <label className={label}>Guardian WhatsApp<Input name="guardian_whatsapp" type="tel" defaultValue={p.guardian_whatsapp ?? ""} maxLength={20} required className={input} /></label>
+          <label className={label}>Guardian name<Input name="guardian_name" defaultValue={p?.guardian_name ?? ""} maxLength={60} required className={input} /></label>
+          <label className={label}>Guardian WhatsApp<Input name="guardian_whatsapp" type="tel" defaultValue={p?.guardian_whatsapp ?? ""} maxLength={20} required className={input} /></label>
         </>
       )}
-      <label className={`${label} sm:col-span-2`}>Address<Input name="address" defaultValue={p.address ?? ""} maxLength={300} className={input} /></label>
-      <label className="flex items-center gap-2 text-sm sm:col-span-2"><input type="checkbox" name="photo_consent" defaultChecked={p.photo_consent} /> Photo and video consent</label>
-      <p className="text-muted-foreground text-sm sm:col-span-2">
-        {p.payment_proof_url ? <a href={p.payment_proof_url} target="_blank" rel="noreferrer" className="text-primary underline">View payment screenshot</a> : "No payment screenshot."}
-      </p>
-      <Button type="submit" className="sm:col-span-2">Save</Button>
+      <label className={`${label} sm:col-span-2`}>Address<Input name="address" defaultValue={p?.address ?? ""} maxLength={300} className={input} /></label>
+      <label className="flex items-center gap-2 text-sm sm:col-span-2"><input type="checkbox" name="photo_consent" defaultChecked={p?.photo_consent} /> Photo and video consent</label>
+      {p && (
+        <p className="text-muted-foreground text-sm sm:col-span-2">
+          {p.payment_proof_url ? <a href={p.payment_proof_url} target="_blank" rel="noreferrer" className="text-primary underline">View payment screenshot</a> : "No payment screenshot."}
+        </p>
+      )}
+      <Button type="submit" className="sm:col-span-2" disabled={idState === "taken"}>{p ? "Save" : "Add member"}</Button>
     </ActionForm>
   );
 }
@@ -87,6 +98,10 @@ function EditForm({ p, onDone }: { p: PlayerRowData; onDone: () => void }) {
 export function PlayersTable({ players }: { players: PlayerRowData[] }) {
   const [query, setQuery] = useState("");
   const [editing, setEditing] = useState<PlayerRowData | null>(null);
+  const [adding, setAdding] = useState(false);
+  const [sort, setSort] = useState<"asc" | "desc" | null>(null);
+  // Every BOM ID in use (lower case) with who has it, for the "already used" check in the form.
+  const taken = useMemo(() => new Map(players.map((p) => [p.bom_id.toLowerCase(), p.name])), [players]);
   const [deleting, setDeleting] = useState<PlayerRowData | null>(null);
   const matches = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -96,10 +111,16 @@ export function PlayersTable({ players }: { players: PlayerRowData[] }) {
       [p.name, p.bom_id, p.full_name ?? "", p.whatsapp ?? "", roleLabel.get(p.role) ?? "", p.status].some((v) => v.toLowerCase().includes(q) || squash(v).includes(squash(q))),
     );
   }, [players, query]);
+  // Sorted by BOM ID by its number ("BoM-18" before "BoM-182"); no sort keeps the order the list came in.
+  const sorted = useMemo(() => {
+    if (!sort) return matches;
+    const num = (id: string) => Number(/\d+/.exec(id)?.[0] ?? 0);
+    return [...matches].sort((a, b) => (num(a.bom_id) - num(b.bom_id) || a.bom_id.localeCompare(b.bom_id)) * (sort === "asc" ? 1 : -1));
+  }, [matches, sort]);
   const [page, setPage] = useState(0);
-  const pages = Math.max(1, Math.ceil(matches.length / PAGE_SIZE));
+  const pages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
   const current = Math.min(page, pages - 1);
-  const rows = matches.slice(current * PAGE_SIZE, (current + 1) * PAGE_SIZE);
+  const rows = sorted.slice(current * PAGE_SIZE, (current + 1) * PAGE_SIZE);
   const remove = async () => {
     const result = await deletePlayer(deleting!.id);
     if (result.ok) setDeleting(null);
@@ -109,16 +130,23 @@ export function PlayersTable({ players }: { players: PlayerRowData[] }) {
 
   return (
     <div className="space-y-3">
-      <div className="relative max-w-md">
-        <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" aria-hidden />
-        <Input type="search" value={query} onChange={(e) => { setQuery(e.target.value); setPage(0); }} placeholder="Search name, BOM ID, WhatsApp or role" aria-label="Search members" className="pl-9" />
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="relative w-full max-w-md">
+          <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" aria-hidden />
+          <Input type="search" value={query} onChange={(e) => { setQuery(e.target.value); setPage(0); }} placeholder="Search name, BOM ID, WhatsApp or role" aria-label="Search members" className="pl-9" />
+        </div>
+        <Button type="button" onClick={() => setAdding(true)}><Plus aria-hidden />Add member</Button>
       </div>
       <div className="bg-card overflow-x-auto rounded-lg border">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead className="w-12">No</TableHead>
-              <TableHead className="w-32 whitespace-nowrap">BOM ID</TableHead>
+              <TableHead className="w-32 whitespace-nowrap" aria-sort={sort === "asc" ? "ascending" : sort === "desc" ? "descending" : "none"}>
+                <button type="button" className="hover:text-primary inline-flex items-center gap-1 font-bold" onClick={() => { setSort((s) => (s === "asc" ? "desc" : "asc")); setPage(0); }}>
+                  BOM ID{sort === "asc" ? <ArrowUp className="size-3.5" aria-hidden /> : sort === "desc" ? <ArrowDown className="size-3.5" aria-hidden /> : <ArrowUpDown className="size-3.5 opacity-60" aria-hidden />}
+                </button>
+              </TableHead>
               <TableHead>Blader</TableHead>
               <TableHead>Full name</TableHead>
               <TableHead>Role</TableHead>
@@ -149,8 +177,12 @@ export function PlayersTable({ players }: { players: PlayerRowData[] }) {
       </div>
       <Pagination label="Members pages" page={current} pages={pages} onChange={setPage} summary={`${matches.length} of ${players.length} members`} />
 
+      <Modal open={adding} onClose={() => setAdding(false)} title="Add member" wide>
+        {adding && <EditForm onDone={() => setAdding(false)} taken={taken} />}
+      </Modal>
+
       <Modal open={editing !== null} onClose={() => setEditing(null)} title={editing ? `Edit ${editing.name}` : "Edit member"} wide>
-        {editing && <EditForm key={editing.id} p={editing} onDone={() => setEditing(null)} />}
+        {editing && <EditForm key={editing.id} p={editing} onDone={() => setEditing(null)} taken={taken} />}
       </Modal>
 
       <Modal open={deleting !== null} onClose={() => setDeleting(null)} title="Delete member">

@@ -1,7 +1,7 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { PROOF_BUCKET } from "@/domain/media";
-import type { PlayerInput } from "@/domain/player-input";
+import type { NewPlayerInput, PlayerInput } from "@/domain/player-input";
 import type { Player, PlayerContact, PlayerStatus } from "@/domain/types";
 import { hasSupabase } from "@/lib/supabase/env";
 import { check } from "./db";
@@ -21,6 +21,8 @@ export interface PlayerRepository {
   remove(playerId: string): Promise<void>;
   /** Admin edit of a player's name, BOM ID, status and role. Their record is never touched here. */
   update(input: PlayerInput): Promise<void>;
+  /** Admin adds a member by hand (active or registered, with no points yet and no sign-up). */
+  create(input: NewPlayerInput): Promise<void>;
   /** Case-insensitive: "bom-001" finds "BoM-001". */
   getByBomId(bomId: string): Promise<Player | null>;
   /** 1-based leaderboard position; ties share the better rank. */
@@ -56,6 +58,13 @@ export function supabasePlayers(client: SupabaseClient): PlayerRepository {
       const { error } = await client.from("players").update({ photo_path: path }).eq("id", playerId);
       check(error, "Failed to update player photo");
       return (data as { photo_path: string | null } | null)?.photo_path ?? null;
+    },
+    async create(input) {
+      const { error } = await client.from("players").insert({ ...input, accepted_payment: true });
+      if (error?.message.includes("players_bom_id")) throw new Error("This BOM ID is already used");
+      if (error?.message.includes("players_name_lower_idx")) throw new Error("This blader name is already taken");
+      if (error?.message.includes("players_whatsapp_idx")) throw new Error("This WhatsApp number is already registered to another member");
+      check(error, "Failed to add the member");
     },
     async update({ id, ...row }) {
       const { error } = await client.from("players").update(row).eq("id", id);
@@ -111,6 +120,7 @@ export function memoryPlayers(players: Player[] = samplePlayers): PlayerReposito
     remove: async () => {},
     listForAdmin: async () => [],
     update: async () => {},
+    create: async () => {},
     setPhoto: async () => null,
     list: async (limit = 100) => [...players].sort((a, b) => b.points - a.points).slice(0, limit),
     getByBomId: async (bomId) => players.find((p) => p.bom_id.toLowerCase() === bomId.toLowerCase()) ?? null,

@@ -12,6 +12,18 @@ export type PlayerInput = { id: string; bom_id: string; name: string; status: Pl
 
 const optional = (raw: unknown, label: string, max: number) => parseText(raw, label, max, "").replace(/\s+/g, " ") || null;
 
+/** A placeholder id so the edit parser can also read the "add member" form, which has no id yet. */
+const NEW_PLAYER_ID = "00000000-0000-4000-8000-000000000000";
+
+export type NewPlayerInput = Omit<PlayerInput, "id">;
+
+/** The "add member" form: the same fields as the edit form, for a member an admin adds by hand. */
+export function parseNewPlayerInput(get: (key: string) => unknown): NewPlayerInput {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- the id is dropped: the database makes one
+  const { id, ...rest } = parsePlayerInput((k) => (k === "id" ? NEW_PLAYER_ID : get(k)));
+  return rest;
+}
+
 /**
  * The edit form: the player and everything the membership form collects. Players added by an admin have no sign-up, so
  * every contact field may be empty; a WhatsApp number needs no other fields. The BOM ID is part of the member's URL, so it

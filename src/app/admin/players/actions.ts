@@ -1,6 +1,6 @@
 "use server";
 import { revalidatePath } from "next/cache";
-import { parsePlayerInput } from "@/domain/player-input";
+import { parseNewPlayerInput, parsePlayerInput } from "@/domain/player-input";
 import { isUuid } from "@/domain/validation";
 import { toFormState, type FormState } from "@/lib/form-state";
 import { requireAdmin } from "@/server/admin-session";
@@ -22,6 +22,15 @@ export async function savePlayer(_prev: FormState, formData: FormData): Promise<
     await supabasePlayers(supabase).update(parsePlayerInput((k) => formData.get(k)));
     revalidate();
   }, "Saved");
+}
+
+/** Adds a member by hand. */
+export async function addPlayer(_prev: FormState, formData: FormData): Promise<FormState> {
+  const supabase = await requireAdmin();
+  return toFormState(async () => {
+    await supabasePlayers(supabase).create(parseNewPlayerInput((k) => formData.get(k)));
+    revalidate();
+  }, "Member added");
 }
 
 /** Removes a player with their payment screenshot and results. Event points depend on the number of participants, so everyone's total is recalculated. */

@@ -401,7 +401,7 @@ describe("rankedDays", () => {
   });
 });
 
-import { parsePlayerInput } from "@/domain/player-input";
+import { parseNewPlayerInput, parsePlayerInput } from "@/domain/player-input";
 import { ranks, searchPlayers, sortPlayers } from "@/domain/leaderboard";
 
 describe("leaderboard search and sort", () => {
@@ -438,6 +438,13 @@ describe("parsePlayerInput", () => {
     expect(() => player({ ...ok, bom_id: "BoM 12!" })).toThrow();
     expect(() => player({ ...ok, status: "banned" })).toThrow();
     expect(() => player({ ...ok, name: "" })).toThrow();
+  });
+  it("reads a new member without an id", () => {
+    const form: Record<string, unknown> = { bom_id: "BoM-200", name: " New Blader ", status: "active", role: "member", whatsapp: "0812 3456 7890" };
+    const added = parseNewPlayerInput((k) => form[k]);
+    expect(added).toMatchObject({ bom_id: "BoM-200", name: "New Blader", status: "active", role: "member" });
+    expect("id" in added).toBe(false);
+    expect(() => parseNewPlayerInput((k) => ({ ...form, bom_id: "BoM 200!" })[k])).toThrow();
   });
 });
 
