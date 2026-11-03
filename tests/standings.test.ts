@@ -58,6 +58,17 @@ describe("results typed as a list", () => {
     expect(() => parseResultsText(text, players)).toThrow(new RegExp(message, "i"));
   });
 
+  it("numbers the places in order: 5, 5, 7, 7, 8 becomes 5, 6, 7, 8, 9", () => {
+    const text = ["1 [BOM-001] Mr. DiBo", "2 Prett", "3 P0", "4 P1", "5 P2", "5 P3", "7 P4", "7 P5", "8 P6"].join("\n\n");
+    const rows = parseResultsText(text, players);
+    expect(rows.map((r) => r.place)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, null]);
+    expect(rows.map((r) => r.rank)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+  });
+
+  it("puts places given out of order in order", () => {
+    expect(parseResultsText(["1 Mr. DiBo", "3 Prett", "2 P0"].join("\n\n"), players).map((r) => r.guestName ?? r.playerId)).toEqual(["id-0", "id-3", "id-1"]);
+  });
+
   it("lets a guest (Non BOM ID) be the Tiger King", () => {
     const rows = parseResultsText("1 Nusa TR (TK)\n\nMr. DiBo", players);
     expect(rows[0]).toMatchObject({ playerId: null, guestName: "Nusa TR", tigerKing: true });
@@ -125,9 +136,9 @@ describe("Challonge", () => {
     expect(challongeResultsText(entries, members)).toEqual({ text: "1. Mr. DiBo\n2. Dewa\n3. Stranger\nLate", unmatched: ["Stranger", "Late"] });
   });
 
-  it("lets two members share a place", () => {
+  it("numbers members in order, with no shared places", () => {
     const players = [{ id: "a", name: "A", bom_id: "BoM-001" }, { id: "b", name: "B", bom_id: "BoM-002" }, { id: "c", name: "C", bom_id: "BoM-003" }];
-    expect(parseResultsText("1. A\n3. B\n3. C", players).map((r) => r.place)).toEqual([1, 3, 3]);
+    expect(parseResultsText("1. A\n3. B\n3. C", players).map((r) => r.place)).toEqual([1, 2, 3]);
   });
 });
 
@@ -135,7 +146,7 @@ describe("guests without a BOM ID", () => {
   const players = [{ id: "a", name: "A", bom_id: "BoM-001" }, { id: "b", name: "B", bom_id: "BoM-002" }];
 
   it("saves a name that matches nobody as a guest, keeping its place", () => {
-    expect(parseResultsText("1. Stranger\n2. A\n3. B", players)).toEqual([
+    expect(parseResultsText("1. Stranger\n2. A\n3. B", players)).toMatchObject([
       { playerId: null, guestName: "Stranger", place: 1, tigerKing: false, combos: [] },
       { playerId: "a", guestName: null, place: 2, tigerKing: false, combos: [] },
       { playerId: "b", guestName: null, place: 3, tigerKing: false, combos: [] },
@@ -166,9 +177,9 @@ describe("results with winning combos", () => {
 
   it("reads a numbered list: place, BOM ID, name, then up to three combos", () => {
     const rows = parseResultsText(sample, players);
-    expect(rows[0]).toEqual({ playerId: "decade", guestName: null, place: 1, tigerKing: true, combos: ["AP 1-80 LR", "HR 9-60 LO", "PW 3-60 R"] });
+    expect(rows[0]).toMatchObject({ playerId: "decade", guestName: null, place: 1, tigerKing: true, combos: ["AP 1-80 LR", "HR 9-60 LO", "PW 3-60 R"] });
     expect(rows[1]).toMatchObject({ playerId: "dibo", place: 2, combos: ["DSt 6-70 J", "CDg 3-60 E", "TB 1-60 R"] });
-    expect(rows[2]).toEqual({ playerId: null, guestName: "Vampire", place: 3, tigerKing: false, combos: ["AP 1-50 R", "PW 3-60 LR"] });
+    expect(rows[2]).toMatchObject({ playerId: null, guestName: "Vampire", place: 3, tigerKing: false, combos: ["AP 1-50 R", "PW 3-60 LR"] });
     expect(rows[3]).toMatchObject({ playerId: null, guestName: "Corona Vaires", place: 4 });
   });
 
@@ -189,9 +200,9 @@ describe("results with winning combos", () => {
 
   it("reads members separated by blank lines, numbered or just a BOM ID or a name", () => {
     const text = "1 [BOM-123] Decade (TK)\nAP 1-80 LR\n\n2 Mr. DiBo\n\nbom 500\n\nStranger";
-    // Past 8th they have no place at all.
+    // Places start at 1 whatever the first number, and past 8th there is no place at all.
     const late = "8 [BOM-500] P0\nAP 1-80 LR\n\nMr. DiBo\nStranger";
-    expect(parseResultsText(late, players).map((r) => [r.place, r.combos.length])).toEqual([[8, 1], [null, 0], [null, 0]]);
+    expect(parseResultsText(late, players).map((r) => [r.place, r.combos.length])).toEqual([[1, 1], [2, 0], [3, 0]]);
     const rows = parseResultsText(text, players);
     expect(rows.map((r) => [r.playerId ?? r.guestName, r.place, r.combos.length])).toEqual([["decade", 1, 1], ["dibo", 2, 0], ["p0", 3, 0], ["Stranger", 4, 0]]);
   });

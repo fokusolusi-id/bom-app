@@ -41,7 +41,7 @@ export function supabaseResults(client: SupabaseClient): ResultsRepository {
         .select("name,tier,starts_at,challonge_url,community:sub_communities(name,image_path),event_placements(place,tiger_king,combos,guest_name,player:players(name,bom_id))")
         // Unrank included: it earns no points, but its results are shown like any other event.
         .in("tier", TIER_LABELS).eq("is_active", true).lte("starts_at", nowIso)
-        .order("starts_at", { ascending: false }).limit(30);
+        .order("starts_at", { ascending: false }).limit(200);
       check(error, "Failed to load latest results");
       type Row = { name: string; tier: string; starts_at: string; challonge_url: string | null; community: { name: string; image_path: string | null } | null; event_placements: { place: number | null; tiger_king: boolean; combos: string[]; guest_name: string | null; player: { name: string; bom_id: string } | null }[] };
       return ((data ?? []) as unknown as Row[])

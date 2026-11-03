@@ -50,7 +50,9 @@ export function ResultsEntry({ eventId, text, challongeUrl, members, hasChallong
   const preview = useMemo(() => {
     if (list.trim() === "") return null;
     try {
-      return { rows: parseResultsText(list, members) };
+      // Shown by place, 1st first, also past 8th (those are saved without a place).
+      const rows = parseResultsText(list, members).sort((a, b) => (a.rank ?? a.place ?? 999) - (b.rank ?? b.place ?? 999) || Number(!a.playerId) - Number(!b.playerId));
+      return { rows };
     } catch (e) {
       return { error: e instanceof Error ? e.message : "Check the list" };
     }
@@ -153,7 +155,7 @@ export function ResultsEntry({ eventId, text, challongeUrl, members, hasChallong
                   const member = r.playerId ? members.find((m) => m.id === r.playerId) : undefined;
                   return (
                     <li key={i} className="flex flex-wrap items-center gap-x-2">
-                      <span className="text-primary w-6 font-bold">{r.place ?? "–"}</span>
+                      <span className="text-primary w-6 font-bold">{r.rank ?? r.place ?? "–"}</span>
                       {member ? <span className="bg-primary text-primary-foreground rounded px-1.5 text-xs font-bold">{formatBomId(member.bom_id)}</span> : <span className="rounded border border-yellow-400 px-1.5 text-xs text-yellow-400 uppercase">Non BOM ID</span>}
                       <span>{member?.name ?? r.guestName}</span>
                       {r.tigerKing && <Crown className="size-4 text-red-500" aria-label="Tiger King" />}
