@@ -31,7 +31,7 @@ export function parsePlacementInput(get: (key: string) => unknown): PlacementInp
 }
 
 /** A line of an event's results: a member (`playerId`) or a guest without a BOM ID (`guestName`). */
-export type ResultRow = { playerId: string | null; guestName: string | null; place: number | null; tigerKing: boolean; combos: string[]; warning?: string };
+export type ResultRow = { playerId: string | null; guestName: string | null; place: number | null; /** The place as listed, also past 8th (which is saved without a place). */ rank?: number; tigerKing: boolean; combos: string[]; warning?: string };
 type Candidate = { id: string; name: string; bom_id: string };
 
 /** A name for comparing: no case, spaces or punctuation, and no "BoM" prefix, so "MR.Dibo" and "BoM Mr. DiBo" both equal "Mr. DiBo". */
@@ -46,7 +46,7 @@ const TK_MARK = /(\(tk\)|\*)\s*$/i;
  * - A plain list, one member per line (blader name or BOM ID). The first line is 1st place, the second 2nd, up to 8th;
  *   every line after that took part without a place.
  * - A numbered list, when the first line starts with a place ("1 [BOM-001] Decade (TK)"). Each numbered line is one
- *   member with that place (two members can share 3rd). Separate members with a blank line; the lines under a member, up to three,
+ *   member with that place (equal or skipped numbers are renumbered in order: 5, 5, 7 becomes 5, 6, 7). Separate members with a blank line; the lines under a member, up to three,
  *   are the combos they won with. A name without a place number is the next place. From 9th on there are no combos, so every
  *   line is one member.
  *
@@ -90,8 +90,11 @@ export function parseResultsText(text: string, players: Candidate[]): ResultRow[
   }
 
   const rows: ResultRow[] = [];
-  let previous = 0;
-  for (const entry of entries) {
+  // The places run 1, 2, 3 and so on: entries are put in the order of the numbers typed (equal or missing numbers keep the line order)
+  // and then numbered one after the other, so a tie (5, 5, 7) or a gap does not leave a hole.
+  let key = 0;
+  const ordered = entries.map((e, i) => ({ e, i, key: (key = e.rank ?? key) })).sort((x, y) => x.key - y.key || x.i - y.i).map((x) => x.e);
+  for (const [index, entry] of ordered.entries()) {
     const tigerKing = TK_MARK.test(entry.header);
     let rest = entry.header.replace(TK_MARK, "").trim();
     // "[BOM-012]" names the member; "[Non BOM ID]" forces a guest. Anything else in brackets is ignored.
@@ -99,8 +102,7 @@ export function parseResultsText(text: string, players: Candidate[]): ResultRow[
     rest = rest.replace(/\[[^\]]*\]/, " ").replace(/\s+/g, " ").trim();
     const forceGuest = /non|guest/i.test(tag);
     const tagged = /bom[\s-]*0*(\d+)/i.exec(tag)?.[1];
-    const rank = entry.rank ?? previous + 1;
-    previous = rank;
+    const rank = index + 1;
     const place = rank >= 1 && rank <= TOP_PLACES ? rank : null;
     const typed = /^(?:bom)?[\s-]*(\d+)$/i.exec(rest)?.[1];
     const idOf = (m: Candidate) => Number(/\d+/.exec(m.bom_id)?.[0]);
@@ -118,12 +120,12 @@ export function parseResultsText(text: string, players: Candidate[]): ResultRow[
     const warning = byId && looseName(rest) && !alike(looseName(rest), looseName(byId.name)) ? `BOM ID says ${byId.name}, the name says "${rest}"` : undefined;
     const combos = parseCombos(entry.combos, place);
     if (found) {
-      rows.push({ playerId: found.id, guestName: null, place, tigerKing, combos, ...(warning ? { warning } : {}) });
+      rows.push({ playerId: found.id, guestName: null, place, rank, tigerKing, combos, ...(warning ? { warning } : {}) });
     } else {
       // Marked Non BOM ID: counted as a participant, never shown on the leaderboard.
       const guestName = rest.slice(0, 60);
       if (!guestName) throw new Error("A line has no name");
-      rows.push({ playerId: null, guestName, place, tigerKing, combos });
+      rows.push({ playerId: null, guestName, place, rank, tigerKing, combos });
     }
   }
   const keys = rows.map((r) => r.playerId ?? `guest:${r.guestName!.toLowerCase()}`);
