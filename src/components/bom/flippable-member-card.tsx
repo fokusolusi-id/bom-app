@@ -63,7 +63,7 @@ async function downloadFront(root: HTMLElement, bomId: string) {
   save(canvas.toDataURL("image/png"), `${bomId.toLowerCase()}-card-front.png`);
 }
 
-/** The member's card that turns over on a click or with a button to show the back (public/print/bom-emoney-11.png). */
+/** The member's card that turns over on a click or with a button to show the back (public/print/bom-emoney-04.png). */
 export function FlippableMemberCard({ bomId, bladerName, since, qr, design }: { bomId: string; bladerName: string; since: string; qr?: string; design?: "print" | "classic" }) {
   const [back, setBack] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -91,7 +91,7 @@ export function FlippableMemberCard({ bomId, bladerName, since, qr, design }: { 
             <MemberCard bomId={bomId} bladerName={bladerName} since={since} qr={qr} design={design} />
           </div>
           <div className="absolute inset-0 overflow-hidden rounded-xl border border-white/10 [backface-visibility:hidden] [transform:rotateY(180deg)]" aria-hidden={!back}>
-            <Image src="/print/bom-emoney-11.png" alt="Back of the member card: TikTok, Instagram, email and website of Beyblade of Medan" fill sizes="(min-width: 768px) 26rem, 100vw" className="object-cover" />
+            <Image src="/print/bom-emoney-04.png" alt="Back of the member card: TikTok, Instagram, email and website of Beyblade of Medan" fill sizes="(min-width: 768px) 26rem, 100vw" className="object-cover" />
           </div>
         </div>
         <div aria-hidden className="pointer-events-none absolute inset-0 grid place-items-center opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100">
@@ -100,7 +100,7 @@ export function FlippableMemberCard({ bomId, bladerName, since, qr, design }: { 
       </div>
       <div className="flex flex-wrap justify-center gap-2">
         <Button type="button" variant="outline" size="sm" onClick={front} disabled={busy}><Download aria-hidden />Download front</Button>
-        <Button type="button" variant="outline" size="sm" onClick={() => save("/print/bom-emoney-11.png", `${bomId.toLowerCase()}-card-back.png`)}><Download aria-hidden />Download back</Button>
+        <Button type="button" variant="outline" size="sm" onClick={() => save("/print/bom-emoney-04.png", `${bomId.toLowerCase()}-card-back.png`)}><Download aria-hidden />Download back</Button>
       </div>
     </div>
   );

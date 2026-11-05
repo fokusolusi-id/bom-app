@@ -20,18 +20,18 @@ export function MemberCard({ bomId, bladerName, since, qr, design = "print" }: {
       ) : (
         <Image src="/print/bom-emoney-10.png" alt="" fill sizes="(min-width: 768px) 26rem, 100vw" priority className="object-cover" />
       )}
-      <div className="absolute bottom-[10%] left-[4%] space-y-[3%]">
+      <div className="absolute bottom-[9%] left-[4%] max-w-[60%] space-y-[1%]">
         <div>
-          <div data-card-text className="text-muted-foreground text-[2.2cqw] uppercase">BOM ID</div>
-          <div data-card-text className="text-primary font-display text-[8.5cqw] leading-none font-black uppercase">{bomId.toUpperCase()}</div>
+          <div data-card-text className="text-muted-foreground text-[2.8cqw] font-semibold uppercase">BOM ID</div>
+          <div data-card-text className="text-primary font-display text-[9.5cqw] leading-none font-black uppercase">{bomId.toUpperCase()}</div>
         </div>
-        <div className="mt-3">
-          <div data-card-text className="text-muted-foreground text-[2.2cqw] uppercase">Beyblader name</div>
-          <div data-card-text className="font-display text-[5cqw] leading-tight font-bold">{bladerName}</div>
+        <div className="mt-1">
+          <div data-card-text className="text-muted-foreground text-[2.8cqw] font-semibold uppercase">Beyblader name</div>
+          <div data-card-text className="font-display text-[5.5cqw] leading-tight font-bold">{bladerName}</div>
         </div>
-        <div className="mt-3">
-          <div data-card-text className="text-muted-foreground text-[2cqw] uppercase">Member since</div>
-          <div data-card-text className="text-[2.3cqw]">{since}</div>
+        <div className="mt-1">
+          <div data-card-text className="text-muted-foreground text-[2.8cqw] font-semibold uppercase">Member since</div>
+          <div data-card-text className="text-[3.2cqw] font-medium">{since}</div>
         </div>
       </div>
       {qr && (
