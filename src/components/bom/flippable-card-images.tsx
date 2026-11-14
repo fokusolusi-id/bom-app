@@ -10,7 +10,7 @@ export function FlippableCardImages({ className, front }: { className?: string; 
     <div className={className}>
       <div className="group relative [perspective:1200px]">
         <div
-          className="relative aspect-[1011/638] w-full cursor-pointer transition-transform duration-700 ease-out [transform-style:preserve-3d] motion-reduce:transition-none"
+          className="relative aspect-[8560/5398] w-full cursor-pointer transition-transform duration-700 ease-out [transform-style:preserve-3d] motion-reduce:transition-none"
           style={{ transform: back ? "rotateY(180deg)" : "rotateY(0deg)" }}
           onClick={() => setBack((b) => !b)}
           role="button"

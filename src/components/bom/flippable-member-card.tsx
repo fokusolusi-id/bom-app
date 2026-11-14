@@ -28,16 +28,44 @@ function save(href: string, filename: string) {
   a.remove();
 }
 
-/** The download is drawn at this many times the art's size (1011 x 638, 300 dpi at 8.56 x 5.4 cm), so the texts and the QR code stay sharp when printed. */
-const EXPORT_SCALE = 3;
+/** A bank-card (ID-1) size, 85.60 x 53.98 mm. The downloads are 3033 x 1913 px: 900 dpi at that size, 3x the art (1011 x 638), so the texts and the QR code stay sharp when printed. */
+const EXPORT_W = 3033;
+const EXPORT_H = 1913;
+const EXPORT_PPM = 35433; // 900 dpi in pixels per metre, written into the PNG so print software sizes it at 85.60 x 53.98 mm
 
-/** Draws the front as it looks on the page (background, texts and QR code) onto a canvas at 3x the size of the art and saves it as a PNG. */
+const CRC_TABLE = Array.from({ length: 256 }, (_, n) => { let c = n; for (let i = 0; i < 8; i++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; return c >>> 0; });
+const crc32 = (bytes: Uint8Array) => { let c = 0xffffffff; for (const b of bytes) c = CRC_TABLE[(c ^ b) & 0xff] ^ (c >>> 8); return (c ^ 0xffffffff) >>> 0; };
+
+/** Saves the canvas as a PNG that says how big it is in print (a pHYs chunk after the header). */
+async function savePng(canvas: HTMLCanvasElement, filename: string) {
+  const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png"));
+  if (!blob) throw new Error("Could not make the image");
+  const png = new Uint8Array(await blob.arrayBuffer());
+  const chunk = new Uint8Array(21); // length (4), "pHYs" (4), x, y, unit (9), crc (4)
+  const view = new DataView(chunk.buffer);
+  view.setUint32(0, 9);
+  chunk.set([0x70, 0x48, 0x59, 0x73], 4);
+  view.setUint32(8, EXPORT_PPM);
+  view.setUint32(12, EXPORT_PPM);
+  chunk[16] = 1; // metres
+  view.setUint32(17, crc32(chunk.subarray(4, 17)));
+  const at = 33; // signature (8) + IHDR chunk (25)
+  const out = new Uint8Array(png.length + chunk.length);
+  out.set(png.subarray(0, at));
+  out.set(chunk, at);
+  out.set(png.subarray(at), at + chunk.length);
+  const url = URL.createObjectURL(new Blob([out], { type: "image/png" }));
+  save(url, filename);
+  setTimeout(() => URL.revokeObjectURL(url), 10_000);
+}
+
+/** Draws the front as it looks on the page (background, texts and QR code) onto a canvas of the card's real proportions and saves it as a PNG. */
 async function downloadFront(root: HTMLElement, bomId: string) {
   await document.fonts.ready;
   const bg = await loadImage("/print/bom-emoney-03.png");
   const canvas = document.createElement("canvas");
-  canvas.width = bg.naturalWidth * EXPORT_SCALE;
-  canvas.height = bg.naturalHeight * EXPORT_SCALE;
+  canvas.width = EXPORT_W;
+  canvas.height = EXPORT_H;
   const ctx = canvas.getContext("2d")!;
   const k = canvas.width / root.offsetWidth;
   ctx.imageSmoothingEnabled = true;
@@ -64,20 +92,20 @@ async function downloadFront(root: HTMLElement, bomId: string) {
     ctx.imageSmoothingEnabled = false;
     ctx.drawImage(await loadImage(qr.src), x * k, y * k, qr.offsetWidth * k, qr.offsetHeight * k);
   }
-  save(canvas.toDataURL("image/png"), `${bomId.toLowerCase()}-card-front.png`);
+  await savePng(canvas, `${bomId.toLowerCase()}-card-front.png`);
 }
 
-/** Saves the back at the same size as the front download (3x the art), enlarged with high-quality smoothing. */
+/** Saves the back at the same size as the front download, enlarged with high-quality smoothing. */
 async function downloadBack(bomId: string) {
   const img = await loadImage("/print/bom-emoney-04.png");
   const canvas = document.createElement("canvas");
-  canvas.width = img.naturalWidth * EXPORT_SCALE;
-  canvas.height = img.naturalHeight * EXPORT_SCALE;
+  canvas.width = EXPORT_W;
+  canvas.height = EXPORT_H;
   const ctx = canvas.getContext("2d")!;
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = "high";
   ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-  save(canvas.toDataURL("image/png"), `${bomId.toLowerCase()}-card-back.png`);
+  await savePng(canvas, `${bomId.toLowerCase()}-card-back.png`);
 }
 
 /** The member's card that turns over on a click or with a button to show the back (public/print/bom-emoney-04.png). */
@@ -95,7 +123,7 @@ export function FlippableMemberCard({ bomId, bladerName, since, qr, design }: { 
     <div className="space-y-3" ref={box}>
       <div className="group relative [perspective:1200px]">
         <div
-          className="relative aspect-[1011/638] w-full cursor-pointer transition-transform duration-700 ease-out [transform-style:preserve-3d] motion-reduce:transition-none"
+          className="relative aspect-[8560/5398] w-full cursor-pointer transition-transform duration-700 ease-out [transform-style:preserve-3d] motion-reduce:transition-none"
           style={{ transform: back ? "rotateY(180deg)" : "rotateY(0deg)" }}
           onClick={() => setBack((b) => !b)}
           role="button"
