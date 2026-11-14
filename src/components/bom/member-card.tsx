@@ -18,7 +18,7 @@ export function MemberCard({ bomId, bladerName, since, qr, design = "print" }: {
           </div>
         </div>
       ) : (
-        <Image src="/print/bom-emoney-03.png" alt="" fill sizes="(min-width: 768px) 26rem, 100vw" priority className="object-cover" />
+        <Image src="/print/bom-emoney-03.png" unoptimized alt="" fill sizes="(min-width: 768px) 26rem, 100vw" priority className="object-cover" />
       )}
       <div className="absolute bottom-[9%] left-[4%] max-w-[60%] space-y-[1%]">
         <div>

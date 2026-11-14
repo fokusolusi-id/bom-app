@@ -136,7 +136,7 @@ export function FlippableMemberCard({ bomId, bladerName, since, qr, design }: { 
             <MemberCard bomId={bomId} bladerName={bladerName} since={since} qr={qr} design={design} />
           </div>
           <div className="absolute inset-0 overflow-hidden rounded-xl border border-white/10 [backface-visibility:hidden] [transform:rotateY(180deg)]" aria-hidden={!back}>
-            <Image src="/print/bom-emoney-04.png" alt="Back of the member card: TikTok, Instagram, email and website of Beyblade of Medan" fill sizes="(min-width: 768px) 26rem, 100vw" className="object-cover" />
+            <Image src="/print/bom-emoney-04.png" unoptimized alt="Back of the member card: TikTok, Instagram, email and website of Beyblade of Medan" fill sizes="(min-width: 768px) 26rem, 100vw" className="object-cover" />
           </div>
         </div>
         <div aria-hidden className="pointer-events-none absolute inset-0 grid place-items-center opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100">

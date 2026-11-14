@@ -21,8 +21,8 @@ export function FlippableCardImages({ className, front }: { className?: string; 
         >
           {front
             ? <div className="absolute inset-0 [backface-visibility:hidden]" aria-hidden={back}>{front}</div>
-            : <Image src="/print/bom-emoney-03.png" alt="Beyblade of Medan Emoney Membership Card, front" width={1011} height={638} className="absolute inset-0 w-full rounded-xl [backface-visibility:hidden]" aria-hidden={back} />}
-          <Image src="/print/bom-emoney-04.png" alt="Beyblade of Medan Emoney Membership Card, back" width={1011} height={638} className="absolute inset-0 w-full rounded-xl [backface-visibility:hidden] [transform:rotateY(180deg)]" aria-hidden={!back} />
+            : <Image src="/print/bom-emoney-03.png" unoptimized alt="Beyblade of Medan Emoney Membership Card, front" width={1011} height={638} className="absolute inset-0 w-full rounded-xl [backface-visibility:hidden]" aria-hidden={back} />}
+          <Image src="/print/bom-emoney-04.png" unoptimized alt="Beyblade of Medan Emoney Membership Card, back" width={1011} height={638} className="absolute inset-0 w-full rounded-xl [backface-visibility:hidden] [transform:rotateY(180deg)]" aria-hidden={!back} />
         </div>
         <div aria-hidden className="pointer-events-none absolute inset-0 grid place-items-center opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100">
           <span className="rounded-full bg-black/60 p-3 text-white shadow-lg"><RotateCw className="size-7" /></span>
