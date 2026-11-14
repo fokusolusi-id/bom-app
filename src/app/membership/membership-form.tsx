@@ -104,7 +104,7 @@ export function MembershipForm({ nextEvent, venue, whatsappInvite }: Props) {
             <input name="website" tabIndex={-1} autoComplete="off" aria-hidden className="hidden" />
             <div className="bg-muted/40 space-y-2 rounded-md border p-3 text-sm">
               <p className="font-bold">Payment: {MEMBERSHIP_FEE}, paid once</p>
-              <Image src="/print/G609448641-0703A01-gma_branding-1792299733.png" alt="Beyblade of Medan payment QRIS" width={1000} height={1150} className="mx-auto w-full max-w-xs rounded-md" />
+              <Image src="/print/qris-bom.png" alt="Beyblade of Medan payment QRIS" width={1000} height={1150} className="mx-auto w-full max-w-xs rounded-md" />
               <p>{PAYMENT_ACCOUNT}</p>
               <p className="text-muted-foreground">
                 Please contact our admin in {whatsappInvite ? <a href={whatsappInvite} target="_blank" rel="noopener noreferrer" className="text-primary underline">Whatsapp group</a> : "Whatsapp group"}

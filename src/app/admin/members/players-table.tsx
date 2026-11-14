@@ -95,11 +95,24 @@ function EditForm({ p, onDone, taken }: { p?: PlayerRowData; onDone: () => void;
 }
 
 /** Every player in a searchable table, with edit and delete in a dialog on the right of each row. */
+/** A column header that sorts the table when clicked. */
+function SortHead({ label, sort, onSort, className }: { label: string; sort: "asc" | "desc" | null; onSort: () => void; className?: string }) {
+  return (
+    <TableHead className={`${className ?? ""} whitespace-nowrap`} aria-sort={sort === "asc" ? "ascending" : sort === "desc" ? "descending" : "none"}>
+      <button type="button" className="hover:text-primary inline-flex items-center gap-1 font-bold" onClick={onSort}>
+        {label}{sort === "asc" ? <ArrowUp className="size-3.5" aria-hidden /> : sort === "desc" ? <ArrowDown className="size-3.5" aria-hidden /> : <ArrowUpDown className="size-3.5 opacity-60" aria-hidden />}
+      </button>
+    </TableHead>
+  );
+}
+
 export function PlayersTable({ players }: { players: PlayerRowData[] }) {
   const [query, setQuery] = useState("");
   const [editing, setEditing] = useState<PlayerRowData | null>(null);
   const [adding, setAdding] = useState(false);
-  const [sort, setSort] = useState<"asc" | "desc" | null>(null);
+  const [sort, setSort] = useState<{ by: "id" | "added"; dir: "asc" | "desc" } | null>(null);
+  // The first click on a column sorts it ascending, the next one descending.
+  const toggleSort = (by: "id" | "added") => { setSort((s) => ({ by, dir: s?.by === by && s.dir === "asc" ? "desc" : "asc" })); setPage(0); };
   // Every BOM ID in use (lower case) with who has it, for the "already used" check in the form.
   const taken = useMemo(() => new Map(players.map((p) => [p.bom_id.toLowerCase(), p.name])), [players]);
   const [deleting, setDeleting] = useState<PlayerRowData | null>(null);
@@ -111,11 +124,13 @@ export function PlayersTable({ players }: { players: PlayerRowData[] }) {
       [p.name, p.bom_id, p.full_name ?? "", p.whatsapp ?? "", roleLabel.get(p.role) ?? "", p.status].some((v) => v.toLowerCase().includes(q) || squash(v).includes(squash(q))),
     );
   }, [players, query]);
-  // Sorted by BOM ID by its number ("BoM-18" before "BoM-182"); no sort keeps the order the list came in.
+  // Sorted by BOM ID by its number ("BoM-18" before "BoM-182") or by the date added (no date last); no sort keeps the order the list came in.
   const sorted = useMemo(() => {
     if (!sort) return matches;
     const num = (id: string) => Number(/\d+/.exec(id)?.[0] ?? 0);
-    return [...matches].sort((a, b) => (num(a.bom_id) - num(b.bom_id) || a.bom_id.localeCompare(b.bom_id)) * (sort === "asc" ? 1 : -1));
+    const time = (p: PlayerRowData) => (p.created_at ? new Date(p.created_at).getTime() : 0);
+    const sign = sort.dir === "asc" ? 1 : -1;
+    return [...matches].sort((a, b) => (sort.by === "added" ? time(a) - time(b) || num(a.bom_id) - num(b.bom_id) : num(a.bom_id) - num(b.bom_id) || a.bom_id.localeCompare(b.bom_id)) * sign);
   }, [matches, sort]);
   const [page, setPage] = useState(0);
   const pages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
@@ -142,15 +157,12 @@ export function PlayersTable({ players }: { players: PlayerRowData[] }) {
           <TableHeader>
             <TableRow>
               <TableHead className="w-12">No</TableHead>
-              <TableHead className="w-32 whitespace-nowrap" aria-sort={sort === "asc" ? "ascending" : sort === "desc" ? "descending" : "none"}>
-                <button type="button" className="hover:text-primary inline-flex items-center gap-1 font-bold" onClick={() => { setSort((s) => (s === "asc" ? "desc" : "asc")); setPage(0); }}>
-                  BOM ID{sort === "asc" ? <ArrowUp className="size-3.5" aria-hidden /> : sort === "desc" ? <ArrowDown className="size-3.5" aria-hidden /> : <ArrowUpDown className="size-3.5 opacity-60" aria-hidden />}
-                </button>
-              </TableHead>
+              <SortHead label="BOM ID" className="w-32" sort={sort?.by === "id" ? sort.dir : null} onSort={() => toggleSort("id")} />
               <TableHead>Blader</TableHead>
               <TableHead>Full name</TableHead>
               <TableHead>Role</TableHead>
               <TableHead>Status</TableHead>
+              <SortHead label="Added" className="w-32" sort={sort?.by === "added" ? sort.dir : null} onSort={() => toggleSort("added")} />
               <TableHead className="w-px text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -163,6 +175,7 @@ export function PlayersTable({ players }: { players: PlayerRowData[] }) {
                 <TableCell className="text-muted-foreground">{p.full_name ?? "-"}</TableCell>
                 <TableCell className={`font-bold ${roleTone[p.role]}`}>{roleLabel.get(p.role)}</TableCell>
                 <TableCell className={p.status === "active" ? "" : "text-muted-foreground"}>{p.status === "active" ? "Active" : "Registered"}</TableCell>
+                <TableCell className="text-muted-foreground whitespace-nowrap">{p.created_at ? joined.format(new Date(p.created_at)) : "-"}</TableCell>
                 <TableCell>
                   <span className="flex justify-end gap-1">
                     <Button type="button" variant="outline" size="sm" className="w-8 px-0" onClick={() => setEditing(p)} aria-label={`Edit ${p.name}`}><Pencil aria-hidden /></Button>
@@ -171,7 +184,7 @@ export function PlayersTable({ players }: { players: PlayerRowData[] }) {
                 </TableCell>
               </TableRow>
             ))}
-            {matches.length === 0 && <TableRow><TableCell colSpan={7} className="text-muted-foreground py-6 text-center">No member matches &ldquo;{query}&rdquo;.</TableCell></TableRow>}
+            {matches.length === 0 && <TableRow><TableCell colSpan={8} className="text-muted-foreground py-6 text-center">No member matches &ldquo;{query}&rdquo;.</TableCell></TableRow>}
           </TableBody>
         </Table>
       </div>
