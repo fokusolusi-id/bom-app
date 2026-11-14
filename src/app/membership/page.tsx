@@ -7,6 +7,10 @@ import { formatWhen } from "@/domain/next-event";
 import { faq, MEMBERSHIP_FEE, memberBenefits, registrationSteps } from "@/lib/content";
 import { VENUE, WHATSAPP_INVITE } from "@/lib/venue";
 import { loadUpcomingEvents } from "@/server/events";
+import { MemberCard } from "@/components/bom/member-card";
+import { SITE_URL } from "@/lib/venue";
+import { qrDataUrl } from "@/server/qr";
+import { publicPlayers } from "@/server/players";
 import { MembershipForm } from "./membership-form";
 
 export const metadata = { title: "Membership | Beyblade of Medan" };
@@ -15,7 +19,11 @@ export const revalidate = 60;
 const sinceFmt = new Intl.DateTimeFormat("en-GB", { month: "2-digit", year: "numeric", timeZone: "Asia/Jakarta" });
 
 export default async function MembershipPage() {
-  const [next] = await loadUpcomingEvents(1);
+  const [[next], sample] = await Promise.all([loadUpcomingEvents(1), publicPlayers().repo.getByBomId("BoM-001")]);
+  // The card shown on the page is Dewa's (BoM-001) as an example.
+  const sampleCard = sample ? (
+    <MemberCard bomId={sample.bom_id} bladerName={sample.name} since={sample.created_at ? sinceFmt.format(new Date(sample.created_at)).replace("/", ".") : "-"} qr={await qrDataUrl(`${SITE_URL}/member/${sample.bom_id.toLowerCase()}`)} />
+  ) : undefined;
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-12">
@@ -39,7 +47,7 @@ export default async function MembershipPage() {
               ))}
             </ul>
             <p className="mt-4 max-w-xl">Don&apos;t miss out on these exclusive perks—join us now and elevate your Beyblade experience with us!</p>
-            <FlippableCardImages className="mt-6 w-full max-w-md" />
+            <FlippableCardImages className="mt-6 w-full max-w-md" front={sampleCard} />
           </section>
 
           <section aria-labelledby="how">
