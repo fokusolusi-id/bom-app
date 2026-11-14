@@ -1,14 +1,14 @@
 import Image from "next/image";
 
 /**
- * The member's card. `design="print"` (the member page) uses the printed Emoney card (public/print/bom-emoney-10.png) as its
+ * The member's card. `design="print"` (the member page) uses the printed Emoney card (public/print/bom-emoney-03.png) as its
  * background; `design="classic"` (the membership sign-up) keeps the original dark card with its own logo, title and stripe.
  * `qr` is a data URL for the QR code on the right.
  */
 export function MemberCard({ bomId, bladerName, since, qr, design = "print" }: { bomId: string; bladerName: string; since: string; qr?: string; design?: "print" | "classic" }) {
   const classic = design === "classic";
   return (
-    <div data-member-card className={`@container relative aspect-[1028/650] w-full overflow-hidden rounded-xl border border-white/10 text-left ${classic ? "bg-gradient-to-br from-zinc-800 via-zinc-950 to-black p-[4%]" : "bg-black"}`}>
+    <div data-member-card className={`@container relative aspect-[1011/638] w-full overflow-hidden rounded-xl border border-white/10 text-left ${classic ? "bg-gradient-to-br from-zinc-800 via-zinc-950 to-black p-[4%]" : "bg-black"}`}>
       {classic ? (
         <div className="flex items-center gap-[4%]">
           <Image src="/brand/logo-768.png" alt="" width={96} height={96} className="size-[17%] shrink-0" />
@@ -18,12 +18,12 @@ export function MemberCard({ bomId, bladerName, since, qr, design = "print" }: {
           </div>
         </div>
       ) : (
-        <Image src="/print/bom-emoney-10.png" alt="" fill sizes="(min-width: 768px) 26rem, 100vw" priority className="object-cover" />
+        <Image src="/print/bom-emoney-03.png" alt="" fill sizes="(min-width: 768px) 26rem, 100vw" priority className="object-cover" />
       )}
       <div className="absolute bottom-[9%] left-[4%] max-w-[60%] space-y-[1%]">
         <div>
           <div data-card-text className="text-muted-foreground text-[2.8cqw] font-semibold uppercase">BOM ID</div>
-          <div data-card-text className="text-primary font-display text-[9.5cqw] leading-none font-black uppercase">{bomId.toUpperCase()}</div>
+          <div data-card-text className="text-primary font-display text-[7.5cqw] leading-none font-black uppercase">[{bomId.toUpperCase()}]</div>
         </div>
         <div className="mt-1">
           <div data-card-text className="text-muted-foreground text-[2.8cqw] font-semibold uppercase">Beyblader name</div>
