@@ -8,7 +8,7 @@ import Image from "next/image";
 export function MemberCard({ bomId, bladerName, since, qr, design = "print" }: { bomId: string; bladerName: string; since: string; qr?: string; design?: "print" | "classic" }) {
   const classic = design === "classic";
   return (
-    <div data-member-card className={`@container relative aspect-[1011/638] w-full overflow-hidden rounded-xl border border-white/10 text-left ${classic ? "bg-gradient-to-br from-zinc-800 via-zinc-950 to-black p-[4%]" : "bg-black"}`}>
+    <div data-member-card className={`@container relative aspect-[8560/5398] w-full overflow-hidden rounded-xl border border-white/10 text-left ${classic ? "bg-gradient-to-br from-zinc-800 via-zinc-950 to-black p-[4%]" : "bg-black"}`}>
       {classic ? (
         <div className="flex items-center gap-[4%]">
           <Image src="/brand/logo-768.png" alt="" width={96} height={96} className="size-[17%] shrink-0" />
