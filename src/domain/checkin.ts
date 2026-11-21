@@ -13,10 +13,13 @@ export function parseScannedBomId(text: string): string | null {
   return /^bom-\d{1,6}$/i.test(candidate.trim()) ? candidate.trim().toLowerCase() : null;
 }
 
-/** The combos typed at check-in: one per line or field, up to three, kept as typed with the spaces tidied. */
+/** How many combos one player can register at check-in. Results show at most MAX_COMBOS (3) of them. */
+export const MAX_CHECKIN_COMBOS = 5;
+
+/** The combos typed at check-in: one per line or field, up to five, kept as typed with the spaces tidied. */
 export function parseCheckinCombos(raw: unknown): string[] {
   const lines = (Array.isArray(raw) ? raw.map(String) : typeof raw === "string" ? raw.split(/\r?\n/) : []).map((l) => l.replace(/\s+/g, " ").trim()).filter(Boolean);
-  if (lines.length > MAX_COMBOS) throw new Error(`At most ${MAX_COMBOS} combos each`);
+  if (lines.length > MAX_CHECKIN_COMBOS) throw new Error(`At most ${MAX_CHECKIN_COMBOS} combos each`);
   if (lines.some((l) => l.length > 40)) throw new Error("A combo can be at most 40 characters");
   return lines;
 }
@@ -39,7 +42,7 @@ export type CheckinCombos = { playerId: string | null; guestName: string | null;
 
 /**
  * Completes results with the combos taken at check-in. A top-8 row (that is where combos show) whose member or guest checked
- * in with combos gets those, instead of what was typed in the results. Everything else is left as it is.
+ * in with combos gets those (the first three, which is what results keep), instead of what was typed in the results. Everything else is left as it is.
  */
 export function withCheckinCombos(rows: ResultRow[], checkins: CheckinCombos[]): ResultRow[] {
   const byPlayer = new Map(checkins.flatMap((c) => (c.playerId && c.combos.length ? [[c.playerId, c.combos] as const] : [])));
@@ -47,6 +50,6 @@ export function withCheckinCombos(rows: ResultRow[], checkins: CheckinCombos[]):
   return rows.map((r) => {
     if (r.place === null || r.place < 1 || r.place > TOP_PLACES) return r;
     const combos = (r.playerId ? byPlayer.get(r.playerId) : r.guestName ? byGuest.get(r.guestName.toLowerCase()) : undefined);
-    return combos ? { ...r, combos } : r;
+    return combos ? { ...r, combos: combos.slice(0, MAX_COMBOS) } : r;
   });
 }

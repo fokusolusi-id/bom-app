@@ -18,12 +18,13 @@ describe("parseScannedBomId", () => {
 });
 
 describe("parseCheckinCombos", () => {
-  it("keeps up to three combos, tidied", () => {
+  it("keeps up to five combos, tidied", () => {
     expect(parseCheckinCombos(["AP  1-80 LR", "", " HR 9-60 LO "])).toEqual(["AP 1-80 LR", "HR 9-60 LO"]);
+    expect(parseCheckinCombos(["a", "b", "c", "d", "e"])).toHaveLength(5);
     expect(parseCheckinCombos("A 1-60 R\nB 1-60 R")).toEqual(["A 1-60 R", "B 1-60 R"]);
   });
-  it("rejects more than three, or a very long one", () => {
-    expect(() => parseCheckinCombos(["a", "b", "c", "d"])).toThrow(/At most 3/);
+  it("rejects more than five, or a very long one", () => {
+    expect(() => parseCheckinCombos(["a", "b", "c", "d", "e", "f"])).toThrow(/At most 5/);
     expect(() => parseCheckinCombos(["x".repeat(41)])).toThrow(/40/);
   });
 });
@@ -47,6 +48,10 @@ describe("withCheckinCombos", () => {
     const rows = [row({ playerId: PLAYER, place: 1, combos: ["typed 1-60 R"] }), row({ guestName: "Vampire", place: 2 })];
     const out = withCheckinCombos(rows, [{ playerId: PLAYER, guestName: null, combos: ["AP 1-80 LR"] }, { playerId: null, guestName: "vampire", combos: ["X 3-60 F"] }]);
     expect(out.map((r) => r.combos)).toEqual([["AP 1-80 LR"], ["X 3-60 F"]]);
+  });
+  it("passes on only the first three combos, which is what results keep", () => {
+    const out = withCheckinCombos([row({ playerId: PLAYER, place: 1 })], [{ playerId: PLAYER, guestName: null, combos: ["a", "b", "c", "d", "e"] }]);
+    expect(out[0].combos).toEqual(["a", "b", "c"]);
   });
   it("leaves 9th and below, and anyone without check-in combos, alone", () => {
     const rows = [row({ playerId: PLAYER, place: 9 }), row({ playerId: "x", place: 3, combos: ["typed 1-60 R"] })];

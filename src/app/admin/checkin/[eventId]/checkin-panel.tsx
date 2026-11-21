@@ -5,8 +5,7 @@ import { ActionForm } from "@/components/form/action-form";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { parseScannedBomId } from "@/domain/checkin";
-import { MAX_COMBOS } from "@/domain/result";
+import { MAX_CHECKIN_COMBOS, parseScannedBomId } from "@/domain/checkin";
 import { formatBomId } from "@/domain/profile";
 import type { FormState } from "@/lib/form-state";
 import type { Checkin } from "@/server/checkins";
@@ -122,15 +121,15 @@ export function CheckinPanel({ eventId, members, checkins }: { eventId: string; 
               </div>
               {note && <p role="status" className="text-sm text-yellow-400">{note}</p>}
 
-              <div className="space-y-2">
-                <div className="text-sm font-bold">Combos (up to {MAX_COMBOS})</div>
+              <div className="space-y-3">
+                <div className="text-sm font-bold">Combos (up to {MAX_CHECKIN_COMBOS})</div>
                 {combos.map((c, i) => (
                   <div key={i} className="flex gap-2">
                     <Input name="combos" value={c} onChange={(e) => setCombo(i, e.target.value)} placeholder="AP 1-80 LR" maxLength={40} aria-label={`Combo ${i + 1}`} className="font-mono text-base" />
                     {combos.length > 1 && <Button type="button" variant="outline" size="sm" className="h-10" aria-label={`Remove combo ${i + 1}`} onClick={() => setCombos((cs) => cs.filter((_, j) => j !== i))}><X aria-hidden /></Button>}
                   </div>
                 ))}
-                {combos.length < MAX_COMBOS && <Button type="button" variant="outline" size="sm" onClick={() => setCombos((cs) => [...cs, ""])}><Plus aria-hidden />Add another combo</Button>}
+                {combos.length < MAX_CHECKIN_COMBOS && <Button type="button" variant="outline" size="sm" className="mt-1" onClick={() => setCombos((cs) => [...cs, ""])}><Plus aria-hidden />Add another combo</Button>}
               </div>
               <Button type="submit" size="lg" className="w-full">{existingFor(subject) ? "Update check-in" : "Check in"}</Button>
             </ActionForm>
