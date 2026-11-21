@@ -43,6 +43,8 @@ export default async function EventResultsPage({ params }: { params: Promise<{ e
           </div>
         </div>
 
+        <p className="text-muted-foreground text-sm">Combos registered at <Link href={`/admin/checkin/${event.id}`} className="text-primary underline">check-in</Link> ({event.checkedIn} checked in) replace typed combos for the top 8 when you save.</p>
+
         <Participants eventId={event.id} rows={event.rows} />
         <ResultsEntry tier={event.tier} table={table} eventId={event.id} text={event.text} challongeUrl={event.challongeUrl} members={members} hasChallongeKey={!!process.env.CHALLONGE_API_KEY} />
 

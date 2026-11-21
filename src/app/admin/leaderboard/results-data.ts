@@ -7,6 +7,7 @@ import type { TierLabel } from "@/domain/tier";
 import { mediaUrl } from "@/lib/media";
 import { BOM_LOGO } from "@/lib/tier-icon";
 import type { requireStaff } from "@/server/admin-session";
+import { supabaseCheckins } from "@/server/checkins";
 import { supabasePlayers } from "@/server/players";
 import { supabaseResults } from "@/server/results";
 import { supabaseScheduleEvents } from "@/server/schedule-events";
@@ -23,12 +24,13 @@ type Staff = Awaited<ReturnType<typeof requireStaff>> & Access;
 export async function loadResultEvents(staff: Staff, eventId?: string): Promise<{ events: ResultEvent[]; members: { id: string; name: string; bom_id: string }[]; table: PointsTable }> {
   const supabase = staff.supabase;
   const [all, players, table] = await Promise.all([
-    supabaseScheduleEvents(supabase).between("2020-01-01T00:00:00Z", new Date().toISOString(), { includeInactive: true }),
+    supabaseScheduleEvents(supabase).between("2020-01-01T00:00:00Z", new Date(new Date().getTime() + 86_400_000).toISOString(), { includeInactive: true }),
     supabasePlayers(supabase).list(1000, { includeRegistered: true }),
     supabaseSettings(supabase).pointsTable(),
   ]);
   const events = all.filter((e) => e.tier !== "Break" && canManageResults(staff, e) && (!eventId || e.id === eventId)).sort((a, b) => b.starts_at.localeCompare(a.starts_at));
-  const placements = await supabaseResults(supabase).placementsForEvents(events.flatMap((e) => (e.id ? [e.id] : [])));
+  const eventIds = events.flatMap((e) => (e.id ? [e.id] : []));
+  const [placements, checkedIn] = await Promise.all([supabaseResults(supabase).placementsForEvents(eventIds), supabaseCheckins(supabase).countsForEvents(eventIds)]);
   const byId = new Map(players.map((p) => [p.id, p]));
   const nameOf = (r: { player_id: string | null; guest_name: string | null }) => (r.player_id ? byId.get(r.player_id)?.name : r.guest_name) ?? "";
 
@@ -38,6 +40,7 @@ export async function loadResultEvents(staff: Staff, eventId?: string): Promise<
     // Major and above belong to BOM as a whole, so they show the BOM logo, as on the calendar.
     const bom = eventUsesBomLogo(e.tier) || !e.community?.image_path;
     return [{
+      checkedIn: checkedIn.get(e.id) ?? 0,
       id: e.id, name: e.name, tier: e.tier as TierLabel, startsAt: e.starts_at, challongeUrl: e.challonge_url ?? null,
       communityId: e.sub_community_id, communityName: e.community?.name ?? "Beyblade of Medan",
       logo: { src: bom ? BOM_LOGO : mediaUrl(e.community!.image_path!), alt: bom ? "Beyblade of Medan" : e.community!.name },

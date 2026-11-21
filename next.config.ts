@@ -23,7 +23,7 @@ const nextConfig: NextConfig = {
   images: { remotePatterns: supabaseUrl ? [new URL(`${supabaseUrl}/storage/v1/object/public/media/**`)] : [] },
   // The About page moved from /about-bom to /about-us.
   async redirects() {
-    return [{ source: "/about-bom", destination: "/about-us", permanent: true }];
+    return [{ source: "/about-bom", destination: "/about-us", permanent: true }, { source: "/admin/checkin", destination: "/admin/leaderboard", permanent: false }];
   },
   async headers() {
     return [{

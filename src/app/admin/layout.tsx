@@ -13,12 +13,11 @@ const adminSections = [
   ["/admin/rules", "Rules"],
   ["/admin/members", "Members"],
   ["/admin/schedule", "Schedule"],
-  ["/admin/checkin", "Check-in"],
   ["/admin/leaderboard", "Leaderboard"],
   ["/admin/access", "Access"],
 ] as const;
 /** Organizers manage the schedule and the results of their own sub community, nothing else. */
-const organizerSections = [["/admin/schedule", "Schedule"], ["/admin/checkin", "Check-in"], ["/admin/leaderboard", "Results"]] as const;
+const organizerSections = [["/admin/schedule", "Schedule"], ["/admin/leaderboard", "Results"]] as const;
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const staff = await requireStaff();

@@ -1,5 +1,5 @@
 "use client";
-import { ExternalLink, Pencil, Trash2 } from "lucide-react";
+import { ExternalLink, Pencil, Trash2, UserCheck } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { TierMark } from "@/components/bom/tier-mark";
@@ -15,7 +15,7 @@ import { deleteEventResults } from "./actions";
 export type ResultEvent = {
   id: string; name: string; tier: TierLabel; startsAt: string; challongeUrl: string | null;
   communityId: string | null; communityName: string; logo: { src: string; alt: string };
-  text: string;
+  text: string; checkedIn: number;
   rows: { id: string; playerId: string | null; name: string; bomId: string | null; place: number | null; tigerKing: boolean; combos: string[]; points: number }[];
 };
 
@@ -72,6 +72,7 @@ export function ResultsBrowser({ events }: { events: ResultEvent[] }) {
               <TableHead>Type</TableHead>
               <TableHead>Event</TableHead>
               <TableHead>Sub community</TableHead>
+              <TableHead className="text-right">Checked in</TableHead>
               <TableHead className="text-right">Participants</TableHead>
               <TableHead className="w-px text-right">Actions</TableHead>
             </TableRow>
@@ -87,16 +88,18 @@ export function ResultsBrowser({ events }: { events: ResultEvent[] }) {
                   {e.challongeUrl && <a href={e.challongeUrl} target="_blank" rel="noopener noreferrer" className="text-primary mt-0.5 flex w-fit items-center gap-0.5 text-xs font-normal underline">Bracket<ExternalLink className="size-3" aria-hidden /></a>}
                 </TableCell>
                 <TableCell className="text-muted-foreground">{e.communityName}</TableCell>
+                <TableCell className={`font-num tabular text-right ${e.checkedIn === 0 ? "text-muted-foreground" : ""}`}>{e.checkedIn === 0 ? "None" : e.checkedIn}</TableCell>
                 <TableCell className={`font-num tabular text-right ${e.rows.length === 0 ? "text-muted-foreground" : ""}`}>{e.rows.length === 0 ? "No results" : e.rows.length}</TableCell>
                 <TableCell>
                   <span className="flex justify-end gap-1">
+                    <Button variant="outline" size="sm" className="w-8 px-0" asChild><Link href={`/admin/checkin/${e.id}`} aria-label={`Check in players for ${e.name}`}><UserCheck aria-hidden /></Link></Button>
                     <Button variant="outline" size="sm" className="w-8 px-0" asChild><Link href={`/admin/leaderboard/results/${e.id}`} aria-label={`Edit results of ${e.name}`}><Pencil aria-hidden /></Link></Button>
                     <Button type="button" variant="outline" size="sm" className="text-destructive w-8 px-0" disabled={e.rows.length === 0} onClick={() => { setDeleteError(null); setDeleting(e); }} aria-label={`Delete all results of ${e.name}`}><Trash2 aria-hidden /></Button>
                   </span>
                 </TableCell>
               </TableRow>
             ))}
-            {rows.length === 0 && <TableRow><TableCell colSpan={7} className="text-muted-foreground py-6 text-center">No past events match.</TableCell></TableRow>}
+            {rows.length === 0 && <TableRow><TableCell colSpan={8} className="text-muted-foreground py-6 text-center">No past events match.</TableCell></TableRow>}
           </TableBody>
         </Table>
       </div>
