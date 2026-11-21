@@ -5,6 +5,7 @@ import { ActionForm } from "@/components/form/action-form";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Pagination } from "@/components/ui/pagination";
 import { MAX_CHECKIN_COMBOS, parseScannedBomId } from "@/domain/checkin";
 import { formatBomId } from "@/domain/profile";
 import type { FormState } from "@/lib/form-state";
@@ -15,6 +16,7 @@ import { QrScanner } from "./qr-scanner";
 type Member = { id: string; name: string; bom_id: string };
 const memberLabel = (p: Member) => `${p.name} ${formatBomId(p.bom_id)}`;
 const squash = (v: string) => v.toLowerCase().replace(/[\s-[\]]/g, "");
+const PAGE_SIZE = 10;
 const time = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "Asia/Jakarta" });
 
 /** The member a typed text points to: the exact suggestion, a blader name, or a BOM ID ("BoM-001", "bom 1" or "1"). */
@@ -40,6 +42,11 @@ export function CheckinPanel({ eventId, members, checkins }: { eventId: string; 
   const [guest, setGuest] = useState("");
   const [note, setNote] = useState<string | null>(null);
   const [removeError, setRemoveError] = useState<string | null>(null);
+  // Finding someone in the checked-in list: typed, or by scanning their card.
+  const [query, setQuery] = useState("");
+  const [page, setPage] = useState(0);
+  const [findScanning, setFindScanning] = useState(false);
+  const [findNote, setFindNote] = useState<string | null>(null);
   const [, startTransition] = useTransition();
 
   const byId = useMemo(() => new Map(members.map((m) => [m.id, m])), [members]);
@@ -61,6 +68,27 @@ export function CheckinPanel({ eventId, members, checkins }: { eventId: string; 
     if (member) pick({ kind: "member", member });
     else { setScanning(false); setNote(`${bomId.toUpperCase()} is not a member. Check them in as a non-member below.`); setGuest(""); }
   }
+
+  function onFindScan(text: string) {
+    setFindScanning(false);
+    const bomId = parseScannedBomId(text);
+    if (!bomId) return setFindNote("That QR code is not a BOM member card.");
+    setFindNote(null);
+    setQuery(bomId.toUpperCase());
+    setPage(0);
+  }
+
+  // The checked-in list narrowed by what was typed or scanned: a name, a BOM ID ("bom-001", "1") or a combo.
+  const q = query.trim().toLowerCase();
+  const qMember = findMember(members, query);
+  const visible = q === "" ? checkins : checkins.filter((c) => {
+    const m = c.playerId ? byId.get(c.playerId) : undefined;
+    return [nameOf(c), m?.bom_id ?? "", ...c.combos].some((v) => v.toLowerCase().includes(q) || squash(v).includes(squash(q))) || (qMember !== undefined && c.playerId === qMember.id);
+  });
+  const pages = Math.max(1, Math.ceil(visible.length / PAGE_SIZE));
+  const current = Math.min(page, pages - 1);
+  const pageRows = visible.slice(current * PAGE_SIZE, (current + 1) * PAGE_SIZE);
+  const notCheckedIn = q !== "" && visible.length === 0 ? qMember : undefined;
 
   const found = findMember(members, search);
   const setCombo = (i: number, v: string) => setCombos((cs) => cs.map((c, j) => (j === i ? v : c)));
@@ -139,10 +167,25 @@ export function CheckinPanel({ eventId, members, checkins }: { eventId: string; 
 
       <section className="space-y-3" aria-labelledby="checked-in-title">
         <h2 id="checked-in-title" className="text-2xl">Checked in ({checkins.length})</h2>
+        <div className="space-y-3">
+          <div className="flex gap-2">
+            <Input value={query} onChange={(e) => { setQuery(e.target.value); setPage(0); setFindNote(null); }} placeholder="Find a player: name, BOM ID or combo" aria-label="Find a checked-in player" autoComplete="off" className="text-base" />
+            {query && <Button type="button" variant="outline" aria-label="Clear the search" onClick={() => { setQuery(""); setPage(0); setFindNote(null); }}><X aria-hidden /></Button>}
+            <Button type="button" variant="outline" aria-label="Scan a member card to find them" onClick={() => { setFindNote(null); setFindScanning((v) => !v); }}><Camera aria-hidden /><span className="hidden sm:inline">Scan</span></Button>
+          </div>
+          {findScanning && <QrScanner onScan={onFindScan} onClose={() => setFindScanning(false)} />}
+          {findNote && <p role="status" className="text-sm text-yellow-400">{findNote}</p>}
+        </div>
         {removeError && <p role="alert" className="text-destructive text-sm">{removeError}</p>}
-        {checkins.length === 0 ? <p className="text-muted-foreground text-sm">Nobody yet.</p> : (
+        {notCheckedIn && (
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border p-3">
+            <p className="text-sm"><b>{notCheckedIn.name}</b> {formatBomId(notCheckedIn.bom_id)} is not checked in yet.</p>
+            <Button type="button" size="sm" onClick={() => { pick({ kind: "member", member: notCheckedIn }); window.scrollTo({ top: 0, behavior: "smooth" }); }}>Check in</Button>
+          </div>
+        )}
+        {checkins.length === 0 ? <p className="text-muted-foreground text-sm">Nobody yet.</p> : visible.length === 0 && !notCheckedIn ? <p className="text-muted-foreground text-sm">Nobody checked in matches.</p> : (
           <ul className="divide-y rounded-md border">
-            {checkins.map((c) => {
+            {pageRows.map((c) => {
               const member = c.playerId ? byId.get(c.playerId) : undefined;
               return (
                 <li key={c.id} className="flex items-start justify-between gap-3 p-3">
@@ -160,6 +203,7 @@ export function CheckinPanel({ eventId, members, checkins }: { eventId: string; 
             })}
           </ul>
         )}
+        <Pagination label="Checked-in pages" page={current} pages={pages} onChange={setPage} summary={`${visible.length} of ${checkins.length} players`} />
       </section>
     </div>
   );
