@@ -31,8 +31,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             <Image src="/brand/logo-768.png" alt="" width={32} height={32} />
             <span className="font-display hidden text-sm font-extrabold italic uppercase sm:inline">Admin</span>
           </Link>
-          <AdminNav sections={staff.isAdmin ? adminSections : organizerSections} />
-          <ProfileMenu email={staff.email} role={roleLabel} signOut={signOut} />
+          <AdminNav sections={staff.isAdmin ? adminSections : organizerSections} email={staff.email} role={roleLabel} signOut={signOut} />
+          {/* On small screens the profile lives in the Menu. */}
+          <div className="hidden md:block"><ProfileMenu email={staff.email} role={roleLabel} signOut={signOut} /></div>
         </div>
       </header>
       <div className="mx-auto max-w-6xl px-4 py-8">{children}</div>
