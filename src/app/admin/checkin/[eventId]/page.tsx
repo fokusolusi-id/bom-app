@@ -4,7 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AdminPage } from "@/components/admin/admin-page";
 import { TIER_TILE, TierTile } from "@/components/bom/tier-tile";
-import { canManageEvent } from "@/domain/access";
+import { canManageResults } from "@/domain/access";
 import { eventUsesBomLogo } from "@/domain/event";
 import type { TierLabel } from "@/domain/tier";
 import { isUuid } from "@/domain/validation";
@@ -27,7 +27,7 @@ export default async function EventCheckinPage({ params }: { params: Promise<{ e
   if (!isUuid(eventId)) notFound();
   const staff = await requireStaff();
   const event = await supabaseScheduleEvents(staff.supabase).get(eventId);
-  if (!event || event.tier === "Break" || !canManageEvent(staff, event)) notFound();
+  if (!event || event.tier === "Break" || !canManageResults(staff, event)) notFound();
   const [players, checkins] = await Promise.all([supabasePlayers(staff.supabase).list(1000, { includeRegistered: true }), supabaseCheckins(staff.supabase).listForEvent(eventId)]);
   const tier = event.tier as TierLabel;
   const bom = eventUsesBomLogo(tier) || !event.community?.image_path;
@@ -35,7 +35,7 @@ export default async function EventCheckinPage({ params }: { params: Promise<{ e
   return (
     <AdminPage title="Check-in" hint="Scan a member card or search the player, then register their combos. When results are saved, the top 8 take their combos from here.">
       <div className="space-y-8">
-        <Link href="/admin/checkin" className="text-muted-foreground hover:text-primary flex w-fit items-center gap-1 text-sm"><ArrowLeft className="size-4" aria-hidden />Back to Check-in</Link>
+        <Link href="/admin/leaderboard#results" className="text-muted-foreground hover:text-primary flex w-fit items-center gap-1 text-sm"><ArrowLeft className="size-4" aria-hidden />Back to Leaderboard</Link>
 
         <div className="flex flex-wrap items-center gap-4">
           <div className="flex items-center gap-2">
@@ -46,12 +46,13 @@ export default async function EventCheckinPage({ params }: { params: Promise<{ e
             <div className={`font-label text-lg font-bold tracking-[0.08em] uppercase italic ${TIER_TILE[tier].title}`}>{EVENT_TYPE_LABEL(tier)}</div>
             <h2 className="font-display text-2xl leading-tight font-extrabold normal-case italic">{event.name}</h2>
             <p className="text-muted-foreground text-sm">{when.format(new Date(event.starts_at))} · {event.community?.name ?? "Beyblade of Medan"}</p>
+            <Link href={`/admin/leaderboard/results/${eventId}`} className="text-primary mt-1 inline-block text-sm underline">Enter results</Link>
           </div>
         </div>
 
         <CheckinPanel eventId={eventId} members={players.flatMap((p) => (p.id ? [{ id: p.id, name: p.name, bom_id: p.bom_id }] : []))} checkins={checkins} />
 
-        <Link href="/admin/checkin" className="text-muted-foreground hover:text-primary flex w-fit items-center gap-1 text-sm"><ArrowLeft className="size-4" aria-hidden />Back to Check-in</Link>
+        <Link href="/admin/leaderboard#results" className="text-muted-foreground hover:text-primary flex w-fit items-center gap-1 text-sm"><ArrowLeft className="size-4" aria-hidden />Back to Leaderboard</Link>
       </div>
     </AdminPage>
   );
