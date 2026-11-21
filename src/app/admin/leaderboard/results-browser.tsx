@@ -1,5 +1,5 @@
 "use client";
-import { ExternalLink, Pencil, Trash2, UserCheck } from "lucide-react";
+import { Eye, ExternalLink, Pencil, Trash2, UserCheck } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { TierMark } from "@/components/bom/tier-mark";
@@ -15,7 +15,7 @@ import { deleteEventResults } from "./actions";
 export type ResultEvent = {
   id: string; name: string; tier: TierLabel; startsAt: string; challongeUrl: string | null;
   communityId: string | null; communityName: string; logo: { src: string; alt: string };
-  text: string; checkedIn: number;
+  text: string; checkedIn: number; /** Only admins check players in; everyone else can only look at who checked in. */ canCheckIn: boolean;
   rows: { id: string; playerId: string | null; name: string; bomId: string | null; place: number | null; tigerKing: boolean; combos: string[]; points: number }[];
 };
 
@@ -92,7 +92,7 @@ export function ResultsBrowser({ events, isAdmin }: { events: ResultEvent[]; isA
                 <TableCell className={`font-num tabular text-right ${e.rows.length === 0 ? "text-muted-foreground" : ""}`}>{e.rows.length === 0 ? "No results" : e.rows.length}</TableCell>
                 <TableCell>
                   <span className="flex justify-end gap-1">
-                    <Button variant="outline" size="sm" className="w-8 px-0" asChild><Link href={`/admin/checkin/${e.id}`} aria-label={`Check in players for ${e.name}`}><UserCheck aria-hidden /></Link></Button>
+                    <Button variant="outline" size="sm" className="w-8 px-0" asChild><Link href={`/admin/checkin/${e.id}`} aria-label={e.canCheckIn ? `Check in players for ${e.name}` : `See who checked in at ${e.name}`}>{e.canCheckIn ? <UserCheck aria-hidden /> : <Eye aria-hidden />}</Link></Button>
                     {isAdmin && (
                       <>
                       <Button variant="outline" size="sm" className="w-8 px-0" asChild><Link href={`/admin/leaderboard/results/${e.id}`} aria-label={`Edit results of ${e.name}`}><Pencil aria-hidden /></Link></Button>
