@@ -28,7 +28,7 @@ function save(href: string, filename: string) {
   a.remove();
 }
 
-/** A bank-card (ID-1) size, 85.60 x 53.98 mm. The downloads are 3033 x 1913 px: 900 dpi at that size, 3x the art (1011 x 638), so the texts and the QR code stay sharp when printed. */
+/** The downloads use the art enlarged and sharpened in advance (public/print/*-hires.png, from the 1011 x 638 art). A bank-card (ID-1) size, 85.60 x 53.98 mm. The downloads are 3033 x 1913 px: 900 dpi at that size, 3x the art (1011 x 638), so the texts and the QR code stay sharp when printed. */
 const EXPORT_W = 3033;
 const EXPORT_H = 1913;
 const EXPORT_PPM = 35433; // 900 dpi in pixels per metre, written into the PNG so print software sizes it at 85.60 x 53.98 mm
@@ -62,7 +62,7 @@ async function savePng(canvas: HTMLCanvasElement, filename: string) {
 /** Draws the front as it looks on the page (background, texts and QR code) onto a canvas of the card's real proportions and saves it as a PNG. */
 async function downloadFront(root: HTMLElement, bomId: string) {
   await document.fonts.ready;
-  const bg = await loadImage("/print/bom-emoney-03.png");
+  const bg = await loadImage("/print/bom-emoney-03-hires.png");
   const canvas = document.createElement("canvas");
   canvas.width = EXPORT_W;
   canvas.height = EXPORT_H;
@@ -95,9 +95,9 @@ async function downloadFront(root: HTMLElement, bomId: string) {
   await savePng(canvas, `${bomId.toLowerCase()}-card-front.png`);
 }
 
-/** Saves the back at the same size as the front download, enlarged with high-quality smoothing. */
+/** Saves the back at the same size as the front download. */
 async function downloadBack(bomId: string) {
-  const img = await loadImage("/print/bom-emoney-04.png");
+  const img = await loadImage("/print/bom-emoney-04-hires.png");
   const canvas = document.createElement("canvas");
   canvas.width = EXPORT_W;
   canvas.height = EXPORT_H;
