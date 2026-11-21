@@ -1,6 +1,5 @@
 "use server";
 import { revalidatePath } from "next/cache";
-import { canManageResults } from "@/domain/access";
 import { parseCheckinInput } from "@/domain/checkin";
 import { isUuid } from "@/domain/validation";
 import { toFormState, type FormState } from "@/lib/form-state";
@@ -8,10 +7,11 @@ import { requireStaff } from "@/server/admin-session";
 import { supabaseCheckins } from "@/server/checkins";
 import { supabaseScheduleEvents } from "@/server/schedule-events";
 
-/** Loads the event and checks the signed-in staff member may take check-ins for it (the same rule as managing the event). */
+/** Loads the event and checks the signed-in staff member is an admin: only admins check players in (organizers can only look). */
 async function requireCheckinAccess(staff: Awaited<ReturnType<typeof requireStaff>>, eventId: string) {
   const event = await supabaseScheduleEvents(staff.supabase).get(eventId);
-  if (!event || event.tier === "Break" || !canManageResults(staff, event)) throw new Error("You can only check in players for events of your own sub community");
+  if (!staff.isAdmin) throw new Error("Only admins can check players in");
+  if (!event || event.tier === "Break") throw new Error("Event not found");
   return staff.supabase;
 }
 

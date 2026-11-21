@@ -34,7 +34,7 @@ function findMember(members: Member[], text: string) {
 type Subject = { kind: "member"; member: Member } | { kind: "guest"; name: string };
 
 /** Take check-ins at one event: scan a member card or search, add the combos, save; and correct the ones already taken. */
-export function CheckinPanel({ eventId, members, checkins }: { eventId: string; members: Member[]; checkins: Checkin[] }) {
+export function CheckinPanel({ eventId, members, checkins, readOnly = false }: { eventId: string; members: Member[]; checkins: Checkin[]; readOnly?: boolean }) {
   const [scanning, setScanning] = useState(false);
   const [subject, setSubject] = useState<Subject | null>(null);
   const [combos, setCombos] = useState<string[]>([""]);
@@ -101,7 +101,7 @@ export function CheckinPanel({ eventId, members, checkins }: { eventId: string; 
 
   return (
     <div className="space-y-6">
-      <Card>
+      {!readOnly && <Card>
         <CardHeader><CardTitle>Check in a player</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           {!subject && (
@@ -163,7 +163,7 @@ export function CheckinPanel({ eventId, members, checkins }: { eventId: string; 
             </ActionForm>
           )}
         </CardContent>
-      </Card>
+      </Card>}
 
       <section className="space-y-3" aria-labelledby="checked-in-title">
         <h2 id="checked-in-title" className="text-2xl">Checked in ({checkins.length})</h2>
@@ -194,10 +194,10 @@ export function CheckinPanel({ eventId, members, checkins }: { eventId: string; 
                     {c.combos.length > 0 ? <ul className="font-mono text-sm">{c.combos.map((x, i) => <li key={i}>{x}</li>)}</ul> : <div className="text-muted-foreground text-sm">No combos</div>}
                     <div className="text-muted-foreground text-xs">By {c.checkedInByEmail ?? "unknown"} · {time.format(new Date(c.createdAt))}{c.updatedByEmail && c.updatedAt !== c.createdAt ? ` · edited by ${c.updatedByEmail}` : ""}</div>
                   </div>
-                  <div className="flex shrink-0 gap-1">
+                  {!readOnly && <div className="flex shrink-0 gap-1">
                     <Button type="button" variant="outline" size="sm" aria-label={`Edit ${nameOf(c)}`} onClick={() => { pick(member ? { kind: "member", member } : { kind: "guest", name: c.guestName ?? "" }); window.scrollTo({ top: 0, behavior: "smooth" }); }}><Pencil aria-hidden /></Button>
                     <Button type="button" variant="outline" size="sm" aria-label={`Remove ${nameOf(c)}`} onClick={() => { if (!confirm(`Remove ${nameOf(c)} from the check-in?`)) return; startTransition(async () => { const r = await removeCheckin(eventId, c.id); setRemoveError(r.error ?? null); }); }}><Trash2 aria-hidden /></Button>
-                  </div>
+                  </div>}
                 </li>
               );
             })}
