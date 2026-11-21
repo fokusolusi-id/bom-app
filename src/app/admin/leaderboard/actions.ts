@@ -1,7 +1,9 @@
 "use server";
 import { revalidatePath } from "next/cache";
 import { challongeResultsText, entriesFromChallonge, parseChallongeUrl } from "@/domain/challonge";
+import { withCheckinCombos } from "@/domain/checkin";
 import { parsePlacementInput, parseResultsText } from "@/domain/result";
+import { supabaseCheckins } from "@/server/checkins";
 import { parsePointsTable } from "@/domain/points-table";
 import { isUuid } from "@/domain/validation";
 import { toFormState, type FormState } from "@/lib/form-state";
@@ -26,6 +28,11 @@ async function revalidate(supabase: Awaited<ReturnType<typeof requireAdmin>>) {
   revalidatePath("/member/[bomId]", "page");
 }
 
+/** The combos registered at check-in for this event. */
+async function checkinCombos(supabase: Awaited<ReturnType<typeof requireAdmin>>, eventId: string) {
+  return (await supabaseCheckins(supabase).listForEvent(eventId)).map((c) => ({ playerId: c.playerId, guestName: c.guestName, combos: c.combos }));
+}
+
 /** Loads the event and checks the signed-in staff member may enter its results. */
 async function requireResultsAccess(staff: Awaited<ReturnType<typeof requireStaff>>, eventId: string) {
   const event = await supabaseScheduleEvents(staff.supabase).get(eventId);
@@ -38,7 +45,9 @@ export async function setPlacement(_prev: FormState, formData: FormData): Promis
   return toFormState(async () => {
     const input = parsePlacementInput((k) => formData.get(k));
     const supabase = await requireResultsAccess(staff, input.eventId);
-    await supabaseResults(supabase).setPlacement(input);
+    // Combos taken at check-in win over typed ones (top 8 only).
+    const [row] = withCheckinCombos([{ playerId: input.playerId, guestName: null, place: input.place, tigerKing: input.tigerKing, combos: input.combos }], await checkinCombos(supabase, input.eventId));
+    await supabaseResults(supabase).setPlacement({ ...input, combos: row.combos });
     await revalidate(supabase);
   });
 }
@@ -53,7 +62,8 @@ export async function saveEventResults(eventId: string, _prev: FormState, formDa
     const players = await supabasePlayers(supabase).list(1000, { includeRegistered: true });
     const rows = parseResultsText(String(formData.get("results") ?? ""), players.flatMap((p) => (p.id ? [{ id: p.id, name: p.name, bom_id: p.bom_id }] : [])));
     guests = rows.flatMap((r) => (r.guestName ? [r.guestName] : []));
-    await supabaseResults(supabase).replaceForEvent(eventId, rows);
+    // The top 8 take the combos registered at check-in, instead of the typed ones.
+    await supabaseResults(supabase).replaceForEvent(eventId, withCheckinCombos(rows, await checkinCombos(supabase, eventId)));
     // The Challonge bracket the list came from, kept with the event so the site can link to it.
     await supabaseScheduleEvents(supabase).setChallongeUrl(eventId, parseChallongeUrl(formData.get("challonge_url"))?.url ?? null);
     await revalidate(supabase);
