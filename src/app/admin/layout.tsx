@@ -16,8 +16,8 @@ const adminSections = [
   ["/admin/leaderboard", "Leaderboard"],
   ["/admin/access", "Access"],
 ] as const;
-/** Organizers manage the schedule and the results of their own sub community, nothing else. */
-const organizerSections = [["/admin/schedule", "Schedule"], ["/admin/leaderboard", "Results"]] as const;
+/** Organizers manage the schedule of their own sub community and check players in at its Ranked events (the Leaderboard page, without the results editing). */
+const organizerSections = [["/admin/schedule", "Schedule"], ["/admin/leaderboard", "Check-in"]] as const;
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const staff = await requireStaff();

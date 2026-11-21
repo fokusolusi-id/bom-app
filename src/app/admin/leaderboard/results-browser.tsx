@@ -23,8 +23,8 @@ const PAGE_SIZE = 25;
 const when = new Intl.DateTimeFormat("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Jakarta" });
 const BOM = "bom";
 
-/** All past events in a filterable list (by competition type and sub community). The pencil opens the event on its own page. */
-export function ResultsBrowser({ events }: { events: ResultEvent[] }) {
+/** Events in a filterable list (by competition type and sub community). The pencil opens the event on its own page. */
+export function ResultsBrowser({ events, isAdmin }: { events: ResultEvent[]; isAdmin: boolean }) {
   const [type, setType] = useState("all");
   const [community, setCommunity] = useState("all");
   const [page, setPage] = useState(0);
@@ -93,8 +93,12 @@ export function ResultsBrowser({ events }: { events: ResultEvent[] }) {
                 <TableCell>
                   <span className="flex justify-end gap-1">
                     <Button variant="outline" size="sm" className="w-8 px-0" asChild><Link href={`/admin/checkin/${e.id}`} aria-label={`Check in players for ${e.name}`}><UserCheck aria-hidden /></Link></Button>
-                    <Button variant="outline" size="sm" className="w-8 px-0" asChild><Link href={`/admin/leaderboard/results/${e.id}`} aria-label={`Edit results of ${e.name}`}><Pencil aria-hidden /></Link></Button>
-                    <Button type="button" variant="outline" size="sm" className="text-destructive w-8 px-0" disabled={e.rows.length === 0} onClick={() => { setDeleteError(null); setDeleting(e); }} aria-label={`Delete all results of ${e.name}`}><Trash2 aria-hidden /></Button>
+                    {isAdmin && (
+                      <>
+                      <Button variant="outline" size="sm" className="w-8 px-0" asChild><Link href={`/admin/leaderboard/results/${e.id}`} aria-label={`Edit results of ${e.name}`}><Pencil aria-hidden /></Link></Button>
+                      <Button type="button" variant="outline" size="sm" className="text-destructive w-8 px-0" disabled={e.rows.length === 0} onClick={() => { setDeleteError(null); setDeleting(e); }} aria-label={`Delete all results of ${e.name}`}><Trash2 aria-hidden /></Button>
+                      </>
+                    )}
                   </span>
                 </TableCell>
               </TableRow>
